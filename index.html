@@ -1234,6 +1234,9 @@ function enhCost(lv){const c={g:Math.round(15*Math.pow(lv+1,1.6))};c[['u','u','i
 const INN=[{n:'푹 쉬기',d:'체력을 모두 회복한다',g:10},{n:'화톳불 수리',d:'화톳불 체력 +150',g:20},{n:'일꾼 고용',d:'주민 1명이 마을에 들어온다 (최대 14명)',g:40},{n:'체력 물약',d:'가방에 체력 물약 1개',g:15}];
 let shopId=null;
 function shopRow(act,dis,name,desc,right,ic){return '<button class="trade" data-act="'+act+'"'+(dis?' disabled':'')+'>'+(ic?'<i class="ri">'+ic+'</i>':'')+'<div><b>'+name+'</b>'+(desc?'<small>'+desc+'</small>':'')+'</div><span>'+right+'</span></button>';}
+function talkTargets(){const a=NPCS.map((n,k)=>({k,x:(CX+n.dx+.5)*T,y:(CY+n.dy+.5)*T,n:n.n}));if(S.merchant)a.push({k:'m',x:S.merchant.x,y:S.merchant.y,n:'떠돌이 상인'});return a}
+function nearTalk(r,wx,wy){const p=S.p;let best=null,bd=r;for(const t of talkTargets()){const d=Math.hypot(t.x-(wx==null?p.x:wx),t.y-(wy==null?p.y:wy));if(d<bd){bd=d;best=t;}}return best}
+function talkTo(t){if(!t||S.trading||S.menu)return;if(t.k==='m')openTrade();else openShop(NPCS[t.k].id);}
 function openShop(id){shopId=id;S.trading=true;renderShop();$('ovShop').hidden=false;}
 function closeShop(){$('ovShop').hidden=true;S.trading=false;}
 function renderShop(){
@@ -1665,11 +1668,11 @@ function take(i,who){
 
 /* ---------- input ---------- */
 const keys={};
-let tool=null,hover=null,joy=null;
+let tool=null,hover=null,joy=null,touchUI=false;
 const ptrs=new Map();
 window.addEventListener('keydown',e=>{
   if(e.repeat)return;
-  const k=e.key.toLowerCase();keys[k]=true;
+  const k=e.key.toLowerCase();keys[k]=true;touchUI=false;
   if(!running)return;
   if(k>='0'&&k<='9'){const n=k==='0'?9:+k-1;selectTool(tool===TOOLS[n]?null:TOOLS[n]);}
   else if(k==='q'||k==='e'){const c=tool?TOOLS.indexOf(tool):-1,n=k==='e'?(c+1)%TOOLS.length:(c<=0?TOOLS.length-1:c-1);selectTool(TOOLS[n]);}
@@ -1677,7 +1680,7 @@ window.addEventListener('keydown',e=>{
   else if(k==='n')startNight();
   else if(k==='r')castW();
   else if(k==='z'||k==='x'||k==='c'||k==='v'||k==='g'){const a=ABIL.find(x=>x.key===k);if(a)castAbil(a.id);}
-  else if(k==='f'||k===' '){hook();e.preventDefault&&e.preventDefault();}
+  else if(k==='f'||k===' '){if(S.p.bite>0)hook();else if(S.talk)talkTo(S.talk);e.preventDefault&&e.preventDefault();}
   else if(k==='i'||k==='b'){if(!$('ovBag').hidden)closeBag();else openBag();}
   else if(k==='m'){if(!$('ovMap').hidden)closeMap();else openMap();}
   else if(k==='p')togglePause();
@@ -1686,6 +1689,7 @@ window.addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=false;});
 cv.addEventListener('contextmenu',e=>e.preventDefault());
 cv.addEventListener('pointerdown',e=>{
   try{cv.setPointerCapture(e.pointerId);}catch(_){}
+  touchUI=e.pointerType==='touch';
   ptrs.set(e.pointerId,{x0:e.clientX,y0:e.clientY,t0:performance.now(),moved:false});
   if(e.pointerType==='mouse')hover={x:e.clientX,y:e.clientY};
 });
@@ -1737,6 +1741,7 @@ function upgCheck(i){
 function repairCost(b){const c=cost(b.t),f=1-b.hp/b.max,o={};for(const k in c)o[k]=Math.ceil(c[k]*.5*f);return o}
 function tap(sx,sy){
   if(running&&!paused&&!tool&&S.p.bite>0){hook();return;}
+  if(running&&!paused&&S.phase!=='dawn'){const [wx,wy]=toWorld(sx,sy),t=nearTalk(T*.9,wx,wy);if(t){if(Math.hypot(t.x-S.p.x,t.y-S.p.y)<T*3.2)talkTo(t);else toast(t.n+'에게 가까이 가서 누르세요',1400);return;}}
   if(!running||paused||S.phase==='dawn'||!tool)return;
   const [wx,wy]=toWorld(sx,sy),i=cellAt(wx,wy);
   const chk=placeCheck(tool,i);
@@ -1859,13 +1864,7 @@ function update(dt){
       if(k.age>.4&&d<T*.6){k.got=true;collectPick(k);}
     }
     S.picks=S.picks.filter(k=>!k.got);
-    if(S.merchant){
-      const d=Math.hypot(S.merchant.x-p.x,S.merchant.y-p.y);
-      if(d<T*1.1&&!S.merchant.near){S.merchant.near=true;openTrade();return;}
-      if(d>T*1.8)S.merchant.near=false;
-    }
-    for(let k=0;k<NPCS.length;k++){const n=NPCS[k],nx=(CX+n.dx+.5)*T,ny=(CY+n.dy+.5)*T,d=Math.hypot(nx-p.x,ny-p.y);
-      if(d<T*1.35){if(S.npcNear!==k){S.npcNear=k;openShop(n.id);return;}}else if(S.npcNear===k&&d>T*2)S.npcNear=-1;}
+    S.talk=nearTalk(T*1.9);
   }
 
   // player
@@ -2227,6 +2226,7 @@ function draw(now){
   for(const k of S.picks)drawPick(k,now);
   for(const c of S.chests)drawChest(c,now);
   if(S.merchant)drawMerchant(S.merchant,now);
+  if(S.talk&&!S.trading&&!S.menu){const t=S.talk,txt=(touchUI?'눌러서 ':'F · ')+t.n,y=t.y-T*2.05;ctx.font='bold 13px "Gowun Dodum",sans-serif';const w=ctx.measureText(txt).width+16;ctx.fillStyle='rgba(12,20,14,.88)';ctx.fillRect(t.x-w/2,y-11,w,22);ctx.strokeStyle='rgba(255,160,71,.8)';ctx.lineWidth=1;ctx.strokeRect(t.x-w/2+.5,y-10.5,w-1,21);ctx.fillStyle='#ffe0b0';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(txt,t.x,y+.5);ctx.textAlign='left';ctx.textBaseline='alphabetic';}
   if(S.lost)drawLost(now);
   for(const v of S.vill)drawVillager(v);
   for(const a of S.allies)drawAlly(a,now);
@@ -2931,7 +2931,7 @@ const HELP=[
   {t:'기본 조작',items:[['이동','화면을 끌거나 WASD·방향키'],['전투','가까운 적은 자동으로 공격해요'],['가방','I키 또는 오른쪽 위 가방 버튼'],['장비 칸','무기·머리·갑옷·장갑·신발·목걸이·장신구 2개. 가방의 장비에는 어느 칸인지 색깔 표시가 붙어요'],['밤 부르기','N키. 준비가 끝났으면 밤을 앞당겨요'],['일시정지','P키']]},
   {t:'무기 7종',items:[['검','근접 공격. 공격력과 최대 체력이 함께 올라요'],['활','멀리서 자동으로 화살을 쏴요'],['지팡이','마법 구체가 터지며 주변 적에게도 피해'],['표창','빠르게 던지고 출혈을 쌓아요'],['부메랑','적 사이를 3번 튕기며 맞혀요'],['장창','일직선의 적을 모두 꿰뚫어요'],['망치','느리지만 주변 적을 기절시켜요']]},
   {t:'희귀 장비',items:[['세트 장비','숲지기·철갑 수호자·대마법사. 2개, 4개 모으면 세트 효과'],['고유 장비','화염검, 폭풍 활, 서리 지팡이 등. 무기 스킬은 R키, 소환사의 지팡이는 정령 늑대 소환'],['드랍','몬스터가 낮은 확률로 떨어뜨리고, 보스는 반드시 줘요']]},
-  {t:'마을',items:[['길','몬스터는 동서남북 네 갈래 길로만 와요. 길을 막으면 막은 건물을 부숴요'],['성벽','마을을 두른 성벽. 수리와 업그레이드가 돼요'],['상점','잡화점과 보석상에 다가가면 금화로 사고팔 수 있어요'],['대장장이','장착한 장비를 +10까지 강화해요. 높을수록 실패가 잦아요'],['여관','휴식, 화톳불 수리, 일꾼 고용'],['금화','몬스터를 잡으면 바로 들어와요']]},
+  {t:'마을',items:[['길','몬스터는 동서남북 네 갈래 길로만 와요. 길을 막으면 막은 건물을 부숴요'],['성벽','마을을 두른 성벽. 수리와 업그레이드가 돼요'],['상점','잡화점·대장장이·보석상·여관 앞에서 F키를 누르거나 NPC를 클릭하면 열려요'],['대장장이','장착한 장비를 +10까지 강화해요. 높을수록 실패가 잦아요'],['여관','휴식, 화톳불 수리, 일꾼 고용'],['금화','몬스터를 잡으면 바로 들어와요']]},
   {t:'채집과 도구',items:[['채집','나무·바위·덤불 옆에 멈춰 서면 자동으로 캐요'],['도구','가방의 제작 탭에서 도끼·곡괭이·삽·낚싯대를 만들고 단계를 올려요'],['광석','나무 → 구리 → 철 → 금 → 코발트 → 에메랄드 → 다이아. 곡괭이를 한 단계씩 올려야 다음 광석을 캘 수 있어요'],['흙더미','X 표시는 삽으로 파면 보물이 나와요']]},
   {t:'건설과 방어',items:[['짓기','아래 건설 바에서 고르고 땅을 탭 (숫자키 1~0, Q/E로 넘기기)'],['방어','벽, 문, 탑, 가시 함정으로 화톳불을 지켜요. 화톳불이 꺼지면 끝'],['생산','벌목소·채석장·광산은 근처 자원에서 자동으로 모아요'],['자동화','드릴은 바로 옆 광석을 계속 캐요(구리→황금→다이아 드릴). 보관함은 주변에 떨어진 아이템을 모으고, 자동 수리기는 주변 건물을 고쳐요'],['업그레이드','업그레이드 도구로 건물을 누르면 Lv5까지 강해져요 (구리→금→코발트→에메랄드·다이아)']]},
   {t:'마을과 생활',items:[['주민','숲 속 길 잃은 주민을 구하거나 오두막을 지으면 대신 일해요'],['농사','밭 위를 지나가면 씨앗을 심고, 다 자라면 거둬요'],['낚시','낚싯대를 들고 물가에 서서, 찌가 물리면 F키·스페이스 또는 낚아채기'],['요리','불 근처에서 가방의 요리 탭을 열어요. 음식마다 효과가 달라요']]},
