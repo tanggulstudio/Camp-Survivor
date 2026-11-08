@@ -1688,6 +1688,8 @@ function solidCellP(cx,cy){
   const i=cy*W+cx;if(S.res[i]||S.water[i]||i===CI||S.npcAt[i]>=0)return true;
   const b=S.bld[i];return !!(b&&B[b.t].wall&&!B[b.t].door);
 }
+function losBlock(cx,cy){if(cx<0||cy<0||cx>=W||cy>=H)return true;const i=cy*W+cx,v=S.res[i];if(v===5||v===7||v===8||v===14||v===18||v===19)return true;const b=S.bld[i];return !!(b&&B[b.t].wall&&!B[b.t].door)}
+function losClear(x0,y0,x1,y1){const d=Math.hypot(x1-x0,y1-y0),n=Math.ceil(d/(T/3));const c0=cellAt(x0,y0),c1=cellAt(x1,y1);for(let k=1;k<n;k++){const x=x0+(x1-x0)*k/n,y=y0+(y1-y0)*k/n,c=cellAt(x,y);if(c===c0||c===c1)continue;if(losBlock(c%W,(c/W)|0))return false;}return true}
 function hitsP(x,y,r){const x0=Math.floor((x-r)/T),x1=Math.floor((x+r)/T),y0=Math.floor((y-r)/T),y1=Math.floor((y+r)/T);for(let cy=y0;cy<=y1;cy++)for(let cx=x0;cx<=x1;cx++)if(solidCellP(cx,cy))return true;return false}
 function solidCell(cx,cy){
   if(cx<0||cy<0||cx>=W||cy>=H)return true;
@@ -3680,7 +3682,7 @@ function update(dt){
     }
     p.cd-=dt;p.atkT=Math.max(0,p.atkT-dt);
     let tgt=null,td=1e9;
-    for(const e of S.enemies){if(e.burrow)continue;const d=Math.hypot(e.x-p.x,e.y-p.y)-ET[e.t].r;if(d<td){td=d;tgt=e;}}
+    for(const e of S.enemies){if(e.burrow)continue;const d=Math.hypot(e.x-p.x,e.y-p.y)-ET[e.t].r;if(d<td&&(d>9*T||losClear(p.x,p.y,e.x,e.y))){td=d;tgt=e;}}
     const cls=weaponCls(),arng=({book:5,bow:6.5,staff:5.5,star:5,boom:5.5,lance:2.4,hammer:1.8}[cls]||1.6)*T;
     if(tgt&&td<arng){
       p.fishW=-1;p.bite=0;
