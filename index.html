@@ -3173,7 +3173,7 @@ function loadChar(){let c=null;try{c=JSON.parse(localStorage.getItem(CHAR_KEY)||
   Object.assign(S.p,c.p);S.p.hp=pMax();S.eq=Object.assign(S.eq,c.eq);S.inv=(c.inv||[]).filter(id=>ITEMS[id]);S.enh=c.enh||{};S.tools=c.tools||S.tools;S.skill=c.skill||{};S.pets=c.pets||[];S.petOn=c.petOn??-1;S.items=Object.assign(newState().items,c.items||{});S.gold=c.gold||0;S.relicMiss=c.relicMiss||{};S.codex=c.codex||{};S.codexR=c.codexR||{};S.ach=c.ach||{};}
 const DIFF={easy:{n:_T('쉬움'),d:_T('몬스터가 약하고 조금 덜 와요. 쓰러져도 자원을 잃지 않아요. 처음이라면 이걸 추천해요!'),hp:.7,dmg:.7,cnt:.75,loss:0,core:150,col:'#7fd06a'},normal:{n:_T('보통'),d:_T('만든 사람이 생각한 기본 난이도예요. 적당히 긴장되고 적당히 버틸 만해요.'),hp:1,dmg:1,cnt:1,loss:.25,core:0,col:'#ffd27a'},hard:{n:_T('어려움'),d:_T('몬스터가 더 많고 세게 와요. 쓰러지면 자원을 꽤 잃어요. 단단히 준비하세요!'),hp:1.35,dmg:1.25,cnt:1.3,loss:.4,core:0,col:'#ff8a6a'}};
 function dif(){return DIFF[(S&&S.diff)||'normal']}
-const UNLOCK={catapult:'i',healfire:'u',iwall:'i',ballista:'i',mine:'i',repairer:'i',magic:'c',venom:'o',prism:'d',drill1:'u',drill2:'a',drill3:'d',forge:'u',collector:'u',incub:'egg'};
+const UNLOCK={catapult:'i',healfire:'u',iwall:'i',ballista:'i',mine:'i',repairer:'i',magic:'c',venom:'o',prism:'d',drill1:'u',drill2:'a',drill3:'d',collector:'u',incub:'egg'};
 function bUnlocked(t){const k=UNLOCK[t];if(!k)return true;return !!(S&&S.got&&S.got[k]);}
 const DISC_LINE={u:_T('구리 곡괭이를 만들면 철광석을 캘 수 있어요. 구리 드릴도 지어 봐요!'),i:_T('철 장비랑 쇠뇌탑·투석기를 만들 수 있어요. 철 곡괭이로 금과 마력석을 노려 봐요!'),a:_T('황금 장비가 반짝여요. 황금 곡괭이를 만들면 코발트를 캘 수 있어요!'),o:_T('코발트 장비와 독안개탑이 열렸어요. 이제 늪 깊숙이 들어가 볼까요?'),c:_T('마법탑과 마법 무기를 만들 수 있어요!'),e:_T('에메랄드 장비는 확 강해져요. 에메랄드 곡괭이로 다이아몬드를 노려 봐요!'),d:_T('다이아 포탑과 다이아 장비! 다이아 곡괭이면 흑요석도 캘 수 있어요.'),b:_T('흑요석 장비는 한 단계 위예요. 흑요석 곡괭이로 미스릴을 캐 봐요!'),m:_T('최고급 미스릴! 미스릴 장비로 끝까지 가 봐요.')};
 function discover(k){const el=$('disc');if(!el)return;const blds=Object.keys(UNLOCK).filter(t=>UNLOCK[t]===k).map(t=>B[t].n);let eqN=0;for(const id in ITEMS){const r=ITEMS[id].recipe;if(r&&r[k])eqN++;}
@@ -3561,7 +3561,7 @@ const ICON={
 const bar=document.getElementById('bar');
 const toolEls={};
 const BCATS=[{id:'wall',n:_T('벽'),t:['wall','swall','iwall','door','spike','scarecrow']},{id:'tower',n:_T('포탑'),t:['tower','ballista','catapult','magic','venom','prism']},
-  {id:'make',n:_T('생산·건설'),t:['torch','fire','lumber','quarry','mine','drill1','drill2','drill3','collector','repairer','forge','field','hut','incub','healfire']},{id:'manage',n:_T('관리'),t:['repair','upgrade','evolve','demolish']}];
+  {id:'make',n:_T('생산·건설'),t:['forge','fire','torch','field','hut','lumber','quarry','mine','drill1','drill2','drill3','collector','repairer','incub','healfire']},{id:'manage',n:_T('관리'),t:['repair','upgrade','evolve','demolish']}];
 let bcat=0,buildOpen=false;
 TOOLS.forEach(t=>{
   const b=document.createElement('button');b.className='tool';b.id='tool-'+t;
