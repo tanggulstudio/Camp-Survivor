@@ -132,12 +132,14 @@ button:focus-visible{outline:2px solid var(--ember);outline-offset:2px}
 .ic{width:17px;height:17px;display:inline-flex}.ic svg{width:100%;height:100%}
 .invwrap{display:grid;grid-template-columns:minmax(0,230px) minmax(0,1fr);gap:16px}
 .charcol,.gridcol{display:flex;flex-direction:column;gap:12px;min-width:0}
-.eqgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.eqgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
 .eqgrid.tools{grid-template-columns:repeat(4,minmax(0,1fr))}
-@media (max-width:580px){.invwrap{grid-template-columns:1fr}.eqgrid{grid-template-columns:repeat(5,minmax(0,1fr))}}
+@media (max-width:580px){.invwrap{grid-template-columns:1fr}.eqgrid{grid-template-columns:repeat(4,minmax(0,1fr))}}
 .eqs{display:flex;flex-direction:column;gap:3px;text-align:center;font-size:11px;color:var(--dim);min-width:0}
 .isl{position:relative;aspect-ratio:1;border-radius:8px;background:#16241a;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;min-width:0}
 .isl>svg{width:72%;height:72%}
+.isl .sb{position:absolute;left:3px;top:3px;font-size:9.5px;line-height:1;padding:2px 4px;border-radius:4px;background:rgba(10,16,12,.82);color:var(--sc);border:1px solid var(--sc);letter-spacing:0;pointer-events:none;white-space:nowrap}
+.eqs>span.k{color:var(--sc)}
 .isl .n{position:absolute;right:4px;bottom:2px;font-size:11.5px;font-variant-numeric:tabular-nums;text-shadow:0 1px 2px #000,0 0 3px #000}
 .isl:hover:not(.empty){border-color:rgba(240,238,223,.35)}
 .isl.eqd{border-color:rgba(255,160,71,.45);background:#22311f}
@@ -468,11 +470,11 @@ const ITEMS={
   larmor:{n:'가죽 갑옷',slot:'body',def:3,hp:20,d:'방어 3 · 최대 체력 +20',recipe:{leather:5}},
   ihelm:{n:'철 투구',slot:'head',def:5,hp:15,d:'방어 5 · 최대 체력 +15',recipe:{i:6,leather:1},forge:1},
   iarmor:{n:'철 갑옷',slot:'body',def:8,hp:30,d:'방어 8 · 최대 체력 +30',recipe:{i:10,leather:2},forge:1},
-  tuskneck:{n:'엄니 목걸이',slot:'acc',atk:4,d:'공격력 +4',recipe:{tusk:3}},
+  tuskneck:{n:'엄니 목걸이',slot:'neck',atk:4,d:'공격력 +4',recipe:{tusk:3}},
   lamp:{n:'광부의 램프',slot:'acc',gather:.4,d:'채집·채광 속도 +40%, 밤에 시야가 넓다',recipe:{i:4,c:1},forge:1},
   wind:{n:'바람의 반지',slot:'acc',spd:.12,d:'이동 속도 +12%',drop:1},
   rring:{n:'재생의 반지',slot:'acc',regen:1.5,d:'체력 재생 +1.5/초',drop:1},
-  lucky:{n:'행운의 부적',slot:'acc',luck:1,d:'적이 장비를 2배 더 자주 떨어뜨린다',drop:1},
+  lucky:{n:'행운의 부적',slot:'neck',luck:1,d:'적이 장비를 2배 더 자주 떨어뜨린다',drop:1},
   angler:{n:'낚시꾼 배지',slot:'acc',fish:.4,d:'입질이 빨라지고 낚아챌 시간이 늘어난다',drop:1},
   fang:{n:'늑대 이빨 반지',slot:'acc',atk:3,spd:.05,d:'공격력 +3 · 이동 속도 +5%',drop:1},
   emsword:{n:'에메랄드 검',slot:'weapon',atk:42,hp:45,d:'근접 · 공격력 +42 · 최대 체력 +45',recipe:{e:8,o:2},forge:1},
@@ -481,7 +483,7 @@ const ITEMS={
   emarmor:{n:'에메랄드 갑옷',slot:'body',def:15,hp:55,d:'방어 15 · 최대 체력 +55',recipe:{e:10,o:3},forge:1},
   dhelm:{n:'다이아 투구',slot:'head',def:14,hp:55,d:'방어 14 · 최대 체력 +55',recipe:{d:6,e:3},forge:1},
   darmor:{n:'다이아 갑옷',slot:'body',def:22,hp:95,d:'방어 22 · 최대 체력 +95',recipe:{d:10,e:5},forge:1},
-  hydrafang:{n:'히드라의 송곳니',slot:'acc',atk:8,venom:1,d:'공격력 +8 · 공격이 적을 중독시킨다',drop:1,boss:1},
+  hydrafang:{n:'히드라의 송곳니',slot:'neck',atk:8,venom:1,d:'공격력 +8 · 공격이 적을 중독시킨다',drop:1,boss:1},
   golemheart:{n:'골렘의 심장',slot:'acc',def:10,hp:50,d:'방어 10 · 최대 체력 +50',drop:1,boss:1},
   abyssblade:{n:'심연의 검',slot:'weapon',atk:72,hp:80,regen:3,d:'근접 · 공격력 +72 · 최대 체력 +80 · 체력 재생 +3/초',drop:1,boss:1},
   hbow:{n:'나무 활',slot:'weapon',cls:'bow',atk:5,d:'원거리 공격 · 공격력 +5',recipe:{w:10,leather:1}},
@@ -495,7 +497,7 @@ const ITEMS={
   fhood:{n:'숲지기 두건',slot:'head',set:'forest',rare:'set',def:4,hp:15,spd:.05,d:'방어 4 · 최대 체력 +15 · 이동 속도 +5%',drop:1,boss:1},
   fvest:{n:'숲지기 조끼',slot:'body',set:'forest',rare:'set',def:6,hp:25,d:'방어 6 · 최대 체력 +25',drop:1,boss:1},
   fbow:{n:'숲지기 장궁',slot:'weapon',set:'forest',rare:'set',cls:'bow',atk:22,d:'원거리 공격 · 공격력 +22',drop:1,boss:1},
-  fcharm:{n:'숲지기 부적',slot:'acc',set:'forest',rare:'set',atk:4,gather:.15,d:'공격력 +4 · 채집 속도 +15%',drop:1,boss:1},
+  fcharm:{n:'숲지기 부적',slot:'neck',set:'forest',rare:'set',atk:4,gather:.15,d:'공격력 +4 · 채집 속도 +15%',drop:1,boss:1},
   ghelm:{n:'수호자의 투구',slot:'head',set:'guard',rare:'set',def:9,hp:30,d:'방어 9 · 최대 체력 +30',drop:1,boss:1},
   garmor:{n:'수호자의 갑옷',slot:'body',set:'guard',rare:'set',def:13,hp:60,d:'방어 13 · 최대 체력 +60',drop:1,boss:1},
   gblade:{n:'수호자의 대검',slot:'weapon',set:'guard',rare:'set',atk:26,hp:40,d:'근접 · 공격력 +26 · 최대 체력 +40',drop:1,boss:1},
@@ -503,7 +505,7 @@ const ITEMS={
   ahat:{n:'대마법사의 고깔',slot:'head',set:'arch',rare:'set',def:3,hp:15,d:'방어 3 · 최대 체력 +15',drop:1,boss:1},
   arobe:{n:'대마법사의 로브',slot:'body',set:'arch',rare:'set',def:5,hp:25,regen:1,d:'방어 5 · 최대 체력 +25 · 체력 재생 +1/초',drop:1,boss:1},
   astaff:{n:'대마법사의 지팡이',slot:'weapon',set:'arch',rare:'set',cls:'staff',atk:26,d:'마법 범위 공격 · 공격력 +26',drop:1,boss:1},
-  aamulet:{n:'대마법사의 목걸이',slot:'acc',set:'arch',rare:'set',atk:6,d:'공격력 +6',drop:1,boss:1},
+  aamulet:{n:'대마법사의 목걸이',slot:'neck',set:'arch',rare:'set',atk:6,d:'공격력 +6',drop:1,boss:1},
   flamesword:{n:'화염검',slot:'weapon',rare:'unique',atk:34,hp:40,skill:'flame',d:'근접 · 공격력 +34 · 최대 체력 +40',drop:1,boss:1},
   stormbow:{n:'폭풍 활',slot:'weapon',rare:'unique',cls:'bow',atk:30,skill:'rain',d:'원거리 · 공격력 +30',drop:1,boss:1},
   froststaff:{n:'서리 지팡이',slot:'weapon',rare:'unique',cls:'staff',atk:30,skill:'blizzard',d:'마법 범위 · 공격력 +30',drop:1,boss:1},
@@ -568,12 +570,35 @@ const ITEMS={
   obhelm:{n:'흑요석 투구',slot:'head',def:18,hp:70,d:'방어 18 · 최대 체력 +70',recipe:{b:6,d:2},forge:1},
   obarmor:{n:'흑요석 갑옷',slot:'body',def:28,hp:120,d:'방어 28 · 최대 체력 +120',recipe:{b:10,d:4},forge:1},
   magmaheart:{n:'용암의 심장',slot:'acc',rare:'unique',atk:12,hp:80,regen:2,d:'공격력 +12 · 최대 체력 +80 · 체력 재생 +2/초',drop:1,boss:1},
+  lglove:{n:'가죽 장갑',slot:'hands',atk:1,def:1,d:'공격력 +1 · 방어 1',recipe:{leather:2}},
+  lboots:{n:'가죽 장화',slot:'feet',def:1,spd:0.03,d:'방어 1 · 이동 속도 +3%',recipe:{leather:2}},
+  cuglove:{n:'구리 장갑',slot:'hands',atk:2,def:1,d:'공격력 +2 · 방어 1',recipe:{u:4,leather:1}},
+  cuboots:{n:'구리 장화',slot:'feet',def:2,spd:0.04,d:'방어 2 · 이동 속도 +4%',recipe:{u:4,leather:1}},
+  iglove:{n:'철 장갑',slot:'hands',atk:3,def:2,d:'공격력 +3 · 방어 2',recipe:{i:5,leather:1},forge:1},
+  iboots:{n:'철 장화',slot:'feet',def:3,spd:0.05,d:'방어 3 · 이동 속도 +5%',recipe:{i:5,leather:1},forge:1},
+  auglove:{n:'황금 장갑',slot:'hands',atk:4,def:3,d:'공격력 +4 · 방어 3',recipe:{a:5,leather:1},forge:1},
+  auboots:{n:'황금 장화',slot:'feet',def:4,spd:0.06,d:'방어 4 · 이동 속도 +6%',recipe:{a:5,leather:1},forge:1},
+  coglove:{n:'코발트 장갑',slot:'hands',atk:5,def:4,d:'공격력 +5 · 방어 4',recipe:{o:5,leather:1},forge:1},
+  coboots:{n:'코발트 장화',slot:'feet',def:5,spd:0.07,d:'방어 5 · 이동 속도 +7%',recipe:{o:5,leather:1},forge:1},
+  emglove:{n:'에메랄드 장갑',slot:'hands',atk:7,def:5,d:'공격력 +7 · 방어 5',recipe:{e:5,o:2},forge:1},
+  emboots:{n:'에메랄드 장화',slot:'feet',def:7,spd:0.08,d:'방어 7 · 이동 속도 +8%',recipe:{e:5,o:2},forge:1},
+  dglove:{n:'다이아 장갑',slot:'hands',atk:9,def:7,d:'공격력 +9 · 방어 7',recipe:{d:5,e:2},forge:1},
+  dboots:{n:'다이아 장화',slot:'feet',def:9,spd:0.09,d:'방어 9 · 이동 속도 +9%',recipe:{d:5,e:2},forge:1},
+  obglove:{n:'흑요석 장갑',slot:'hands',atk:12,def:9,d:'공격력 +12 · 방어 9',recipe:{b:5,d:2},forge:1},
+  obboots:{n:'흑요석 장화',slot:'feet',def:12,spd:0.1,d:'방어 12 · 이동 속도 +10%',recipe:{b:5,d:2},forge:1},
+  galeboots:{n:'질풍의 장화',slot:'feet',def:2,spd:.15,d:'방어 2 · 이동 속도 +15%',drop:1},
+  brawler:{n:'싸움꾼의 장갑',slot:'hands',atk:6,def:2,d:'공격력 +6 · 방어 2',drop:1},
+  titanfist:{n:'거인의 건틀릿',slot:'hands',rare:'unique',atk:10,hp:40,def:4,d:'공격력 +10 · 최대 체력 +40 · 방어 4',drop:1,boss:1},
   crown:{n:'족장의 왕관',slot:'head',def:4,atk:6,hp:25,d:'방어 4 · 공격력 +6 · 최대 체력 +25',drop:1,boss:1},
 };
-const SLOT_KEYS=['weapon','head','body','acc1','acc2'];
+const SLOT_KEYS=['weapon','head','body','hands','feet','neck','acc1','acc2'];
+const SLOT_KIND={weapon:'무기',head:'머리',body:'갑옷',hands:'장갑',feet:'신발',neck:'목걸이',acc:'장신구'};
+const SLOT_COL={weapon:'#ff8a6a',head:'#7fb8ff',body:'#5fd0a0',hands:'#ffb347',feet:'#c9a27a',neck:'#ff8ad8',acc:'#c9a6ff'};
 const SV=x=>'<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">'+x+'</svg>';
 const PLATE='<ellipse cx="12" cy="16.5" rx="10" ry="4.5" fill="#e8e4d8"/><ellipse cx="12" cy="15.5" rx="7" ry="2.6" fill="#cfc9b8"/>';
 const FISHP=(b,d)=>'<path d="M3 12c4-6 11-6 15 0-4 6-11 6-15 0z" fill="'+b+'"/><path d="M17 12l5-4v8z" fill="'+d+'"/><circle cx="7" cy="11" r="1.2" fill="#1a2a30"/>';
+const GLOVE=c=>'<path d="M7 21v-6l-2-4c-.6-1.2.9-2.2 1.8-1.2L8 11V5a1.2 1.2 0 0 1 2.4 0v5V4a1.2 1.2 0 0 1 2.4 0v6V5a1.2 1.2 0 0 1 2.4 0v6V7a1.2 1.2 0 0 1 2.4 0v8l-1.5 6z" fill="'+c+'"/><rect x="7" y="18" width="10" height="3" fill="rgba(0,0,0,.3)"/>';
+const BOOT=c=>'<path d="M7 3h6v10l6 3c1.5.8 2 2 2 3.5V21H4v-4l1-1V3z" fill="'+c+'"/><rect x="4" y="19" width="17" height="2" fill="rgba(0,0,0,.35)"/><path d="M7 7h6" stroke="rgba(0,0,0,.25)" stroke-width="1.3"/>';
 const RING=(band,gem)=>'<circle cx="12" cy="14" r="6" fill="none" stroke="'+band+'" stroke-width="3"/><path d="M9 6.5l3-3.5 3 3.5-3 3z" fill="'+gem+'"/>';
 const VEST=c=>'<path d="M6 4l3 2h6l3-2 3 4-3 3v9H6v-9L3 8z" fill="'+c+'"/><path d="M12 6v14" stroke="rgba(0,0,0,.25)" stroke-width="1.2"/>';
 const SWORD=(c,h,g)=>'<path d="M7 17L19 5l.5 2.5L9 19z" fill="'+c+'"/><path d="M11 13l4-4" stroke="'+g+'"/><path d="M5 15l4 4" stroke="'+h+'" stroke-width="2.5"/><path d="M6 18l-3 3" stroke="#6b4528" stroke-width="2.5"/>';
@@ -614,6 +639,7 @@ const IC={
   ham1:HAMMER('#a06a3c'),ham2:HAMMER('#c9d0d3'),ham3:HAMMER('#3fbf7a'),ham4:HAMMER('#8fdcff'),thunderhammer:HAMMER('#ffd23a'),
   cusword:SWORD('#d9824a','#6b4528','#ffffff'),cubow:BOW('#d9824a'),custaff:STAFF('#6b4528','#d9824a'),custar:STAR('#d9824a'),cuboom:BOOM('#d9824a'),culance:LANCE('#d9824a'),cuham:HAMMER('#d9824a'),cuhelm:HELM('#d9824a'),cuarmor:VEST('#d9824a'),ausword:SWORD('#ffd23a','#6b4528','#ffffff'),aubow:BOW('#ffd23a'),austaff:STAFF('#6b4528','#ffd23a'),austar:STAR('#ffd23a'),auboom:BOOM('#ffd23a'),aulance:LANCE('#ffd23a'),auham:HAMMER('#ffd23a'),auhelm:HELM('#ffd23a'),auarmor:VEST('#ffd23a'),cosword:SWORD('#3a6ad8','#6b4528','#ffffff'),cobow:BOW('#3a6ad8'),costaff:STAFF('#6b4528','#3a6ad8'),costar:STAR('#3a6ad8'),coboom:BOOM('#3a6ad8'),colance:LANCE('#3a6ad8'),coham:HAMMER('#3a6ad8'),cohelm:HELM('#3a6ad8'),coarmor:VEST('#3a6ad8'),
   obsword:SWORD('#2a1838','#7a4ab8','#c080ff'),obbow:BOW('#4a2a6a'),obstaff:STAFF('#2a1838','#c080ff'),obstar:STAR('#4a2a6a'),obboom:BOOM('#4a2a6a'),oblance:LANCE('#7a4ab8'),obham:HAMMER('#4a2a6a'),obhelm:HELM('#3a2450'),obarmor:VEST('#3a2450')+'<path d="M12 7l3 4-3 4-3-4z" fill="#c080ff"/>',magmaheart:'<path d="M12 21L3 11a5 5 0 0 1 9-5 5 5 0 0 1 9 5z" fill="#ff6a2a"/><path d="M8 10l3 3-2 3M15 9l-2 4 3 2" stroke="#3a1a10" stroke-width="1.4" fill="none"/>',
+  lglove:GLOVE('#8a5a32'),lboots:BOOT('#8a5a32'),cuglove:GLOVE('#d9824a'),cuboots:BOOT('#d9824a'),iglove:GLOVE('#bfc6ca'),iboots:BOOT('#bfc6ca'),auglove:GLOVE('#ffd23a'),auboots:BOOT('#ffd23a'),coglove:GLOVE('#3a6ad8'),coboots:BOOT('#3a6ad8'),emglove:GLOVE('#4fd08a'),emboots:BOOT('#4fd08a'),dglove:GLOVE('#9fe8ff'),dboots:BOOT('#9fe8ff'),obglove:GLOVE('#7a4ab8'),obboots:BOOT('#7a4ab8'),galeboots:BOOT('#7fe8e0')+'<path d="M3 8h5M2 11h4" stroke="#c9fff8" stroke-width="1.3"/>',brawler:GLOVE('#a8432a'),titanfist:GLOVE('#6a6f78')+'<rect x="8" y="7" width="8" height="2" fill="#ffa047"/>',
   golemheart:'<path d="M12 21L3 11a5 5 0 0 1 9-5 5 5 0 0 1 9 5z" fill="#8a64c8"/><path d="M12 8l3 4-3 4-3-4z" fill="#e6d8ff"/>',
   w:'<rect x="2" y="8" width="17" height="9" rx="4.5" fill="#8a5a34"/><circle cx="18" cy="12.5" r="4.5" fill="#e0b07a"/><circle cx="18" cy="12.5" r="2" fill="#a06a3c"/>',
   s:'<path d="M4 17l2-8 7-4 7 4 1 8-6 3H9z" fill="#8a9296"/><path d="M7 9.5l6-3.5 4 2-5 3z" fill="#b3bbbe"/>',
@@ -672,7 +698,7 @@ function itemIcon(k){
   if(k.slice(0,2)==='d_'&&DISH[k.slice(2)])return SV(DISH[k.slice(2)]);
   return SV('<circle cx="12" cy="12" r="6" fill="#aab59d"/>');
 }
-const GHOST={weapon:'sword',head:'lhat',body:'larmor',acc1:'wind',acc2:'wind'};
+const GHOST={weapon:'sword',head:'lhat',body:'larmor',hands:'lglove',feet:'lboots',neck:'tuskneck',acc1:'wind',acc2:'wind'};
 const MAT_DESC={w:'건설과 제작의 기본 재료',s:'벽과 탑, 돌 도구에 쓰인다',i:'철 장비와 철 건물의 재료. 철 제품은 대장간 근처에서 만든다',c:'마법탑, 마력검, 광부의 램프 재료',
   fish:'요리 재료 · 생선구이, 매운탕, 일꾼 도시락',trout:'요리 재료 · 송어 스테이크',koi:'희귀한 물고기 · 황금 잉어찜으로 영구히 강해진다',berry:'요리 재료 · 베리 파이, 매운탕, 스튜',
   meat:'요리 재료 · 고기 구이, 든든한 스튜, 고기 파이',leather:'가죽 장비와 고급 낚싯대 재료',tusk:'엄니 목걸이 재료',worm:'미끼 · 낚시할 때 자동으로 써서 좋은 물고기가 더 잘 잡힌다',
@@ -683,7 +709,7 @@ function iconImg(k){
   if(!IMG[k]){const im=new Image();const svg=k.slice(0,3)==='eq:'?itemIcon(k.slice(3)):itemIcon(k);im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);IMG[k]=im;}
   return IMG[k];
 }
-const SLOT_LABEL={weapon:'무기',head:'투구',body:'갑옷',acc1:'장신구',acc2:'장신구'};
+const SLOT_LABEL={weapon:'무기',head:'머리',body:'갑옷',hands:'장갑',feet:'신발',neck:'목걸이',acc1:'장신구 1',acc2:'장신구 2'};
 const TOOLS_EQ={
   axe:{n:'도끼',pw:'벌목력',tiers:[{n:'맨손',p:.6,col:'#c9b08a'},{n:'나무 도끼',p:1,r:{w:5},col:'#a06a3c'},{n:'구리 도끼',p:1.7,r:{w:4,u:5},col:'#d9824a'},{n:'철 도끼',p:2.3,r:{w:4,i:6},forge:1,col:'#d5dbde'},{n:'황금 도끼',p:2.9,r:{w:4,a:5},forge:1,col:'#ffd23a'},{n:'코발트 도끼',p:3.4,r:{w:4,o:5},forge:1,col:'#3a6ad8'},{n:'에메랄드 도끼',p:4,r:{w:4,e:5},forge:1,col:'#4fd08a'}]},
   pick:{n:'곡괭이',pw:'채광력',tiers:[{n:'맨손',p:.35,col:'#c9b08a'},{n:'나무 곡괭이',p:1,r:{w:6},note:'구리 광석을 캘 수 있다',col:'#a06a3c'},{n:'구리 곡괭이',p:1.7,r:{w:4,u:6},note:'철광석을 캘 수 있다',col:'#d9824a'},{n:'철 곡괭이',p:2.4,r:{w:4,i:8},forge:1,note:'금 광석과 마력 광맥을 캘 수 있다',col:'#d5dbde'},{n:'황금 곡괭이',p:3,r:{w:4,a:6},forge:1,note:'코발트 광석을 캘 수 있다',col:'#ffd23a'},{n:'코발트 곡괭이',p:3.6,r:{w:4,o:7},forge:1,note:'에메랄드 원석을 캘 수 있다',col:'#3a6ad8'},{n:'에메랄드 곡괭이',p:4.3,r:{w:4,e:6},forge:1,note:'다이아몬드 원석을 캘 수 있다',col:'#4fd08a'},{n:'다이아 곡괭이',p:5.2,r:{w:4,d:6,e:2},forge:1,col:'#9fe8ff',note:'흑요석을 캘 수 있다'},{n:'흑요석 곡괭이',p:6.2,r:{w:4,b:6,d:2},forge:1,col:'#7a4ab8'}]},
@@ -749,7 +775,7 @@ function newState(){
   return {day:1,phase:'day',t:0,wood:15,stone:5,iron:0,crystal:0,oreHintT:0,
     res:new Uint8Array(W*H),rhp:new Uint8Array(W*H),water:new Uint8Array(W*H),trail:new Uint8Array(W*H),seen:new Uint8Array(W*H),road:new Uint8Array(W*H),town:new Uint8Array(W*H),npcAt:new Int8Array(W*H).fill(-1),npcNear:-1,gold:20,enh:{},
     items:{fish:0,trout:0,koi:0,berry:0,meat:0,leather:0,tusk:0,worm:0,seed:3,wheat:0,mapfrag:0},earrows:[],
-    tools:{axe:0,pick:0,shovel:0,rod:0},eq:{weapon:null,head:null,body:null,acc1:null,acc2:null},inv:[],digs:[],buffs:{},menu:false,fishHint:0,bld:new Array(W*H).fill(null),
+    tools:{axe:0,pick:0,shovel:0,rod:0},eq:{weapon:null,head:null,body:null,hands:null,feet:null,neck:null,acc1:null,acc2:null},inv:[],digs:[],buffs:{},menu:false,fishHint:0,bld:new Array(W*H).fill(null),
     core:{hp:300,max:300},
     p:{x:(CX+.5)*T,y:(CY+2.5)*T,hp:100,max:100,dmg:10,spd:125,lvl:1,xp:0,cd:0,dead:0,face:Math.PI/2,gT:0,gI:-1,atkT:0,moving:false,fishW:-1,fishT:0,bite:0,digT:0,poison:0,shield:0},
     mods:{wallHp:1,towerDmg:1,towerRange:0,gather:1,spike:1,cost:1,enemy:1,resMult:1,regen:false,dayBonus:0,prod:1},
@@ -956,7 +982,7 @@ function pickAcc(prefer){
 }
 function dropAcc(x,y,prefer){const id=pickAcc(prefer);if(id)drop(x,y,'eq:'+id,1);else drop(x,y,'c',1);}
 function collectPick(k){
-  if(k.kind.slice(0,3)==='eq:'){const id=k.kind.slice(3);S.inv.push(id);float(k.x,k.y-16,ITEMS[id].n,'#ffd27a');toast((ITEMS[id].rare==='set'?'세트 장비 획득! ':ITEMS[id].rare==='unique'?'고유 장비 획득! ':'장비 획득: ')+ITEMS[id].n+' — 가방(I)에서 장착하세요',3400);return;}
+  if(k.kind.slice(0,3)==='eq:'){const id=k.kind.slice(3);S.inv.push(id);float(k.x,k.y-16,ITEMS[id].n,'#ffd27a');toast((ITEMS[id].rare==='set'?'세트 장비 획득! ':ITEMS[id].rare==='unique'?'고유 장비 획득! ':'장비 획득: ')+'['+SLOT_KIND[ITEMS[id].slot]+'] '+ITEMS[id].n+' — 가방(I)에서 장착하세요',3400);return;}
   addAmt(k.kind,k.n);float(k.x,k.y-14,'+'+k.n+' '+nameOf(k.kind),colorOf(k.kind));
 }
 function waterNear(i,r){const x0=i%W,y0=(i/W)|0;for(let y=y0-r;y<=y0+r;y++)for(let x=x0-r;x<=x0+r;x++){if(x<0||y<0||x>=W||y>=H)continue;if(S.water[idx(x,y)]===1)return true;}return false}
@@ -1089,7 +1115,7 @@ function haveItems(n){for(const k in n)if(S.items[k]<n[k])return false;return tr
 function openBag(){if(!running||paused||S.phase==='dawn'||S.trading)return;S.menu=true;renderBag();$('ovBag').hidden=false;}
 function closeBag(){S.menu=false;$('ovBag').hidden=true;}
 let bagTab='eq',bagSel=null,craftF='all';
-function craftOrder(){const so={weapon:0,head:1,body:2,acc:3},co={sword:0,bow:1,staff:2,star:3,boom:4,lance:5,hammer:6};return Object.keys(ITEMS).filter(id=>ITEMS[id].recipe).sort((a,b)=>{const A=ITEMS[a],B=ITEMS[b];return (so[A.slot]-so[B.slot])||((co[A.cls||'sword']||0)-(co[B.cls||'sword']||0))||((A.atk||A.def||0)-(B.atk||B.def||0));});}
+function craftOrder(){const so={weapon:0,head:1,body:2,hands:3,feet:4,neck:5,acc:6},co={sword:0,bow:1,staff:2,star:3,boom:4,lance:5,hammer:6};return Object.keys(ITEMS).filter(id=>ITEMS[id].recipe).sort((a,b)=>{const A=ITEMS[a],B=ITEMS[b];return (so[A.slot]-so[B.slot])||((co[A.cls||'sword']||0)-(co[B.cls||'sword']||0))||((A.atk||A.def||0)-(B.atk||B.def||0));});}
 function renderBag(){
   for(const t of ['eq','craft','cook'])$('tab-'+t).classList.toggle('on',bagTab===t);
   const it=S.items;let h='';
@@ -1098,7 +1124,7 @@ function renderBag(){
     h+='<div class="statline"><span>공격력 <b>'+Math.round(pAtk())+'</b></span><span>방어 <b>'+Math.round(pDef())+'</b></span><span>최대 체력 <b>'+Math.round(pMax())+'</b></span><span>이동 속도 <b>'+Math.round(pSpd()/125*100)+'%</b></span><span>무기 <b>'+({sword:'검',bow:'활',staff:'지팡이',star:'표창',boom:'부메랑',lance:'장창',hammer:'망치'}[weaponCls()])+'</b></span>'+Object.entries(setCounts()).filter(([k,c])=>c>=2).map(([k,c])=>'<span>'+SETS[k].n+' 세트 <b>'+c+'/4</b></span>').join('')+'</div>';
     h+='<div class="invwrap"><div class="charcol"><div class="sec"><h3>장착</h3><div class="eqgrid">';
     for(const k of SLOT_KEYS){const id=S.eq[k];
-      h+='<div class="eqs"><button class="isl'+(id?' eqd':'')+(bagSel==='slot:'+k?' sel':'')+'" data-act="sel:slot:'+k+'" aria-label="'+SLOT_LABEL[k]+'">'+(id?itemIcon(id):'<span class="ghost">'+itemIcon(GHOST[k])+'</span>')+'</button><span>'+SLOT_LABEL[k]+'</span></div>';}
+      h+='<div class="eqs"><button class="isl'+(id?' eqd':'')+(bagSel==='slot:'+k?' sel':'')+'" data-act="sel:slot:'+k+'" aria-label="'+SLOT_LABEL[k]+'">'+(id?itemIcon(id):'<span class="ghost">'+itemIcon(GHOST[k])+'</span>')+'</button><span class="k" style="--sc:'+SLOT_COL[k.slice(0,3)==='acc'?'acc':k]+'">'+SLOT_LABEL[k]+'</span></div>';}
     h+='</div></div><div class="sec"><h3>도구</h3><div class="eqgrid tools">';
     for(const k in TOOLS_EQ){const t=S.tools[k];
       h+='<div class="eqs"><button class="isl'+(t?' eqd':'')+(bagSel==='tool:'+k?' sel':'')+'" data-act="sel:tool:'+k+'" aria-label="'+TOOLS_EQ[k].n+'">'+(t?toolIcon(k,t):'<span class="ghost">'+toolIcon(k,1)+'</span>')+'</button><span>'+TOOLS_EQ[k].n+'</span></div>';}
@@ -1107,8 +1133,8 @@ function renderBag(){
     for(const k of ['w','s','i','c'])if(getAmt(k)>0)ents.push({ref:'mat:'+k,ic:itemIcon(k),n:getAmt(k),nm:nameOf(k)});
     for(const k in ITEM_NAME)if(it[k]>0)ents.push({ref:'mat:'+k,ic:itemIcon(k),n:it[k],nm:ITEM_NAME[k]});
     for(const r of RECIPES)if(it['d_'+r.id]>0)ents.push({ref:'dish:'+r.id,ic:itemIcon('d_'+r.id),n:it['d_'+r.id],nm:r.n});
-    S.inv.forEach((id,i)=>ents.push({ref:'inv:'+i,ic:itemIcon(id),n:1,nm:itemName(id),rare:ITEMS[id].drop,rc:ITEMS[id].rare}));
-    for(const e of ents)h+='<button class="isl'+(e.rc==='set'?' setc':e.rc==='unique'?' uniq':e.rare?' rare':'')+(bagSel===e.ref?' sel':'')+'" data-act="sel:'+e.ref+'" title="'+e.nm+'" aria-label="'+e.nm+'">'+e.ic+(e.n>1?'<span class="n">'+e.n+'</span>':'')+'</button>';
+    S.inv.forEach((id,i)=>ents.push({ref:'inv:'+i,ic:itemIcon(id),n:1,nm:'['+SLOT_KIND[ITEMS[id].slot]+'] '+itemName(id),rare:ITEMS[id].drop,rc:ITEMS[id].rare,sl:ITEMS[id].slot}));
+    for(const e of ents)h+='<button class="isl'+(e.rc==='set'?' setc':e.rc==='unique'?' uniq':e.rare?' rare':'')+(bagSel===e.ref?' sel':'')+'" data-act="sel:'+e.ref+'" title="'+e.nm+'" aria-label="'+e.nm+'">'+e.ic+(e.n>1?'<span class="n">'+e.n+'</span>':'')+(e.sl?'<span class="sb" style="--sc:'+SLOT_COL[e.sl]+'">'+SLOT_KIND[e.sl]+'</span>':'')+'</button>';
     const total=Math.max(30,Math.ceil(ents.length/6)*6);
     for(let k=ents.length;k<total;k++)h+='<div class="isl empty"></div>';
     h+='</div></div>'+detailHtml()+'</div></div>';
@@ -1123,9 +1149,9 @@ function renderBag(){
       h+=row('tool:'+k,!afford(nx.r)||(nx.forge&&!fn),nx.n,desc,costText(nx.r),toolIcon(k,S.tools[k]+1));
     }
     h+='</div></div><div class="sec"><h3>장비 제작</h3><div class="trades">';
-    h+='<div class="chips">'+[['all','전체'],['sword','검'],['bow','활'],['staff','지팡이'],['star','표창'],['boom','부메랑'],['lance','장창'],['hammer','망치'],['armor','방어구'],['acc','장신구']].map(([k,n])=>'<button class="chip'+(craftF===k?' on':'')+'" data-act="cf:'+k+'">'+n+'</button>').join('')+'</div>';
-    for(const id of craftOrder()){const e=ITEMS[id];if(craftF!=='all'){const g=e.slot==='weapon'?(e.cls||'sword'):e.slot==='acc'?'acc':'armor';if(g!==craftF)continue;}const own=owns(id);
-      h+=row('item:'+id,own||!afford(e.recipe)||(e.forge&&!fn),e.n,e.d+(e.forge?' · 대장간':''),own?'보유 중':costText(e.recipe),itemIcon(id));}
+    h+='<div class="chips">'+[['all','전체'],['sword','검'],['bow','활'],['staff','지팡이'],['star','표창'],['boom','부메랑'],['lance','장창'],['hammer','망치'],['armor','머리·갑옷'],['hands','장갑'],['feet','신발'],['acc','목걸이·장신구']].map(([k,n])=>'<button class="chip'+(craftF===k?' on':'')+'" data-act="cf:'+k+'">'+n+'</button>').join('')+'</div>';
+    for(const id of craftOrder()){const e=ITEMS[id];if(craftF!=='all'){const g=e.slot==='weapon'?(e.cls||'sword'):e.slot==='acc'||e.slot==='neck'?'acc':e.slot==='head'||e.slot==='body'?'armor':e.slot;if(g!==craftF)continue;}const own=owns(id);
+      h+=row('item:'+id,own||!afford(e.recipe)||(e.forge&&!fn),e.n,'['+SLOT_KIND[e.slot]+'] '+e.d+(e.forge?' · 대장간':''),own?'보유 중':costText(e.recipe),itemIcon(id));}
     h+='</div></div>';
   }else{
     const fire=nearFire();
@@ -1141,7 +1167,7 @@ function renderBag(){
   $('bagBody').innerHTML=h;
 }
 function detailHtml(){
-  const wrap=(ic,tag,name,desc,extra,act)=>'<div class="detail"><div class="dicon">'+ic+'</div><div class="dtxt"><span class="tag'+(tag.indexOf('세트')===0?' setc':tag==='고유 장비'?' uniq':tag==='드랍 장신구'||tag==='희귀 장비'?' rare':'')+'">'+tag+'</span><b>'+name+'</b><p>'+desc+'</p>'+(extra?'<p>'+extra+'</p>':'')+(act||'')+'</div></div>';
+  const wrap=(ic,tag,name,desc,extra,act)=>'<div class="detail"><div class="dicon">'+ic+'</div><div class="dtxt"><span class="tag'+(tag.indexOf('세트')>=0?' setc':tag.indexOf('고유 장비')>=0?' uniq':tag.indexOf('희귀')===0?' rare':'')+'">'+tag+'</span><b>'+name+'</b><p>'+desc+'</p>'+(extra?'<p>'+extra+'</p>':'')+(act||'')+'</div></div>';
   if(!bagSel)return '<div class="detail"><div class="dtxt"><p>칸을 누르면 아이템 정보와 사용 버튼이 나와요.</p></div></div>';
   const i=bagSel.indexOf(':'),k=bagSel.slice(0,i),v=bagSel.slice(i+1),it=S.items;
   if(k==='mat'){const n=getAmt(v);if(n<=0){bagSel=null;return detailHtml();}return wrap(itemIcon(v),RK[v]?'자원':'재료',nameOf(v),MAT_DESC[v]||'','보유 '+n+'개');}
@@ -1551,7 +1577,9 @@ function eqInfo(id){
   const e=ITEMS[id];let tag,extra='';
   if(e.rare==='set'){const st=SETS[e.set],c=setCounts()[e.set]||0;tag='세트 · '+st.n;extra='세트 '+c+'/4 장착 · 2세트: '+st.b2d+' · 4세트: '+st.b4d;}
   else if(e.rare==='unique')tag='고유 장비';
-  else tag=e.drop?(e.slot==='acc'?'드랍 장신구':'희귀 장비'):'장비 · '+({weapon:'무기',head:'투구',body:'갑옷',acc:'장신구'}[e.slot]);
+  else tag=(e.drop?'희귀 ':'')+SLOT_KIND[e.slot];
+  tag=(e.rare?SLOT_KIND[e.slot]+' · ':'')+tag;
+  extra=(extra?extra+' · ':'')+'장착 칸: '+(e.slot==='acc'?'장신구 1·2':SLOT_KIND[e.slot]);
   if(e.skill)extra=(extra?extra+' · ':'')+'R키 스킬 「'+WSKILL[e.skill].n+'」 '+WSKILL[e.skill].d;
   if(e.slot==='weapon')extra=(CLS_DESC[e.cls||'sword'])+(extra?' · '+extra:'');
   return {tag,extra};
@@ -2862,7 +2890,7 @@ function loadGame(o){
   if(o.items)Object.assign(S.items,o.items);if(o.buffs)S.buffs=o.buffs;
   if(o.tools)Object.assign(S.tools,o.tools);else S.tools={axe:1,pick:2,shovel:0,rod:1};
   if((o.v||0)<5&&o.tools){let pk=o.tools.pick||0,ax=o.tools.axe||0;if((o.v||0)<4){pk=[0,1,2,4,6,8][pk]??pk;ax=[0,1,2,4,6][ax]??ax;}S.tools.pick=[0,1,2,2,3,4,6,6,7][pk]??pk;S.tools.axe=[0,1,2,2,3,4,6][ax]??ax;}
-  if(o.eq)Object.assign(S.eq,o.eq);if(o.inv)S.inv=o.inv.filter(id=>ITEMS[id]);
+  if(o.eq)Object.assign(S.eq,o.eq);for(const k of ['acc1','acc2']){const id=S.eq[k];if(id&&ITEMS[id]&&ITEMS[id].slot==='neck'){S.eq[k]=null;if(!S.eq.neck)S.eq.neck=id;else S.inv.push(id);}}if(o.inv)S.inv=o.inv.filter(id=>ITEMS[id]);
   if(o.digs)S.digs=o.digs.map(d=>({x:shift(d.x),y:shift(d.y)}));
   if(o.chests&&v2)S.chests=o.chests.map(c=>Object.assign({},c,{x:shift(c.x),y:shift(c.y)}));
   if(v2&&o.trail)decTo(o.trail,S.trail,map||undefined);
@@ -2900,7 +2928,7 @@ function showStart(){
 }
 
 const HELP=[
-  {t:'기본 조작',items:[['이동','화면을 끌거나 WASD·방향키'],['전투','가까운 적은 자동으로 공격해요'],['가방','I키 또는 오른쪽 위 가방 버튼'],['밤 부르기','N키. 준비가 끝났으면 밤을 앞당겨요'],['일시정지','P키']]},
+  {t:'기본 조작',items:[['이동','화면을 끌거나 WASD·방향키'],['전투','가까운 적은 자동으로 공격해요'],['가방','I키 또는 오른쪽 위 가방 버튼'],['장비 칸','무기·머리·갑옷·장갑·신발·목걸이·장신구 2개. 가방의 장비에는 어느 칸인지 색깔 표시가 붙어요'],['밤 부르기','N키. 준비가 끝났으면 밤을 앞당겨요'],['일시정지','P키']]},
   {t:'무기 7종',items:[['검','근접 공격. 공격력과 최대 체력이 함께 올라요'],['활','멀리서 자동으로 화살을 쏴요'],['지팡이','마법 구체가 터지며 주변 적에게도 피해'],['표창','빠르게 던지고 출혈을 쌓아요'],['부메랑','적 사이를 3번 튕기며 맞혀요'],['장창','일직선의 적을 모두 꿰뚫어요'],['망치','느리지만 주변 적을 기절시켜요']]},
   {t:'희귀 장비',items:[['세트 장비','숲지기·철갑 수호자·대마법사. 2개, 4개 모으면 세트 효과'],['고유 장비','화염검, 폭풍 활, 서리 지팡이 등. 무기 스킬은 R키, 소환사의 지팡이는 정령 늑대 소환'],['드랍','몬스터가 낮은 확률로 떨어뜨리고, 보스는 반드시 줘요']]},
   {t:'마을',items:[['길','몬스터는 동서남북 네 갈래 길로만 와요. 길을 막으면 막은 건물을 부숴요'],['성벽','마을을 두른 성벽. 수리와 업그레이드가 돼요'],['상점','잡화점과 보석상에 다가가면 금화로 사고팔 수 있어요'],['대장장이','장착한 장비를 +10까지 강화해요. 높을수록 실패가 잦아요'],['여관','휴식, 화톳불 수리, 일꾼 고용'],['금화','몬스터를 잡으면 바로 들어와요']]},
