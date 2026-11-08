@@ -187,6 +187,13 @@ body.bopen .bossbar{bottom:calc(196px + env(safe-area-inset-bottom,0px))}
 .ri svg{width:76%;height:76%}
 .trade>div{flex:1}
 .panel{position:relative}
+.panel.story{gap:12px}
+.sart{border-radius:10px;overflow:hidden;aspect-ratio:320/140;max-width:100%;border:1px solid var(--line)}
+.sart svg{display:block;width:100%;height:100%}
+.stext{font-size:15.5px;line-height:1.7;margin:0;min-height:5.2em}
+.coldbar{position:absolute;left:50%;transform:translateX(-50%);top:calc(64px + env(safe-area-inset-top,0px));width:min(260px,60%);pointer-events:none;text-align:center;font-size:12px;color:#d8f0fa}
+.coldbar .bar{height:7px;margin-top:4px}
+#coldFill{display:block;height:100%;background:linear-gradient(90deg,#9fd8e8,#e8fbff)}
 .xbtn{position:absolute;top:10px;right:10px;width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:#1d2e22;color:var(--ink);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;z-index:2}
 .xbtn:hover{border-color:var(--ember);color:var(--ember)}
 .xbtn svg{width:18px;height:18px}
@@ -279,6 +286,7 @@ button.slot:disabled{cursor:default}
   </header>
 
   <div id="toast"></div>
+  <div class="coldbar" id="coldBar" hidden>체온이 떨어지고 있다<div class="bar"><i id="coldFill"></i></div></div>
   <div class="bossbar" id="bossbar" hidden><b id="bossName"></b><div class="bar"><i id="bossFill"></i></div></div>
 
   <button class="hook" id="btnHook" hidden>낚아채기!</button>
@@ -321,6 +329,15 @@ button.slot:disabled{cursor:default}
     </div>
   </div>
 
+  <div class="overlay" id="ovStory" hidden>
+    <div class="panel story">
+      <div class="sart" id="storyArt"></div>
+      <div class="hhead"><span class="pg" id="storyPg">1 / 4</span><h2 id="storyTitle"></h2></div>
+      <p class="stext" id="storyText"></p>
+      <div class="row"><button class="big" id="storyPrev">이전</button><button class="big pri" id="storyNext">다음</button></div>
+      <button class="link" id="storySkip">건너뛰기</button>
+    </div>
+  </div>
   <div class="overlay" id="ovFloor" hidden>
     <div class="panel">
       <h2 id="floorTitle">층 돌파!</h2>
@@ -346,6 +363,7 @@ button.slot:disabled{cursor:default}
         <button class="tab" id="tab-craft" data-tab="craft">제작</button>
         <button class="tab" id="tab-cook" data-tab="cook">요리</button>
         <button class="tab" id="tab-pet" data-tab="pet">펫</button>
+        <button class="tab" id="tab-log" data-tab="log">일지</button>
       </div>
       <div id="bagBody"></div>
       <div class="row"><button class="big" id="btnBagClose">닫기</button></div>
@@ -496,7 +514,7 @@ const EVENTS=[
   {id:'raid',n:'도적 떼',d:'한낮에 고블린 도적 떼가 마을을 덮친다',min:3,bad:1},
   {id:'blood',n:'핏빛 달',d:'오늘 밤 적이 50% 더 많다. 대신 경험치 2배, 마력석이 자주 떨어진다',min:3,bad:1},
 ];
-const ITEM_NAME={fish:'붕어',trout:'송어',koi:'황금 잉어',berry:'베리',meat:'고기',leather:'가죽',tusk:'엄니',worm:'지렁이',seed:'씨앗',wheat:'밀',mapfrag:'지도 조각',token:'탑 증표',keyfrag:'고대 열쇠 조각',akey:'고대 열쇠'};
+const ITEM_NAME={fish:'붕어',trout:'송어',koi:'황금 잉어',berry:'베리',meat:'고기',leather:'가죽',tusk:'엄니',worm:'지렁이',seed:'씨앗',wheat:'밀',mapfrag:'지도 조각',sunstone:'태양석',token:'탑 증표',keyfrag:'고대 열쇠 조각',akey:'고대 열쇠'};
 const ITEM_COL={leather:'#d9a77a',meat:'#ff9a8a',tusk:'#f3ead2',worm:'#f0a8bc',seed:'#bfe3a8',wheat:'#f0d27a',mapfrag:'#e8d8a8',berry:'#ff8a96',fish:'#9fd3ff',trout:'#9fd3ff',koi:'#ffd23a'};
 const ITEMS={
   club:{n:'나무 몽둥이',slot:'weapon',atk:4,hp:5,d:'근접 · 공격력 +4 · 최대 체력 +5',recipe:{w:8}},
@@ -667,6 +685,7 @@ const BOOM=c=>'<path d="M4 6c5-3 10-2 15 6-3-3-7-4-10-3 3 2 5 6 6 12-4-6-8-9-11-
 const LANCE=c=>'<path d="M3 21L17 7" stroke="#8a5a34" stroke-width="2.4" stroke-linecap="round"/><path d="M15 5l6-3-3 6-2 1z" fill="'+c+'"/><path d="M13 9l2 2" stroke="#e0573f" stroke-width="2"/>';
 const HAMMER=c=>'<path d="M6 20L14 10" stroke="#7a4d2a" stroke-width="2.8" stroke-linecap="round"/><rect x="11" y="2" width="10" height="8" rx="1.5" transform="rotate(40 16 6)" fill="'+c+'"/>';
 const IC={
+  sunstone:'<circle cx="12" cy="12" r="5.5" fill="#ffd27a"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4M5 5l3 3M16 16l3 3M19 5l-3 3M8 16l-3 3" stroke="#ffa047" stroke-width="2" stroke-linecap="round"/>',
   m:'<path d="M5 18l3-11 8-3 4 8-5 9z" fill="#6aa8c0"/><path d="M8 7l8-3-3 8z" fill="#e8fbff"/><path d="M11 14l4-2" stroke="#e8fbff"/>',keyfrag:'<path d="M4 14a4 4 0 1 1 8 0 4 4 0 0 1-8 0z" fill="none" stroke="#ffd27a" stroke-width="2.4"/><path d="M12 14h8l-3 3" stroke="#ffd27a" stroke-width="2.4" fill="none" stroke-dasharray="3 2"/>',akey:'<circle cx="7" cy="12" r="4" fill="none" stroke="#ffd27a" stroke-width="2.6"/><path d="M11 12h10M17 12v4M20 12v3" stroke="#ffd27a" stroke-width="2.6"/>',
   b:'<path d="M6 20l-2-9 6-8 8 3 2 9-6 6z" fill="#2a1838"/><path d="M10 3l8 3-6 4z" fill="#7a4ab8"/><path d="M8 12l4-2 3 6" stroke="#c080ff" fill="none"/>',
   u:'<path d="M4 16l3-7h10l3 7z" fill="#b5653a"/><path d="M7 9h10l1 2.5H6z" fill="#e8a070"/><path d="M9 14h6" stroke="#8a4a2a"/>',
@@ -832,7 +851,7 @@ function hash(i){let x=(i*374761393)^0x5bd1e995;x=(x^(x>>>13))*1274126177;return
 
 function newState(){
   return {day:1,phase:'day',t:0,wood:15,stone:5,iron:0,crystal:0,oreHintT:0,
-    res:new Uint8Array(W*H),rhp:new Uint8Array(W*H),water:new Uint8Array(W*H),trail:new Uint8Array(W*H),seen:new Uint8Array(W*H),road:new Uint8Array(W*H),town:new Uint8Array(W*H),npcAt:new Int8Array(W*H).fill(-1),npcNear:-1,pets:[],petOn:-1,petE:null,tower:null,towerBest:0,tbuy:{},vault:null,haz:null,nests:null,incub:{},gold:20,enh:{},
+    res:new Uint8Array(W*H),rhp:new Uint8Array(W*H),water:new Uint8Array(W*H),trail:new Uint8Array(W*H),seen:new Uint8Array(W*H),road:new Uint8Array(W*H),town:new Uint8Array(W*H),npcAt:new Int8Array(W*H).fill(-1),npcNear:-1,pets:[],petOn:-1,petE:null,tower:null,towerBest:0,tbuy:{},warm:0,story:[],gt:0,vault:null,haz:null,nests:null,incub:{},stash:{},gold:20,enh:{},
     items:{fish:0,trout:0,koi:0,berry:0,meat:0,leather:0,tusk:0,worm:0,seed:3,wheat:0,mapfrag:0},earrows:[],
     tools:{axe:0,pick:0,shovel:0,rod:0},eq:{weapon:null,head:null,body:null,hands:null,feet:null,neck:null,acc1:null,acc2:null,relic:null},inv:[],digs:[],buffs:{},menu:false,fishHint:0,bld:new Array(W*H).fill(null),
     core:{hp:300,max:300},
@@ -863,7 +882,7 @@ function genMap(s){
   for(let i=0;i<W*H;i++)if(rr(i%W,Math.floor(i/W))<12)s.seen[i]=1;
 }
 const TOWN_R=7;
-const NPCS=[{id:'shop',n:'잡화점',dx:-4,dy:-4},{id:'smith',n:'대장장이',dx:4,dy:-4},{id:'gem',n:'보석상',dx:-4,dy:4},{id:'inn',n:'여관',dx:4,dy:4},{id:'tower',n:'도전의 탑',dx:-2,dy:-5}];
+const NPCS=[{id:'shop',n:'잡화점',dx:-4,dy:-4},{id:'smith',n:'대장장이',dx:4,dy:-4},{id:'gem',n:'보석상',dx:-4,dy:4},{id:'inn',n:'여관',dx:4,dy:4},{id:'tower',n:'도전의 탑',dx:-2,dy:-5},{id:'altar',n:'태양의 제단',dx:2,dy:-5}];
 function townCell(x,y){return Math.max(Math.abs(x-CX),Math.abs(y-CY))<=TOWN_R}
 function roadCell(x,y){const ax=Math.abs(x-CX),ay=Math.abs(y-CY);return rr(x,y)<R1-1.5&&((ax<=1&&ay>TOWN_R)||(ay<=1&&ax>TOWN_R))}
 const AR={x0:6,y0:6,n:17};
@@ -897,6 +916,7 @@ function floorBanner(){const f=S.tower.floor;toast('도전의 탑 '+f+'층'+(f%5
 function towerClear(){
   const t=S.tower,f=t.floor;t.state='clear';
   if(f%10===0&&f>(S.towerBest||0))gainKeyFrag(1);
+  if(f%15===0&&f>(S.towerBest||0)){S.items.sunstone=(S.items.sunstone||0)+1;toast('탑 '+f+'층 첫 돌파 보상 · 태양석 +1',2600);}
   S.towerBest=Math.max(S.towerBest||0,f);
   const tok=1+Math.floor(f/5)+(f%5===0?2:0),g=Math.round(20+f*7);
   S.items.token=(S.items.token||0)+tok;S.gold+=g;
@@ -1079,7 +1099,6 @@ function addBarriers(s){
     const d=rr(x,y),i=idx(x,y);
     if(d>=R1-.5&&d<R1+1.1){s.water[i]=0;s.bld[i]=null;setRes(s,i,7);}
     else if(d>=R3-.5&&d<R3+1.1){s.water[i]=0;s.bld[i]=null;setRes(s,i,14);}
-    else if(d>=R4-.5&&d<R4+1.1){s.water[i]=0;s.bld[i]=null;setRes(s,i,16);}
     else if(d>=R2-.5&&d<R2+1.1){s.water[i]=0;s.bld[i]=null;setRes(s,i,8);}
   }
 }
@@ -1167,11 +1186,11 @@ function pay(c,sign){for(const k in c)addAmt(k,-c[k]*sign)}
 const ENH_KEYS={atk:1,def:1,hp:1,regen:1};
 function eqSum(key){let v=0;for(const sl of SLOT_KEYS){const id=S.eq[sl];if(id&&ITEMS[id][key]){const b=ITEMS[id][key];v+=ENH_KEYS[key]?b*(1+.1*(S.enh[id]||0)):b;}}return v+setBonus(key)}
 function isEq(id){return SLOT_KEYS.some(k=>S.eq[k]===id)}
-function owns(id){return isEq(id)||S.inv.includes(id)}
+function owns(id){if(isEq(id)||S.inv.includes(id))return true;for(const k in (S.stash||{}))if(S.stash[k].includes(id))return true;return false}
 function pAtk(){return S.p.dmg+eqSum('atk')+(S.buffs.stew?8:0)+(S.buffs.feast?5:0)}
 function pDef(){return eqSum('def')+(S.buffs.hearty?5:0)+(S.buffs.feast?3:0)}
 function pMax(){return S.p.max+eqSum('hp')}
-function pSpd(){const p=S.p;return p.spd*(1+eqSum('spd'))*(S.buffs.steak?1.25:1)*(1-(p.hzSlow||0))*((p.chill||0)>0?.7:1)}
+function pSpd(){const p=S.p;return (1-Math.min(.45,Math.max(0,((p.cold||0)-35)/65*.45)))*p.spd*(1+eqSum('spd'))*(S.buffs.steak?1.25:1)*(1-(p.hzSlow||0))*((p.chill||0)>0?.7:1)}
 function toolP(k){return TOOLS_EQ[k].tiers[S.tools[k]].p}
 function fishWait(){return (2+Math.random()*4)/Math.max(.5,toolP('rod'))*(1-eqSum('fish'))}
 function nearForge(){const p=S.p;for(let i=0;i<W*H;i++){const b=S.bld[i];if(b&&b.t==='forge'){const [x,y]=cCenter(i);if(Math.hypot(x-p.x,y-p.y)<3*T)return true;}}return false}
@@ -1322,7 +1341,7 @@ function sortedInv(){const a=S.inv.map((id,i)=>({id,i,e:ITEMS[id]}));const pw=e=
   a.sort((A,B)=>bagSort==='rare'?(((RARE_ORD[A.e.rare]??(A.e.drop?3:4))-(RARE_ORD[B.e.rare]??(B.e.drop?3:4)))||(SLOT_ORD[A.e.slot]-SLOT_ORD[B.e.slot])||(pw(B.e)-pw(A.e))):bagSort==='power'?(pw(B.e)-pw(A.e)):((SLOT_ORD[A.e.slot]-SLOT_ORD[B.e.slot])||(pw(B.e)-pw(A.e))));return a}
 function craftOrder(){const so={weapon:0,head:1,body:2,hands:3,feet:4,neck:5,acc:6,relic:7},co={sword:0,bow:1,staff:2,star:3,boom:4,lance:5,hammer:6};return Object.keys(ITEMS).filter(id=>ITEMS[id].recipe).sort((a,b)=>{const A=ITEMS[a],B=ITEMS[b];return (so[A.slot]-so[B.slot])||((co[A.cls||'sword']||0)-(co[B.cls||'sword']||0))||((A.atk||A.def||0)-(B.atk||B.def||0));});}
 function renderBag(){
-  for(const t of ['eq','craft','cook','pet'])$('tab-'+t).classList.toggle('on',bagTab===t);
+  for(const t of ['eq','craft','cook','pet','log'])$('tab-'+t).classList.toggle('on',bagTab===t);
   const it=S.items;let h='';
   const row=(act,dis,name,desc,right,ic)=>'<button class="trade" data-act="'+act+'"'+(dis?' disabled':'')+'>'+(ic?'<i class="ri">'+ic+'</i>':'')+'<div><b>'+name+'</b>'+(desc?'<small>'+desc+'</small>':'')+'</div><span>'+right+'</span></button>';
   if(bagTab==='eq'){
@@ -1351,6 +1370,10 @@ function renderBag(){
     const total=0;
     for(let k=ents.length;k<total;k++)h+='<div class="isl empty"></div>';
     }
+  }else if(bagTab==='log'){
+    h+='<p>괴물들이 깨어난 이유를 쫓는 기록이에요. 보스를 쓰러뜨릴 때마다 새 장이 열려요.</p><div class="sec"><h3>생존 일지</h3><div class="trades">';
+    for(const id of STORY_ORDER){const st=STORY[id],got=(S.story||[]).includes(id);h+=row(got?'story:'+id:'',!got,got?st.t:'??? · 아직 알 수 없는 이야기',got?st.pages[0].slice(0,44)+'…':'',got?'다시 보기':'',got?'<svg viewBox="0 0 24 24"><path d="M5 4h11l3 3v13H5z" fill="#c9b08a"/><path d="M8 9h8M8 12h8M8 15h5" stroke="#5a4028" stroke-width="1.5"/></svg>':'');}
+    h+='</div></div>';
   }else if(bagTab==='pet'){
     h+='<p>데리고 다니는 펫은 적을 잡을 때마다 경험치를 함께 얻어 레벨이 올라요 (최대 Lv'+PET_MAX+').</p><div class="sec"><h3>내 펫</h3><div class="trades">';
     S.pets.forEach((pt,i)=>{const D=PETS[pt.t],on=S.petOn===i,mx=pt.lv>=PET_MAX;
@@ -1407,6 +1430,7 @@ function bagAct(act,arg){setTimeout(renderAbil,0);
   if(act==='pet'){const i=+arg;S.petOn=S.petOn===i?-1:i;S.petE=null;renderBag();return;}
   if(act==='cf'){craftF=arg;renderBag();return;}
   if(act==='bs'){bagSort=arg;renderBag();return;}
+  if(act==='story'){closeBag();showStory(arg);return;}
   if(act==='sel'){bagSel=bagSel===arg?null:arg;renderBag();return;}
   if(act==='equip'){
     const i=+arg,id=S.inv[i];if(id==null)return;const sl=ITEMS[id].slot;
@@ -1442,8 +1466,11 @@ function eat(r){
   else S.buffs[r.id]=1;
   float(p.x,p.y-26,'냠!','#ffe08a');renderBag();
 }
-let incubSel=-1;
+let incubSel=-1,stashSel=-1;
+const SUN_MAX=8,SUN_ADD=15;
 const SHOPS={
+  altar:{t:'태양의 제단',line:'"태양석을 바치면 해가 조금 더 오래 머문다."'},
+  stash:{t:'보관함',line:'"가방에 다 못 넣는 장비는 여기 두자."'},
   incub:{t:'부화기',line:'"따뜻하게 품으면 알이 깨어난다."'},
   tower:{t:'도전의 탑',line:'"끝없이 이어진 층계다. 오를수록 적은 강해지고, 보상도 커진다."'},
   shop:{t:'잡화점',line:'"필요한 건 웬만큼 다 있다네. 남는 건 사주기도 하지."',
@@ -1460,10 +1487,10 @@ function enhCost(lv){const c={g:Math.round(15*Math.pow(lv+1,1.6))};c[['u','u','i
 const INN=[{n:'푹 쉬기',d:'체력을 모두 회복한다',g:10},{n:'화톳불 수리',d:'화톳불 체력 +150',g:20},{n:'일꾼 고용',d:'주민 1명이 마을에 들어온다 (최대 14명)',g:40},{n:'체력 물약',d:'가방에 체력 물약 1개',g:15},{n:'늑대 알',d:'부화기에 넣으면 2일 뒤 늑대가 태어난다',g:80}];
 let shopId=null;
 function shopRow(act,dis,name,desc,right,ic){return '<button class="trade" data-act="'+act+'"'+(dis?' disabled':'')+'>'+(ic?'<i class="ri">'+ic+'</i>':'')+'<div><b>'+name+'</b>'+(desc?'<small>'+desc+'</small>':'')+'</div><span>'+right+'</span></button>';}
-function talkTargets(){const a=NPCS.map((n,k)=>({k,x:(CX+n.dx+.5)*T,y:(CY+n.dy+.5)*T,n:n.n}));{const ii=incubNear();if(ii>=0){const [ix,iy]=cCenter(ii);a.push({k:'i',i:ii,x:ix,y:iy,n:'부화기'});}}for(const q of S.nests||[])if(q.egg&&Math.abs(q.x-S.p.x)<4*T&&Math.abs(q.y-S.p.y)<4*T)a.push({k:'n',q,x:q.x,y:q.y,n:'알 줍기'});
+function talkTargets(){const a=NPCS.map((n,k)=>({k,x:(CX+n.dx+.5)*T,y:(CY+n.dy+.5)*T,n:n.n}));{const ii=incubNear();if(ii>=0){const [ix,iy]=cCenter(ii);a.push({k:'i',i:ii,x:ix,y:iy,n:'부화기'});}const ci=bldNear('collector');if(ci>=0){const [ix,iy]=cCenter(ci);a.push({k:'s',i:ci,x:ix,y:iy,n:'보관함'});}}for(const q of S.nests||[])if(q.egg&&Math.abs(q.x-S.p.x)<4*T&&Math.abs(q.y-S.p.y)<4*T)a.push({k:'n',q,x:q.x,y:q.y,n:'알 줍기'});
   if(S.vault&&((S.items.akey>0)||(S.items.keyfrag>0)))a.push({k:'v',x:S.vault.x,y:S.vault.y,n:'고대 보물고'});if(S.merchant)a.push({k:'m',x:S.merchant.x,y:S.merchant.y,n:'떠돌이 상인'});return a}
 function nearTalk(r,wx,wy){const p=S.p;let best=null,bd=r;for(const t of talkTargets()){const d=Math.hypot(t.x-(wx==null?p.x:wx),t.y-(wy==null?p.y:wy));if(d<bd){bd=d;best=t;}}return best}
-function talkTo(t){if(!t||S.trading||S.menu)return;if(t.k==='v'){enterVault();return;}if(t.k==='n'){takeNest(t.q);return;}if(t.k==='i'){incubSel=t.i;openShop('incub');return;}if(t.k==='m')openTrade();else openShop(NPCS[t.k].id);}
+function talkTo(t){if(!t||S.trading||S.menu)return;if(t.k==='v'){enterVault();return;}if(t.k==='n'){takeNest(t.q);return;}if(t.k==='i'){incubSel=t.i;openShop('incub');return;}if(t.k==='s'){stashSel=t.i;stashCleanup();openShop('stash');return;}if(t.k==='m')openTrade();else openShop(NPCS[t.k].id);}
 function openShop(id){shopId=id;S.trading=true;renderShop();$('ovShop').hidden=false;}
 function closeShop(){$('ovShop').hidden=true;S.trading=false;}
 function renderShop(){
@@ -1482,6 +1509,20 @@ function renderShop(){
       if(lv>=10){h+=shopRow('',true,itemName(id),'최고 강화 단계','완료',itemIcon(id));continue;}
       const c=enhCost(lv);h+=shopRow('enh:'+sl,!afford(c),itemName(id)+' → +'+(lv+1),'성공 확률 '+Math.round(ENH_RATE[lv]*100)+'% · 실패해도 단계는 그대로',costText(c),itemIcon(id));}
     if(!any)h+='<p>장착한 장비가 없어요. 가방에서 먼저 장비를 장착하세요.</p>';
+    h+='</div></div>';
+  }else if(shopId==='altar'){
+    const n=S.sunOff||0,have=S.items.sunstone||0;
+    h+='<p>지금 낮의 길이는 <b>'+Math.round(dayLen())+'초</b>예요. 태양석 하나를 바칠 때마다 낮이 영구히 '+SUN_ADD+'초 길어져요 ('+n+' / '+SUN_MAX+').</p><div class="sec"><h3>바치기</h3><div class="trades">';
+    h+=shopRow('sun:1',n>=SUN_MAX||have<1,'태양석 바치기','보유 '+have+'개 · 태양석은 보스를 처음 쓰러뜨리거나 도전의 탑 15층마다 얻어요',n>=SUN_MAX?'완료':'+'+SUN_ADD+'초',itemIcon('sunstone'));
+    h+='</div></div>';
+  }else if(shopId==='stash'){
+    const st=stashOf(stashSel);
+    h+='<div class="sec"><div class="shead"><h3>보관함 '+st.length+' / '+STASH_MAX+'</h3>'+(st.length?'<button class="chip" data-act="stall:out">모두 꺼내기</button>':'')+'</div><div class="trades">';
+    if(!st.length)h+='<p>비어 있어요. 아래 가방 장비를 눌러 넣으세요.</p>';
+    st.forEach((id,i)=>{const e=ITEMS[id];h+=shopRow('sout:'+i,false,'['+SLOT_KIND[e.slot]+'] '+itemName(id),e.d,'꺼내기',itemIcon(id));});
+    h+='</div></div><div class="sec"><div class="shead"><h3>가방 장비 '+S.inv.length+'</h3>'+(S.inv.length?'<button class="chip" data-act="stall:in">모두 넣기</button>':'')+'</div><div class="trades">';
+    if(!S.inv.length)h+='<p>가방에 장착하지 않은 장비가 없어요.</p>';
+    S.inv.forEach((id,i)=>{const e=ITEMS[id];h+=shopRow('sin:'+i,st.length>=STASH_MAX,'['+SLOT_KIND[e.slot]+'] '+itemName(id),e.d,st.length>=STASH_MAX?'가득 참':'넣기',itemIcon(id));});
     h+='</div></div>';
   }else if(shopId==='incub'){
     const v=S.incub[incubSel];
@@ -1511,6 +1552,13 @@ function renderShop(){
 }
 function shopAct(act,arg){
   const sh=SHOPS[shopId],p=S.p;
+  if(act==='sun'){if((S.sunOff||0)>=SUN_MAX||!(S.items.sunstone>0))return;S.items.sunstone--;S.sunOff=(S.sunOff||0)+1;S.mods.dayBonus+=SUN_ADD;burst(S.p.x,S.p.y-20,'#ffd27a',24);toast('제단이 빛난다! 낮이 '+SUN_ADD+'초 길어졌다 (지금 '+Math.round(dayLen())+'초)',3000);renderShop();return;}
+  if(act==='sin'||act==='sout'||act==='stall'){const st=stashOf(stashSel);
+    if(act==='sin'){const i=+arg;if(st.length<STASH_MAX&&S.inv[i]){st.push(S.inv.splice(i,1)[0]);}}
+    else if(act==='sout'){const i=+arg;if(st[i])S.inv.push(st.splice(i,1)[0]);}
+    else if(arg==='in'){while(S.inv.length&&st.length<STASH_MAX)st.push(S.inv.shift());}
+    else{S.inv.push(...st.splice(0));}
+    renderShop();return;}
   if(act==='egg'){if(S.incub[incubSel]||!(S.items['egg_'+arg]>0))return;S.items['egg_'+arg]--;S.incub[incubSel]={t:arg,day:S.day+HATCH_DAYS};toast(ITEM_NAME['egg_'+arg]+'을 부화기에 넣었다 · '+HATCH_DAYS+'일 뒤 아침에 부화',2400);renderShop();return;}
   if(act==='tw'){enterTower(+arg);return;}
   if(act==='tk'){const o=TOKEN_SHOP[+arg];if(!o)return;const lv=S.tbuy[o.id]||0,c=tokenCost(o);if(lv>=o.max||(S.items.token||0)<c)return;S.items.token-=c;S.tbuy[o.id]=lv+1;o.a();toast(o.n+' '+(lv+1)+'단계!',1800);renderShop();return;}
@@ -1527,6 +1575,7 @@ function shopAct(act,arg){
   renderShop();
 }
 function closeTopOverlay(){
+  if(!$('ovStory').hidden){closeStory();return true;}
   if(!$('ovShop').hidden){closeShop();return true;}
   if(!$('ovTrade').hidden){$('ovTrade').hidden=true;S.trading=false;return true;}
   if(!$('ovBag').hidden){closeBag();return true;}
@@ -1625,8 +1674,9 @@ function dawn(){
   S.phase='dawn';
   let huts=0;forB(b=>{if(b.t==='hut')huts++;});
   let extra='';if(huts&&S.vill.length<Math.min(14,4+huts*2)){addVillager();extra=' 오두막에 새 주민이 들어왔다.';}
-  showCards(S.day+'일째 아침','살아남았다.'+extra+' 축복 하나를 고르세요.');
+  beginDay('살아남았다! '+S.day+'일째 아침.'+extra);
 }
+function beginDay(msg){setupDay();save();toast(S.day===1?'먼저 가방(I) → 제작에서 나무 도끼와 곡괭이를 만들고, 밤이 오기 전에 건설(B)에서 벽을 세우세요':(msg||'')+(S.event?' 오늘의 사건 · '+S.event.n+': '+S.event.d:' 평온한 하루다'),4000);}
 
 /* ---------- combat ---------- */
 const RELIC_N={spin:'족장의 회오리 부적',mist:'히드라의 독샘',guard:'골렘의 수정핵',blink:'심연의 그림자',erupt:'군주의 불씨',frostnova:'여왕의 서리꽃'};
@@ -1721,6 +1771,7 @@ function bossAI(e,dt,slowF){
     else{e.hp=Math.min(e.max,e.hp+e.max*.1*dt);if(e.hp>=e.max&&dH>22*T){e.dead=true;L.state='sleep';}}
     return;
   }
+  if(S.gt-(e.lastHit==null?S.gt:e.lastHit)>8&&e.hp<e.max){e.hp=Math.min(e.max,e.hp+e.max*.12*dt);e.rgT=(e.rgT||0)-dt;if(e.rgT<=0){e.rgT=.5;float(e.x,e.y-ET[e.t].r-10,'회복','#7fe8aa');}}
   e.face=Math.atan2(p.y-e.y,p.x-e.x);const a=e.face;
   if(dP>E.r+20)moveE(e,p.x,p.y,e.spd*slowF,dt);
   else if(e.cd<=0){hurtPlayer(E.dmg);e.cd=E.cd;}
@@ -1892,10 +1943,77 @@ function drawNests(now){for(const q of S.nests||[]){if(!S.seen[cellAt(q.x,q.y)])
   ctx.strokeStyle=q.rg===4?'#9fb8c8':q.rg===3?'#5a3a2a':'#8a6a3a';ctx.lineWidth=3;for(let k=0;k<3;k++){ctx.beginPath();ctx.ellipse(x,y+2,13-k*2,6-k,0,0,Math.PI);ctx.stroke();}
   if(q.egg){const [a,b]=EGG_COL[q.egg],wb=Math.sin(now/300)*.08;ctx.save();ctx.translate(x,y-2);ctx.rotate(wb);ctx.fillStyle=a;ctx.beginPath();ctx.ellipse(0,0,6,8,0,0,Math.PI*2);ctx.fill();ctx.fillStyle=b;ctx.beginPath();ctx.arc(-2,-2,1.4,0,Math.PI*2);ctx.arc(2,2,1.7,0,Math.PI*2);ctx.fill();ctx.restore();}
 }}
+const STASH_MAX=30;
+function bldNear(t){const p=S.p,cx=Math.floor(p.x/T),cy=Math.floor(p.y/T);let best=-1,bd=1e9;for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++){const i=idx(cx+dx,cy+dy);const b=S.bld[i];if(b&&b.t===t){const d=dx*dx+dy*dy;if(d<bd){bd=d;best=i;}}}return best}
+function stashOf(i){S.stash=S.stash||{};return S.stash[i]||(S.stash[i]=[])}
+function stashCleanup(){if(!S.stash)return;for(const k in S.stash){if(!S.bld[k]||S.bld[k].t!=='collector'){if(S.stash[k].length){S.inv.push(...S.stash[k]);toast('부서진 보관함의 장비 '+S.stash[k].length+'개를 가방으로 옮겼다',2600);}delete S.stash[k];}}}
 function incubNear(){const p=S.p,cx=Math.floor(p.x/T),cy=Math.floor(p.y/T);for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++){const i=idx(cx+dx,cy+dy);const b=S.bld[i];if(b&&b.t==='incub')return i;}return -1}
 function hatchDawn(){for(const k in S.incub){const v=S.incub[k];if(!S.bld[k]||S.bld[k].t!=='incub'){delete S.incub[k];continue;}if(S.day>=v.day){delete S.incub[k];hatchPet(v.t);}}}
 function hatchPet(t){if(!hasPet(t)){S.pets.push({t,lv:1,xp:0});if(S.petOn<0)S.petOn=S.pets.length-1;setTimeout(()=>toast('알이 부화했다! '+PETS[t].n+'가 태어났다 — 가방(I) → 펫 탭',4000),2200);}
   else{const pt=S.pets.find(x=>x.t===t),o=S.petOn;S.petOn=S.pets.indexOf(pt);petXp(400+200*EGG_REG[t]);S.petOn=o;setTimeout(()=>toast('알에서 '+PETS[t].n+'가 또 태어났다! 기존 '+PETS[t].n+'가 경험치를 얻었다',3600),2200);}}
+function sceneSvg(k){
+  const sky={fire:['#2a0f0a','#7a2a12'],camp:['#0f1a24','#24384a'],chief:['#1a1410','#3a2a1a'],hydra:['#122014','#2a4a2a'],golem:['#1a1424','#3a2e4a'],flame:['#200a06','#6a1e0a'],frost:['#1a2a3a','#6a8aa0'],abyss:['#0a0610','#2a1a3a'],cold:['#24364a','#9fb8c8']}[k]||['#111','#333'];
+  let g='<defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+sky[0]+'"/><stop offset="1" stop-color="'+sky[1]+'"/></linearGradient></defs><rect width="320" height="140" fill="url(#sg)"/>';
+  const tree=(x,s,c)=>'<path d="M'+x+' '+(118-36*s)+'l'+(14*s)+' '+(30*s)+'h'+(-28*s)+'z" fill="'+(c||'#14261a')+'"/><rect x="'+(x-2*s)+'" y="'+(118-6*s)+'" width="'+(4*s)+'" height="'+(6*s)+'" fill="#2a1c10"/>';
+  const ground=c=>'<rect y="116" width="320" height="24" fill="'+c+'"/>';
+  const eyes=(x,y)=>'<circle cx="'+x+'" cy="'+y+'" r="2" fill="#ff4a3a"/><circle cx="'+(x+7)+'" cy="'+y+'" r="2" fill="#ff4a3a"/>';
+  if(k==='fire'){g+=ground('#1a0e08');for(const [x,h] of [[60,30],[120,40],[200,34],[260,28]])g+='<rect x="'+(x-16)+'" y="'+(116-h)+'" width="32" height="'+h+'" fill="#1a0e08"/><path d="M'+(x-20)+' '+(116-h)+'l20-16 20 16z" fill="#120806"/><path d="M'+(x-8)+' '+(116-h-10)+'q8-24 16 0q-4-10-8-4q-4-6-8 4z" fill="#ff8a3a" opacity=".9"/>';for(let i=0;i<6;i++)g+=eyes(30+i*48,128-((i*13)%8));}
+  else if(k==='camp'){g+=ground('#18261a');for(const x of [20,50,270,300])g+=tree(x,1.2);g+='<ellipse cx="160" cy="118" rx="26" ry="6" fill="#4a4a4a"/><path d="M150 116q10-34 20 0q-4-14-10-8q-6-8-10 8z" fill="#ffa047"/><circle cx="160" cy="110" r="40" fill="#ffa047" opacity=".12"/><circle cx="120" cy="110" r="6" fill="#2f5a72"/><circle cx="200" cy="110" r="6" fill="#2f5a72"/><circle cx="185" cy="112" r="5" fill="#5a3a72"/>';}
+  else if(k==='chief'){g+=ground('#2a1c10');for(const x of [30,290])g+=tree(x,1.3);g+='<circle cx="160" cy="92" r="24" fill="#5a7a3a"/><path d="M148 72l-6-14 12 10zM172 72l6-14-12 10z" fill="#3a5a2a"/>'+eyes(152,90)+'<path d="M160 116l-8 6h16z" fill="#111"/><circle cx="160" cy="122" r="5" fill="#1a1a1a" stroke="#b48cf0"/>';}
+  else if(k==='hydra'){g+=ground('#1e3020');g+='<ellipse cx="160" cy="124" rx="90" ry="10" fill="#2a4a3a"/><rect x="150" y="60" width="20" height="58" fill="#6a6a62"/><path d="M152 70l8 10-4 10 6 12" stroke="#1a1a1a" stroke-width="2" fill="none"/>';for(const x of [60,100,220,260])g+='<path d="M'+x+' 118q-8-30 6-46" stroke="#4a8a4a" stroke-width="8" fill="none"/>';}
+  else if(k==='golem'){g+=ground('#2a2236');for(const x of [40,80,240,280])g+='<path d="M'+x+' 118l10-40 10 40z" fill="#9a7ad8" opacity=".7"/>';g+='<rect x="136" y="70" width="48" height="48" rx="6" fill="#5a5068"/><circle cx="160" cy="92" r="9" fill="#1a1020"/><circle cx="160" cy="92" r="4" fill="#b48cf0"/>';}
+  else if(k==='flame'){g+=ground('#2a120a');g+='<path d="M0 118l60-50 40 30 50-60 50 60 40-30 80 50z" fill="#1a0a06"/><path d="M150 38q10-30 20 0" stroke="#ff8a3a" stroke-width="4" fill="none"/><circle cx="160" cy="96" r="12" fill="#ff6a2a"/><circle cx="160" cy="96" r="22" fill="#ff8a3a" opacity=".25"/><path d="M156 92q4-6 8 0q-4 10-4 10q0 0-4-10z" fill="#ffe08a"/>';}
+  else if(k==='frost'||k==='cold'){g+=ground('#dfeef6');for(const x of [30,70,250,290])g+=tree(x,1.1,'#5a7a8a')+'<path d="M'+(x-8)+' '+(96)+'h16" stroke="#fff" stroke-width="3"/>';for(let i=0;i<30;i++)g+='<circle cx="'+((i*53)%320)+'" cy="'+((i*37)%110)+'" r="1.5" fill="#fff" opacity=".8"/>';if(k==='frost')g+='<path d="M140 118l6-34 14-14 14 14 6 34z" fill="#9fd8e8"/><circle cx="160" cy="70" r="9" fill="#e8fbff"/><path d="M150 60l4-10 6 8 6-8 4 10z" fill="#bfe8f8"/>';}
+  else if(k==='abyss'){g+=ground('#120a1a');g+='<ellipse cx="160" cy="80" rx="60" ry="44" fill="#000"/><ellipse cx="160" cy="80" rx="60" ry="44" fill="none" stroke="#7a4ab8" stroke-width="3"/>'+eyes(150,78)+'<path d="M110 120q50-20 100 0" stroke="#b48cf0" stroke-width="2" fill="none" opacity=".6"/>';}
+  return '<svg viewBox="0 0 320 140" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">'+g+'</svg>';
+}
+const STORY={
+  prologue:{t:'프롤로그 · 불타는 밤',sc:['fire','fire','camp','camp'],pages:[
+    '숲속 작은 마을 솔빛. 그날 밤도 여느 때처럼 조용했다.',
+    '자정 무렵, 숲 사방에서 붉은 눈들이 몰려왔다. 고블린, 늑대, 처음 보는 괴물들까지. 마을은 하룻밤 새 잿더미가 되었다.',
+    '살아남은 몇 사람과 정신없이 도망쳤다. 숲 한가운데에서 오래전 누군가 쓰던 돌 화톳불 터를 발견했다.',
+    '여기서 버텨야 한다. 낮에는 모으고 짓고, 밤에는 불을 지킨다. 그리고 알아내야 한다. 괴물들은 왜 갑자기 깨어났을까.']},
+  chief:{t:'1장 · 검은 부적',sc:['chief','chief'],pages:[
+    '쓰러진 고블린 족장의 목에 검은 부적이 걸려 있었다. 손에 쥐자 차가운 기운이 스며든다.',
+    '누군가 괴물들을 깨워 부리고 있다. 족장이 쓰러지자 숲을 두르던 가시 장벽이 시들고, 독안개 늪으로 가는 길이 열렸다.']},
+  hydra:{t:'2장 · 금이 간 봉인석',sc:['hydra','hydra'],pages:[
+    '히드라의 둥지 한가운데 금이 간 돌기둥이 서 있었다. 오래된 글씨가 새겨진 봉인석이다.',
+    '이 땅 곳곳에는 무언가를 가두기 위한 봉인이 있었던 모양이다. 봉인이 깨지자 괴물들이 날뛰기 시작했다. 늪 너머 고대 봉인이 풀리며 수정 협곡이 드러났다.']},
+  golem:{t:'3장 · 검게 물든 수호자',sc:['golem','golem'],pages:[
+    '수정 골렘은 원래 봉인을 지키던 수호자였다. 하지만 그 심장은 검게 물들어 있었다.',
+    '봉인을 지키던 자들마저 무언가에 잠식당했다. 골렘이 쓰러지자 협곡 끝 용암 장벽이 식었다. 화산 깊은 곳에서 땅이 울린다.']},
+  flame:{t:'4장 · 따뜻한 심장',sc:['flame','cold'],pages:[
+    '화염 군주가 쓰러지며 남긴 불씨 하나가 아직 따뜻하게 뛰고 있다. 따뜻한 심장. 품에 넣자 온몸에 열기가 돈다.',
+    '이제 북쪽 설원의 혹한도 견딜 수 있다. 얼음 너머에서 누군가 부르는 소리가 들린다. 마지막 봉인 지기가 아직 버티고 있는 걸까.']},
+  frost:{t:'5장 · 마지막 봉인 지기',sc:['frost','abyss'],pages:[
+    '서리 여왕은 마지막 봉인 지기였다. 숨이 끊어지기 전 그녀가 속삭였다. "심연의 문이… 열렸다…"',
+    '"고대 열쇠를 모아 보물고로 가라. 봉인을 다시 잇는 힘이 그곳에 잠들어 있다." 이 모든 일의 시작, 심연이 우리를 기다린다.']},
+  abyss:{t:'종장 · 심연의 군주',sc:['abyss','camp'],pages:[
+    '심연의 군주. 봉인을 깨뜨리고 괴물들을 깨운 장본인이 마침내 쓰러졌다. 숲을 뒤덮던 붉은 기운이 조금 옅어졌다.',
+    '하지만 밤은 여전히 찾아온다. 화톳불을 지키는 한, 우리의 이야기는 계속된다.']},
+};
+const STORY_ORDER=['prologue','chief','hydra','golem','flame','frost','abyss'];
+let storyId=null,storyPg=0,storyAfter=null;
+function showStory(id,after){const st=STORY[id];if(!st){if(after)after();return;}if(!S.story)S.story=[];if(!S.story.includes(id))S.story.push(id);
+  storyId=id;storyPg=0;storyAfter=after||null;S.menu=true;renderStory();$('ovStory').hidden=false;}
+function renderStory(){const st=STORY[storyId];$('storyTitle').textContent=st.t;$('storyArt').innerHTML=sceneSvg(st.sc[storyPg]||st.sc[0]);$('storyText').textContent=st.pages[storyPg];
+  $('storyPg').textContent=(storyPg+1)+' / '+st.pages.length;$('storyNext').textContent=storyPg<st.pages.length-1?'다음':'계속하기';$('storyPrev').hidden=storyPg===0;}
+function storyNext(){const st=STORY[storyId];if(storyPg<st.pages.length-1){storyPg++;renderStory();return;}closeStory();}
+function closeStory(){$('ovStory').hidden=true;S.menu=false;const a=storyAfter;storyAfter=null;if(a)a();}
+function storyLater(id){setTimeout(()=>{if(running&&S)showStory(id);},2400);}
+function nearWarmth(){const p=S.p,cx=Math.floor(p.x/T),cy=Math.floor(p.y/T);for(let dy=-3;dy<=3;dy++)for(let dx=-3;dx<=3;dx++){const b=S.bld[idx(cx+dx,cy+dy)];if(b&&(b.t==='fire'||b.t==='torch'))return true;}return false}
+function updCold(dt){
+  const p=S.p;if(p.dead||S.tower){p.cold=Math.max(0,(p.cold||0)-40*dt);return;}
+  const rg=regionAtPos(p.x,p.y);
+  if(rg===4&&!S.warm&&!nearWarmth()){
+    const c0=p.cold||0;p.cold=Math.min(100,c0+6.5*dt);
+    if(c0<1&&!S.coldSeen){S.coldSeen=1;toast('살을 에는 추위다. 이대로는 얼어 죽는다… 몸을 덥힐 무언가가 필요하다',3600);}
+    if(c0<35&&p.cold>=35)toast('몸이 떨린다… 손끝이 얼어붙기 시작했다',2200);
+    if(c0<75&&p.cold>=75)toast('발이 굳어간다! 당장 돌아가거나 불을 피워야 한다',2400);
+    if(p.cold>=100){p.coldT=(p.coldT||0)+dt;if(p.coldT>=.5){p.coldT-=.5;const d=pMax()*.06;p.hp-=d;float(p.x,p.y-18,'-'+Math.round(d),'#bfe8f8');if(p.hp<=0){p.hp=1;hurtPlayer(9999);}}}
+  }else p.cold=Math.max(0,(p.cold||0)-(nearWarmth()?30:18)*dt);
+}
+function bossesReset(){for(const e of S.enemies){if(!e.lair||e.dead)continue;e.hp=e.max;e.summoned=0;e.mets=null;e.spikes=null;}}
 function updAllies(dt){
   const p=S.p;
   const petOn=isEq('wolfflute');
@@ -1950,7 +2068,7 @@ function arrowHit(a){
   if(a.kind==='pfire'&&!a.e.dead)a.e.poison=3;
 }
 function hitEnemy(e,d){
-  e.hp-=d;e.hurt=.12;float(e.x,e.y-14,Math.round(d),'#ffe6b8');
+  e.lastHit=S.gt;e.hp-=d;e.hurt=.12;float(e.x,e.y-14,Math.round(d),'#ffe6b8');
   if(e.hp<=0&&!e.dead)killEnemy(e);
 }
 const GOLD={yeti:14,wisp:12,frost:1400,imp:9,magma:12,flame:800,goblin:2,wolf:2,boar:4,archer:3,burrower:4,toad:3,shard:6,mimic:25,chief:40,hydra:150,golem:300,abyss:500};
@@ -1964,7 +2082,7 @@ function killEnemy(e){
   if(e.t==='boar'){if(Math.random()<.6)drop(e.x,e.y,'meat',1);if(Math.random()<.35)drop(e.x,e.y,'tusk',1);}
   const accP=({goblin:.025,wolf:.035,boar:.06,mimic:1,chief:0}[e.t]||0)*(eqSum('luck')?2:1);
   if(Math.random()<accP)dropAcc(e.x,e.y,e.t==='wolf'?'fang':null);
-  if(e.t==='chief')drop(e.x,e.y,'egg_wolf',1);
+  if(e.t==='chief'){drop(e.x,e.y,'egg_wolf',1);if(!S.chiefSun){S.chiefSun=1;drop(e.x,e.y,'sunstone',1);}if(!(S.story||[]).includes('chief'))storyLater('chief');}
   if(e.t==='chief'){if(!owns('crown'))drop(e.x,e.y,'eq:crown',1);else dropAcc(e.x,e.y);relicDrop('chief',e.x,e.y);if(S.prog<1){S.prog=1;openBarrier(7,'가시 장벽이 시들었다! 숲 바깥 독안개 늪으로 가는 길이 열렸다');}}
   if(e.t==='toad'&&Math.random()<.15)drop(e.x,e.y,'o',1);
   if(e.t==='imp'&&Math.random()<.08)drop(e.x,e.y,'b',1);
@@ -1974,13 +2092,13 @@ function killEnemy(e){
   if(e.t==='magma'&&Math.random()<.12)drop(e.x,e.y,'b',1);
   if(e.t==='shard'){if(Math.random()<.15)drop(e.x,e.y,'e',1);if(Math.random()<.3)drop(e.x,e.y,'c',1);}
   if(e.lair){
-    const L=e.lair;L.state='dead';const first=!L.kills;L.kills=(L.kills||0)+1;L.resp=S.day+3;relicDrop(e.t,e.x,e.y);
+    const L=e.lair;L.state='dead';const first=!L.kills;if(first)drop(e.x,e.y,'sunstone',1);if(STORY[e.t]&&!(S.story||[]).includes(e.t))storyLater(e.t);L.kills=(L.kills||0)+1;L.resp=S.day+3;relicDrop(e.t,e.x,e.y);
     {const eg={hydra:'toad',golem:'sprite',flame:'imp',frost:'yeticub'}[e.t];if(eg)drop(e.x,e.y,'egg_'+eg,1);}
     if(first&&(e.t==='hydra'||e.t==='golem'))gainKeyFrag(1,e.x,e.y);
     if(e.t==='hydra'){for(let k=0;k<6;k++)drop(e.x,e.y,'o',2);drop(e.x,e.y,'mapfrag',1);if(!owns('hydrafang'))drop(e.x,e.y,'eq:hydrafang',1);if(S.prog<2){S.prog=2;openBarrier(8,'히드라를 쓰러뜨렸다! 고대 봉인이 풀리고 수정 협곡이 열렸다');}}
     else if(e.t==='golem'){if(S.prog<3){S.prog=3;openBarrier(14,'수정 골렘이 쓰러지자 용암 장벽이 식었다! 화산 지대가 열렸다');}for(let k=0;k<4;k++)drop(e.x,e.y,'e',3);drop(e.x,e.y,'mapfrag',1);if(!owns('golemheart'))drop(e.x,e.y,'eq:golemheart',1);}
     else if(e.t==='frost'){for(let k=0;k<8;k++)drop(e.x,e.y,'m',2);if(first)gainKeyFrag(1,e.x,e.y);S.prog=Math.max(S.prog,5);toast('서리 여왕을 쓰러뜨렸다! 미스릴과 고대 열쇠 조각을 얻었다',4200);}
-    else if(e.t==='flame'){for(let k=0;k<8;k++)drop(e.x,e.y,'b',2);if(first)gainKeyFrag(1,e.x,e.y);if(S.prog<4){S.prog=4;openBarrier(16,'화염 군주의 불꽃이 얼음 장벽을 녹였다! 서리 설원이 열렸다');}toast('화염 군주를 쓰러뜨렸다! 흑요석과 고대 열쇠 조각을 얻었다',4200);}
+    else if(e.t==='flame'){for(let k=0;k<8;k++)drop(e.x,e.y,'b',2);if(first)gainKeyFrag(1,e.x,e.y);if(!S.warm){S.warm=1;setTimeout(()=>toast('따뜻한 심장을 얻었다! 이제 서리 설원의 추위를 견딜 수 있다',4000),1200);}if(S.prog<4)S.prog=4;toast('화염 군주를 쓰러뜨렸다! 흑요석과 고대 열쇠 조각을 얻었다',4200);}
     else if(e.t==='abyss'){if(!owns('abyssblade'))drop(e.x,e.y,'eq:abyssblade',1);for(let k=0;k<5;k++){drop(e.x,e.y,'d',2);drop(e.x,e.y,'e',2);}S.hiddenDone=1;toast('심연의 군주를 쓰러뜨렸다! 전설의 무기, 심연의 검을 얻었다',4200);}
   }
   if(e.t==='chief'){S.wood+=25;S.stone+=25;S.crystal+=3;toast('족장을 쓰러뜨렸다! 나무 +25, 돌 +25, 마력석 +3 — 마법탑을 지을 수 있다',3600);}
@@ -1999,10 +2117,10 @@ function hurtPlayer(d){
   p.hp-=d;float(p.x,p.y-18,'-'+Math.round(d),'#ff9a8a');
   if(p.hp<=0&&S.tower){p.hp=Math.round(pMax()*.5);burst(p.x,p.y,'#e0573f',14);const f=S.tower.floor;if(S.tower.vault){leaveTower('쓰러졌다… 보물고에서 밀려났다. 열쇠는 사라졌다');return;}leaveTower('쓰러졌다… '+f+'층에서 탑 밖으로 밀려났다 · 최고 기록 '+(S.towerBest||0)+'층');return;}
   if(p.hp<=0){
-    p.hp=0;p.dead=6;
+    p.hp=0;p.dead=6;bossesReset();p.cold=0;
     const lw=Math.floor(S.wood*.25),ls=Math.floor(S.stone*.25);S.wood-=lw;S.stone-=ls;
     burst(p.x,p.y,'#e0573f',14);
-    toast('쓰러졌다… 6초 뒤 화톳불에서 깨어난다 (나무 -'+lw+', 돌 -'+ls+')',3200);
+    toast('쓰러졌다… (나무 -'+lw+', 돌 -'+ls+')',3200);
   }
 }
 function hurtCore(d){
@@ -2033,6 +2151,7 @@ const ptrs=new Map();
 window.addEventListener('keydown',e=>{
   if(e.repeat)return;
   const k=e.key.toLowerCase();keys[k]=true;touchUI=false;
+  if(!$('ovStory').hidden){if(k==='enter'||k===' '||k==='arrowright'||k==='f'){e.preventDefault&&e.preventDefault();storyNext();}else if(k==='arrowleft'&&storyPg>0){storyPg--;renderStory();}else if(k==='escape')closeStory();return;}
   if(!running)return;
   if(k>='1'&&k<='9'){const L=BCATS[bcat].t,t=L[+k-1];if(!buildOpen)setBuild(true);if(t)selectTool(tool===t?null:t);}
   else if(k==='b'){setBuild(!buildOpen);}
@@ -2271,7 +2390,7 @@ function update(dt){
   p.moving=false;
   if(p.dead){
     p.dead-=dt;
-    if(p.dead<=0){p.dead=0;p.hp=Math.round(pMax()*.6);const [x,y]=cCenter(freeCellNear(CI));p.x=x;p.y=y;}
+    if(p.dead<=0){p.dead=0;p.wake=1.6;p.hp=Math.round(pMax()*.6);const [x,y]=cCenter(freeCellNear(CI));p.x=x;p.y=y;}
   }else{
     if(m>.12){
       p.moving=true;p.face=Math.atan2(my,mx);
@@ -2349,7 +2468,7 @@ function update(dt){
   // villagers
   for(const v of S.vill)updVillager(v,dt);
   S.picks=S.picks.filter(k=>!k.got);
-  updAllies(dt);updPet(dt);updHazard(dt);if(S.p.chill>0)S.p.chill-=dt;
+  updAllies(dt);updPet(dt);updHazard(dt);updCold(dt);if(S.p.chill>0)S.p.chill-=dt;S.gt+=dt;
 
   // buildings
   for(let i=0;i<W*H;i++){
@@ -2710,7 +2829,11 @@ function draw(now){
   }
   if(!p.dead&&p.poison>0){ctx.fillStyle='rgba(90,160,60,.12)';ctx.fillRect(0,0,vw,vh);}
   if(S.tower){const t=S.tower,txt=t.vault?('고대 보물고 '+(t.floor<4?t.floor+'/3번째 방':'수호자')+' · 남은 적 '+t.left):'도전의 탑 '+t.floor+'층 · '+(t.state==='fight'?'남은 적 '+t.left:'돌파!');ctx.font='18px "Black Han Sans",sans-serif';ctx.textAlign='center';const w=ctx.measureText(txt).width+28;ctx.fillStyle='rgba(20,14,30,.85)';ctx.fillRect(vw/2-w/2,64,w,32);ctx.strokeStyle='rgba(180,140,240,.7)';ctx.strokeRect(vw/2-w/2+.5,64.5,w-1,31);ctx.fillStyle='#e6d8ff';ctx.fillText(txt,vw/2,87);ctx.textAlign='left';}
-  if(p.dead){ctx.fillStyle='rgba(120,20,10,.25)';ctx.fillRect(0,0,vw,vh);ctx.font='22px "Black Han Sans",sans-serif';ctx.textAlign='center';ctx.fillStyle='#f0eedf';ctx.fillText(Math.ceil(p.dead)+'초 뒤 부활',vw/2,vh/2);}
+  if(p.dead){const k=Math.min(1,(6-p.dead)/1.6);ctx.fillStyle='rgba(120,20,10,'+(.35*(1-k))+')';ctx.fillRect(0,0,vw,vh);ctx.fillStyle='rgba(4,4,6,'+(k*.92)+')';ctx.fillRect(0,0,vw,vh);
+    ctx.textAlign='center';ctx.font='26px "Black Han Sans",sans-serif';ctx.fillStyle='rgba(240,238,223,'+k+')';ctx.fillText(p.dead>2.5?'눈앞이 캄캄해진다…':'화톳불의 온기가 당신을 깨운다',vw/2,vh/2-8);
+    ctx.font='14px "Gowun Dodum",sans-serif';ctx.fillStyle='rgba(200,190,170,'+k+')';ctx.fillText(Math.ceil(p.dead)+'초 뒤 마을 화톳불에서 깨어난다 · 싸우던 보스는 기운을 되찾는다',vw/2,vh/2+22);ctx.textAlign='left';}
+  if(p.wake>0){p.wake-=1/60;ctx.fillStyle='rgba(4,4,6,'+Math.max(0,p.wake/1.6*.92)+')';ctx.fillRect(0,0,vw,vh);}
+  if((p.cold||0)>5){const c=Math.min(1,p.cold/100),gr=ctx.createRadialGradient(vw/2,vh/2,Math.min(vw,vh)*(.55-c*.25),vw/2,vh/2,Math.max(vw,vh)*.75);gr.addColorStop(0,'rgba(170,215,240,0)');gr.addColorStop(.6,'rgba(170,215,240,'+(c*.35)+')');gr.addColorStop(1,'rgba(150,200,235,'+(c*.95)+')');ctx.fillStyle=gr;ctx.fillRect(0,0,vw,vh);}
 }
 function edgeArrow(wx,wy,col,now,sz){sz=sz||1;
   const sx=(wx-camX)*scale,sy=(wy-camY)*scale,m=40;
@@ -2990,6 +3113,9 @@ function drawNpc(k,i,now){
     ctx.fillStyle='#2a2238';ctx.fillRect(x-5,py+18,10,14);
     ctx.fillStyle='#9fe8ff';ctx.beginPath();ctx.moveTo(px+6,py+20);ctx.lineTo(px+9,py+24);ctx.lineTo(px+6,py+28);ctx.lineTo(px+3,py+24);ctx.fill();
     ctx.fillStyle='#4fd08a';ctx.beginPath();ctx.moveTo(px+26,py+20);ctx.lineTo(px+29,py+24);ctx.lineTo(px+26,py+28);ctx.lineTo(px+23,py+24);ctx.fill();
+  }else if(n.id==='altar'){
+    const g2=(Math.sin(now/400)+1)/2;ctx.fillStyle='#8a8070';ctx.fillRect(px+2,py+12,T-4,T-12);ctx.fillStyle='#a89a84';ctx.fillRect(px-2,py+8,T+4,6);
+    ctx.fillStyle='rgba(255,210,122,'+(.25+g2*.3+(S.sunOff||0)*.05)+')';ctx.beginPath();ctx.arc(x,py+2,10+g2*2,0,Math.PI*2);ctx.fill();ctx.fillStyle='#ffd27a';ctx.beginPath();ctx.arc(x,py+2,5,0,Math.PI*2);ctx.fill();
   }else if(n.id==='tower'){
     const g2=(Math.sin(now/300)+1)/2;ctx.fillStyle='#3a2e4a';ctx.fillRect(px+4,py-18,T-8,T+18);ctx.fillStyle='#4a3a62';ctx.fillRect(px+2,py-22,T-4,6);
     for(let k2=0;k2<3;k2++){ctx.fillStyle='rgba(255,210,122,'+(.4+g2*.5)+')';ctx.fillRect(px+13,py-12+k2*11,6,6);}
@@ -3257,7 +3383,7 @@ function hud(){
     const n=S.enemies.filter(e=>!e.wild&&!e.lair).length+S.spawnQ.length;
     $('phase').textContent='밤 · 남은 적 '+n;pf.classList.add('n');pf.style.width=Math.min(100,S.nightT/60*100)+'%';
   }
-  $('gold').textContent=S.gold;$('wood').textContent=S.wood;$('stone').textContent=S.stone;$('iron').textContent=S.iron;$('obsidian').textContent=S.obsidian;$('mithril').textContent=S.mithril;$('miWrap').hidden=!(S.prog>=4||S.mithril>0);$('obWrap').hidden=!(S.prog>=3||S.obsidian>0);$('copper').textContent=S.copper;$('goldore').textContent=S.goldore;$('cobalt').textContent=S.cobalt;$('auWrap').hidden=!(S.goldore>0||S.tools.pick>=3);$('coWrap').hidden=!(S.prog>=1||S.cobalt>0);$('crystal').textContent=S.crystal;$('emerald').textContent=S.emerald;$('diamond').textContent=S.diamond;$('emWrap').hidden=!(S.prog>=2||S.emerald>0);$('diWrap').hidden=!(S.prog>=3||S.diamond>0);$('vil').textContent=S.vill.length;
+  $('gold').textContent=S.gold;$('wood').textContent=S.wood;$('stone').textContent=S.stone;$('iron').textContent=S.iron;$('coldBar').hidden=!((S.p.cold||0)>1);$('coldFill').style.width=Math.round(S.p.cold||0)+'%';$('obsidian').textContent=S.obsidian;$('mithril').textContent=S.mithril;$('miWrap').hidden=!(S.prog>=4||S.mithril>0);$('obWrap').hidden=!(S.prog>=3||S.obsidian>0);$('copper').textContent=S.copper;$('goldore').textContent=S.goldore;$('cobalt').textContent=S.cobalt;$('auWrap').hidden=!(S.goldore>0||S.tools.pick>=3);$('coWrap').hidden=!(S.prog>=1||S.cobalt>0);$('crystal').textContent=S.crystal;$('emerald').textContent=S.emerald;$('diamond').textContent=S.diamond;$('emWrap').hidden=!(S.prog>=2||S.emerald>0);$('diWrap').hidden=!(S.prog>=3||S.diamond>0);$('vil').textContent=S.vill.length;
   $('lvl').textContent='Lv '+p.lvl;
   $('xpFill').style.width=(p.xp/Math.round(8*Math.pow(p.lvl,1.5))*100)+'%';
   $('hpFill').style.width=(p.hp/pMax()*100)+'%';
@@ -3289,7 +3415,7 @@ function decTo(str,a,map){if(!str)return;for(let i=0;i<str.length;i++){const j=m
 function save(){
   try{
     const bl=[];forB((b,i)=>bl.push([i,b.t,Math.round(b.hp),b.max,+(b.g||0).toFixed(2),b.seeded?1:0,b.lv||1]));
-    const o={v:9,nests:S.nests,incub:S.incub,relicMiss:S.relicMiss,mithril:S.mithril,vault:S.vault,haz:enc(S.haz||new Uint8Array(W*H)),towerBest:S.towerBest,tbuy:S.tbuy,pets:S.pets,petOn:S.petOn,obsidian:S.obsidian,copper:S.copper,goldore:S.goldore,cobalt:S.cobalt,gold:S.gold,enh:S.enh,day:S.day,wood:S.wood,stone:S.stone,iron:S.iron,crystal:S.crystal,emerald:S.emerald,diamond:S.diamond,core:S.core,coreLv:S.coreLv,mods:S.mods,kills:S.kills,
+    const o={v:9,sunOff:S.sunOff,chiefSun:S.chiefSun,stash:S.stash,warm:S.warm,story:S.story,nests:S.nests,incub:S.incub,relicMiss:S.relicMiss,mithril:S.mithril,vault:S.vault,haz:enc(S.haz||new Uint8Array(W*H)),towerBest:S.towerBest,tbuy:S.tbuy,pets:S.pets,petOn:S.petOn,obsidian:S.obsidian,copper:S.copper,goldore:S.goldore,cobalt:S.cobalt,gold:S.gold,enh:S.enh,day:S.day,wood:S.wood,stone:S.stone,iron:S.iron,crystal:S.crystal,emerald:S.emerald,diamond:S.diamond,core:S.core,coreLv:S.coreLv,mods:S.mods,kills:S.kills,
       prog:S.prog,lairs:S.lairs,abil:S.abil,fragHint:S.fragHint,hiddenDone:S.hiddenDone,
       p:{hp:S.p.hp,max:S.p.max,dmg:S.p.dmg,spd:S.p.spd,lvl:S.p.lvl,xp:S.p.xp},
       vill:S.vill.length,lost:S.lost,items:S.items,buffs:S.buffs,tools:S.tools,eq:S.eq,inv:S.inv,digs:S.digs,chests:S.chests,
@@ -3316,7 +3442,7 @@ function loadGame(o){
   S.prog=v2?(o.prog||0):(o.day>5?1:0);S.fragHint=o.fragHint||0;S.abil=o.abil||{};S.hiddenDone=o.hiddenDone||0;
   S.towerBest=o.towerBest||0;S.tbuy=o.tbuy||{};S.relicMiss=o.relicMiss||{};
   S.pets=(o.pets||[]).filter(x=>PETS[x.t]);S.petOn=o.petOn==null?-1:o.petOn;if(S.petOn>=S.pets.length)S.petOn=-1;
-  S.nests=o.nests||null;S.incub=o.incub||{};
+  S.sunOff=o.sunOff||0;S.chiefSun=o.chiefSun||0;S.nests=o.nests||null;S.incub=o.incub||{};S.stash=o.stash||{};
   if(!o.pets){const g=t=>{if(!S.pets.some(x=>x.t===t))S.pets.push({t,lv:1,xp:0});};if(S.prog>=1)g('wolf');if(S.prog>=2)g('toad');if(S.prog>=3)g('sprite');if(S.prog>=4)g('imp');if(S.pets.length)S.petOn=0;}
   Object.assign(S.p,o.p);
   for(const [i,t,hp,max,g,sd,lv] of o.bld){if(!B[t])continue;const j=map?map(i):i;if(j<0)continue;S.bld[j]={t,hp,max,cd:0,hurt:0,pt:0,idle:false,g:g||0,seeded:!!sd,lv:lv||1};}
@@ -3336,7 +3462,8 @@ function loadGame(o){
   for(const L of S.lairs)if(L.state==='awake')L.state='sleep';
   if(!S.lairs.some(l=>l.id==='flame'))addFlameLair(S);
   if(S.prog>=3){for(let i=0;i<W*H;i++)if(S.res[i]===14){S.res[i]=0;S.rhp[i]=0;}}
-  if(S.prog>=4){for(let i=0;i<W*H;i++)if(S.res[i]===16){S.res[i]=0;S.rhp[i]=0;}}
+  for(let i=0;i<W*H;i++)if(S.res[i]===16){S.res[i]=0;S.rhp[i]=0;}
+  S.warm=o.warm||(S.prog>=4?1:0);S.story=o.story||(v2?STORY_ORDER.filter((id,k)=>k===0||(id==='abyss'?S.hiddenDone:S.prog>=k)):[]);
   if(!S.lairs.some(l=>l.id==='frost'))addFrostLair(S);if(!S.vault)addVault(S);if(!S.haz)addHazards(S);
   if(!S.nests)addNests(S);
   for(let i=0;i<W*H;i++)if(S.haz[i]&&(S.trail[i]||S.bld[i]||S.res[i]||S.water[i]||S.town[i]||S.road[i]))S.haz[i]=0;
@@ -3349,7 +3476,7 @@ function loadGame(o){
 function newGame(){
   S=newState();genMap(S);makeGrass();flowDirty=true;
   begin();S.phase='dawn';
-  showCards('첫날 아침','숲 한가운데 화톳불을 피웠다. 축복 하나를 고르고 시작하세요.');
+  showStory('prologue',()=>beginDay());
 }
 function begin(){$('ovMap').hidden=true;mapT=0;setTimeout(renderAbil,0);$('ovTrade').hidden=true;$('ovShop').hidden=true;$('ovBag').hidden=true;$('ovStart').hidden=true;$('ovOver').hidden=true;$('ovPause').hidden=true;running=true;paused=false;selectTool(null);resize();}
 function gameOver(){
@@ -3372,9 +3499,9 @@ const HELP=[
   {t:'희귀 장비',items:[['세트 장비','숲지기·철갑 수호자·대마법사. 2개, 4개 모으면 세트 효과'],['고유 장비','화염검, 폭풍 활, 서리 지팡이 등. 무기 스킬은 R키, 소환사의 지팡이는 정령 늑대 소환'],['드랍','몬스터가 낮은 확률로 떨어뜨리고, 보스는 반드시 줘요']]},
   {t:'마을',items:[['길','몬스터는 동서남북 네 갈래 길로만 와요. 길을 막으면 막은 건물을 부숴요'],['성벽','마을을 두른 성벽. 수리와 업그레이드가 돼요'],['상점','잡화점·대장장이·보석상·여관 앞에서 F키를 누르거나 NPC를 클릭하면 열려요'],['대장장이','장착한 장비를 +10까지 강화해요. 높을수록 실패가 잦아요'],['여관','휴식, 화톳불 수리, 일꾼 고용'],['금화','몬스터를 잡으면 바로 들어와요']]},
   {t:'채집과 도구',items:[['채집','나무·바위·덤불 옆에 멈춰 서면 자동으로 캐요'],['도구','가방의 제작 탭에서 도끼·곡괭이·삽·낚싯대를 만들고 단계를 올려요'],['광석','나무 → 구리 → 철 → 금 → 코발트 → 에메랄드 → 다이아. 곡괭이를 한 단계씩 올려야 다음 광석을 캘 수 있어요'],['흙더미','X 표시는 삽으로 파면 보물이 나와요']]},
-  {t:'건설과 방어',items:[['짓기','B키나 건설 버튼으로 건설 창을 열고, 분류(벽·포탑·생산·건설·관리)에서 골라 땅을 탭. 숫자키 1~9로 선택, Q/E로 분류 넘기기'],['관리','수리, 업그레이드, 잘못 지은 건물 철거(재료 절반 환급)'],['도전의 탑','마을의 탑 NPC에게 F키. 층마다 적을 모두 잡으면 증표·금화·재료·장비. 증표로 포탑·벽·화톳불 영구 강화'],['관리 비용','업그레이드·수리·철거를 고르고 건물을 누르면 드는 재료가 먼저 보이고, 한 번 더 누르면 실행'],['펫','지역마다 둥지에 알이 생기고 몬스터·보스도 알을 떨어뜨려요. 마을에 부화기를 지어 알을 넣으면 2일 뒤 태어나요. 가방 → 펫 탭에서 하나를 데리고 다니면 함께 싸우며 레벨업'],['방어','벽, 문, 탑, 가시 함정으로 화톳불을 지켜요. 화톳불이 꺼지면 끝'],['생산','벌목소·채석장·광산은 근처 자원에서 자동으로 모아요'],['자동화','드릴은 바로 옆 광석을 계속 캐요(구리→황금→다이아 드릴). 보관함은 주변에 떨어진 아이템을 모으고, 자동 수리기는 주변 건물을 고쳐요'],['업그레이드','업그레이드 도구로 건물을 누르면 Lv5까지 강해져요 (구리→금→코발트→에메랄드·다이아)']]},
+  {t:'건설과 방어',items:[['짓기','B키나 건설 버튼으로 건설 창을 열고, 분류(벽·포탑·생산·건설·관리)에서 골라 땅을 탭. 숫자키 1~9로 선택, Q/E로 분류 넘기기'],['관리','수리, 업그레이드, 잘못 지은 건물 철거(재료 절반 환급)'],['도전의 탑','마을의 탑 NPC에게 F키. 층마다 적을 모두 잡으면 증표·금화·재료·장비. 증표로 포탑·벽·화톳불 영구 강화'],['관리 비용','업그레이드·수리·철거를 고르고 건물을 누르면 드는 재료가 먼저 보이고, 한 번 더 누르면 실행'],['태양의 제단','마을 제단에 태양석(보스 첫 처치·탑 15층마다)을 바치면 낮이 영구히 15초씩 길어져요'],['이야기','괴물들이 왜 깨어났는지 보스를 쓰러뜨리며 알아가요. 가방 → 일지 탭에서 다시 볼 수 있어요'],['서리 설원','따뜻한 심장(화염 군주 처치) 없이는 점점 얼어붙어요. 모닥불·횃불 곁에서는 몸이 녹아요'],['펫','지역마다 둥지에 알이 생기고 몬스터·보스도 알을 떨어뜨려요. 마을에 부화기를 지어 알을 넣으면 2일 뒤 태어나요. 가방 → 펫 탭에서 하나를 데리고 다니면 함께 싸우며 레벨업'],['방어','벽, 문, 탑, 가시 함정으로 화톳불을 지켜요. 화톳불이 꺼지면 끝'],['생산','벌목소·채석장·광산은 근처 자원에서 자동으로 모아요'],['자동화','드릴은 바로 옆 광석을 계속 캐요(구리→황금→다이아 드릴). 보관함은 주변에 떨어진 아이템을 모으고, 자동 수리기는 주변 건물을 고쳐요'],['업그레이드','업그레이드 도구로 건물을 누르면 Lv5까지 강해져요 (구리→금→코발트→에메랄드·다이아)']]},
   {t:'마을과 생활',items:[['주민','숲 속 길 잃은 주민을 구하거나 오두막을 지으면 대신 일해요'],['농사','밭 위를 지나가면 씨앗을 심고, 다 자라면 거둬요'],['낚시','낚싯대를 들고 물가에 서서, 찌가 물리면 F키·스페이스 또는 낚아채기'],['요리','불 근처에서 가방의 요리 탭을 열어요. 음식마다 효과가 달라요']]},
-  {t:'매일의 사건',items:[['축복','아침마다 카드 한 장을 골라요. 빨간 카드는 양날의 검'],['사건','상인, 유성우, 풍년, 보물 지도, 도적 떼, 핏빛 달'],['보물상자','숲 곳곳에서 반짝여요. 가끔은 미믹이에요'],['장비','적과 상자에서 장비가 나와요. 가방의 장비 탭에서 장착']]},
+  {t:'매일의 사건',items:[['사건','상인, 유성우, 풍년, 보물 지도, 도적 떼, 핏빛 달'],['보물상자','숲 곳곳에서 반짝여요. 가끔은 미믹이에요'],['장비','적과 상자에서 장비가 나와요. 가방의 장비 탭에서 장착']]},
   {t:'지역과 보스',items:[['고요한 숲','처음 시작하는 곳. 5일째마다 고블린 족장이 쳐들어와요'],['독안개 늪','족장을 쓰러뜨리면 열려요. 둥지의 독늪 히드라를 찾아가세요'],['수정 협곡','히드라를 쓰러뜨리면 열려요. 수정 골렘이 지키고 있어요'],['숨겨진 보스','지도 조각 세 개를 모으면 길이 보여요'],['능력','보스는 일정 확률로 보스 유물을 떨어뜨려요. 유물 칸에 낀 유물의 능력을 Z키로 써요. 보스는 3일 뒤 다시 깨어나요']]},
 ];
 let helpPage=0,helpFrom=null;
@@ -3403,6 +3530,9 @@ $('btnPause').addEventListener('click',togglePause);
 $('btnResume').addEventListener('click',togglePause);
 $('btnQuit').addEventListener('click',showStart);
 $('btnBag').addEventListener('click',openBag);
+$('storyNext').addEventListener('click',storyNext);
+$('storyPrev').addEventListener('click',()=>{if(storyPg>0){storyPg--;renderStory();}});
+$('storySkip').addEventListener('click',closeStory);
 $('floorNext').addEventListener('click',towerNext);
 $('floorLeave').addEventListener('click',()=>leaveTower());
 $('btnBuild').addEventListener('click',()=>setBuild(!buildOpen));
