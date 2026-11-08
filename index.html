@@ -177,6 +177,9 @@ body.bopen .bossbar{bottom:calc(196px + env(safe-area-inset-bottom,0px))}
 .acts{display:flex;gap:8px;flex-wrap:wrap}
 .act.ghost{background:transparent;border:1px solid rgba(255,140,120,.6);color:#ffb0a0}
 .cmp{margin:4px 0 8px;font-size:13px}
+#bkCode{width:100%;font:12px/1.4 ui-monospace,monospace;color:var(--ink);background:rgba(0,0,0,.35);border:1px solid rgba(255,210,122,.4);border-radius:8px;padding:8px;resize:vertical;word-break:break-all}
+.bkmsg{min-height:1.2em;color:#ffd27a;font-size:13px}
+#btnBkStart{margin-top:8px}
 .pnm{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:6px 0 10px;font-size:14px;color:var(--dim)}
 .pnm input{font:inherit;color:var(--ink);background:rgba(0,0,0,.3);border:1px solid rgba(255,210,122,.45);border-radius:8px;padding:8px 10px;width:10em;max-width:100%}
 .eqc .tag{color:var(--leaf)}.eqc .tag.setc{color:#5fd07a}.eqc .tag.uniq{color:#ffa047}.eqc .tag.rare{color:#c9a6ff}
@@ -390,6 +393,7 @@ button.slot:disabled{cursor:default}
         <button class="big" id="btnHelp">게임 방법</button>
         <button class="big" id="btnNet">친구와 함께하기</button>
       </div>
+      <button type="button" class="linkbtn" id="btnBkStart">백업 코드로 불러오기</button>
       <nav class="legal" aria-label="법적 고지">
         <a href="https://tanggulstudio.github.io/Camp-Survivor/privacy.html" target="_blank" rel="noopener">개인정보처리방침</a>
         <a href="https://tanggulstudio.github.io/Camp-Survivor/terms.html" target="_blank" rel="noopener">이용약관</a>
@@ -530,13 +534,22 @@ button.slot:disabled{cursor:default}
     </div>
   </div>
 
+  <div class="overlay" id="ovBk" hidden role="dialog" aria-labelledby="bkTitle">
+    <div class="panel">
+      <h2 id="bkTitle">저장 백업</h2>
+      <p>게임은 아침마다, 그리고 낮 동안 1분마다 이 브라우저에 자동 저장돼요. 다른 기기로 옮기거나 혹시 모를 일에 대비하고 싶다면 아래 코드를 복사해 메모장 같은 곳에 보관해 두세요. 나중에 붙여 넣으면 그대로 이어서 할 수 있어요.</p>
+      <textarea id="bkCode" rows="5" spellcheck="false" aria-label="백업 코드"></textarea>
+      <div class="row"><button class="big pri" id="bkCopy">코드 복사</button><button class="big" id="bkLoad">붙여 넣은 코드로 불러오기</button><button class="big" id="bkClose">닫기</button></div>
+      <p class="bkmsg" id="bkMsg" role="status"></p>
+    </div>
+  </div>
   <div class="overlay" id="ovPause" hidden>
     <div class="panel">
       <h2>잠시 쉬는 중</h2>
       <p>진행 상황은 매일 아침 자동으로 저장돼요. <span id="pauseDiff"></span></p>
       <div class="pnm row"><label>내 이름 <input id="pnameP" maxlength="8" autocomplete="off"></label><button class="big" id="pnameSave">이름 바꾸기</button></div>
       <div class="audio" role="group" aria-label="소리 설정"><label>배경음악 <input type="range" id="volMus" min="0" max="100"></label><label>효과음 <input type="range" id="volFx" min="0" max="100"></label><button type="button" class="chip" id="btnMute">소리 끄기</button></div>
-      <div class="row"><button class="big pri" id="btnResume">계속하기</button><button class="big" id="btnHelp2">게임 방법</button><button class="big" id="btnNet2">친구와 함께하기</button><button class="big" id="btnQuit">처음 화면</button></div>
+      <div class="row"><button class="big pri" id="btnResume">계속하기</button><button class="big" id="btnHelp2">게임 방법</button><button class="big" id="btnNet2">친구와 함께하기</button><button class="big" id="btnBk">저장 백업</button><button class="big" id="btnQuit">처음 화면</button></div>
     </div>
   </div>
 </div>
@@ -649,8 +662,8 @@ const EVENTS=[
   {id:'raid',n:'도적 떼',d:'한낮에 고블린 도적 떼가 마을을 덮친다',min:3,bad:1},
   {id:'blood',n:'핏빛 달',d:'오늘 밤 적이 50% 더 많다. 대신 경험치 2배, 마력석이 자주 떨어진다',min:3,bad:1},
 ];
-const ITEM_NAME={fish:'붕어',trout:'송어',koi:'황금 잉어',berry:'베리',meat:'고기',leather:'가죽',tusk:'엄니',worm:'지렁이',seed:'씨앗',wheat:'밀',mapfrag:'지도 조각',ess:'장비 정수',slime:'두꺼비 점액',dust:'수정 가루',horn:'임프 뿔',fur:'설인 털',sum_hydra:'늪의 미끼',sum_golem:'공명석',sum_flame:'불씨 심지',sum_frost:'서리 종',sunstone:'태양석',token:'탑 증표',keyfrag:'고대 열쇠 조각',akey:'고대 열쇠'};
-const ITEM_COL={leather:'#d9a77a',meat:'#ff9a8a',tusk:'#f3ead2',worm:'#f0a8bc',seed:'#bfe3a8',wheat:'#f0d27a',mapfrag:'#e8d8a8',berry:'#ff8a96',fish:'#9fd3ff',trout:'#9fd3ff',koi:'#ffd23a'};
+const ITEM_NAME={carrot:'당근',potato:'감자',strawberry:'딸기',cherry:'체리',apple:'사과',pumpkin:'호박',melon:'수박',eel:'장어',salmon:'연어',catfish:'메기',sd_carrot:'당근 씨앗',sd_potato:'씨감자',sd_straw:'딸기 모종',sd_cherry:'체리 묘목',sd_apple:'사과 묘목',sd_pumpkin:'호박 씨앗',sd_melon:'수박 씨앗',fish:'붕어',trout:'송어',koi:'황금 잉어',berry:'베리',meat:'고기',leather:'가죽',tusk:'엄니',worm:'지렁이',seed:'씨앗',wheat:'밀',mapfrag:'지도 조각',ess:'장비 정수',slime:'두꺼비 점액',dust:'수정 가루',horn:'임프 뿔',fur:'설인 털',sum_hydra:'늪의 미끼',sum_golem:'공명석',sum_flame:'불씨 심지',sum_frost:'서리 종',sunstone:'태양석',token:'탑 증표',keyfrag:'고대 열쇠 조각',akey:'고대 열쇠'};
+const ITEM_COL={carrot:'#ff8a3a',potato:'#c8a070',strawberry:'#ff4a6a',cherry:'#e0405a',apple:'#ff6a4a',pumpkin:'#f08a20',melon:'#6fd07a',eel:'#9fd3ff',salmon:'#ff9a7a',catfish:'#9fd3ff',leather:'#d9a77a',meat:'#ff9a8a',tusk:'#f3ead2',worm:'#f0a8bc',seed:'#bfe3a8',wheat:'#f0d27a',mapfrag:'#e8d8a8',berry:'#ff8a96',fish:'#9fd3ff',trout:'#9fd3ff',koi:'#ffd23a'};
 const ITEMS={
   club:{n:'나무 몽둥이',slot:'weapon',atk:4,hp:5,d:'근접 · 공격력 +4 · 최대 체력 +5',recipe:{w:8}},
   spear:{n:'돌 창',slot:'weapon',atk:9,hp:10,d:'근접 · 공격력 +9 · 최대 체력 +10'},
@@ -859,7 +872,21 @@ const IC={
   s:'<path d="M4 17l2-8 7-4 7 4 1 8-6 3H9z" fill="#8a9296"/><path d="M7 9.5l6-3.5 4 2-5 3z" fill="#b3bbbe"/>',
   i:'<path d="M3 17l3-7h12l3 7z" fill="#8a9296"/><path d="M6 10h12l1 2.5H5z" fill="#d5dbde"/><circle cx="9" cy="14.5" r="1.3" fill="#c0784a"/><circle cx="15" cy="15" r="1" fill="#c0784a"/>',
   c:'<path d="M12 2l6 8-6 12-6-12z" fill="#b48cf0"/><path d="M12 2l2.5 8H12z" fill="#e6d8ff"/><path d="M6 10h12" stroke="#8a64c8"/>',
-  fish:FISHP('#7fa3b8','#5f8398'),
+  fish:FISHP('#7fa3b8','#5f8398'),eel:'<path d="M3 14c3-4 6 2 9-2s6 2 9-2" stroke="#4a5a3a" stroke-width="3.4" fill="none" stroke-linecap="round"/><circle cx="20" cy="10.5" r=".9" fill="#fff"/>',salmon:FISHP('#e88a6a','#c86a4a'),catfish:FISHP('#6a6a5a','#4a4a3a')+'<path d="M19 12l3-2M19 13l3 1" stroke="#3a3a2a" stroke-width=".8"/>',
+  carrot:'<path d="M12 21L7 9h10z" fill="#ff8a3a" stroke="#14100c" stroke-width=".8"/><path d="M9 12h3M10 15h3" stroke="#c05a1a" stroke-width=".8"/><path d="M12 9V3M12 9l-3-5M12 9l3-5" stroke="#4fa03a" stroke-width="1.8" stroke-linecap="round"/>',
+  potato:'<ellipse cx="12" cy="13" rx="8" ry="6" fill="#c8a070" stroke="#14100c" stroke-width=".8"/><circle cx="9" cy="12" r=".8" fill="#8a6a40"/><circle cx="14" cy="15" r=".8" fill="#8a6a40"/><circle cx="15" cy="11" r=".7" fill="#8a6a40"/>',
+  strawberry:'<path d="M12 21c-5-3-7-7-6-10 2-2 10-2 12 0 1 3-1 7-6 10z" fill="#ff4a6a" stroke="#14100c" stroke-width=".8"/><path d="M7 10l2-3 3 2 3-2 2 3" fill="#4fa03a"/><g fill="#ffe08a"><circle cx="10" cy="13" r=".6"/><circle cx="14" cy="13" r=".6"/><circle cx="12" cy="16" r=".6"/></g>',
+  cherry:'<path d="M8 15C9 9 12 5 16 3M16 15c0-5-1-9 0-12" stroke="#4a7a2a" stroke-width="1.3" fill="none"/><circle cx="8" cy="17" r="4" fill="#c0203a" stroke="#14100c" stroke-width=".8"/><circle cx="16" cy="17" r="4" fill="#c0203a" stroke="#14100c" stroke-width=".8"/><circle cx="7" cy="16" r="1" fill="#ff8a9a"/>',
+  apple:'<circle cx="12" cy="14" r="7.5" fill="#e8402a" stroke="#14100c" stroke-width=".8"/><path d="M12 7V4" stroke="#6a4a2a" stroke-width="1.6"/><path d="M12 6c2-3 5-3 6-2-2 2-4 2-6 2z" fill="#4fa03a"/><circle cx="9" cy="12" r="1.6" fill="#ff9a8a"/>',
+  pumpkin:'<ellipse cx="12" cy="14" rx="9" ry="7" fill="#f08a20" stroke="#14100c" stroke-width=".8"/><path d="M12 7c-2 3-2 11 0 14M12 7c2 3 2 11 0 14M7 9c-2 3-2 8 0 11M17 9c2 3 2 8 0 11" stroke="#c0601a" stroke-width=".9" fill="none"/><path d="M12 8V4" stroke="#4a7a2a" stroke-width="2"/>',
+  melon:'<ellipse cx="12" cy="13" rx="9" ry="8" fill="#3a9a4a" stroke="#14100c" stroke-width=".8"/><path d="M6 8c2 4 2 8 0 12M10 5c1 5 1 11 0 16M14 5c-1 5-1 11 0 16M18 8c-2 4-2 8 0 12" stroke="#1f6a2a" stroke-width="1.4" fill="none"/>',
+  sd_carrot:'<path d="M5 17c4-7 10-7 14 0z" fill="#8a6a40"/><g fill="#ffd27a"><circle cx="9" cy="14" r="1"/><circle cx="12" cy="13" r="1"/><circle cx="15" cy="14" r="1"/></g><path d="M12 12V6M12 8l-3-2M12 8l3-2" stroke="#ff8a3a" stroke-width="1.5"/>',
+  sd_potato:'<ellipse cx="12" cy="14" rx="7" ry="5" fill="#b89060"/><path d="M12 9V4M12 6l-2-2M12 6l2-2" stroke="#4fa03a" stroke-width="1.5"/>',
+  sd_straw:'<path d="M6 20h12l-2-6H8z" fill="#a0603a"/><path d="M12 14V8M12 10l-4-3M12 10l4-3" stroke="#4fa03a" stroke-width="1.8"/><circle cx="15" cy="7" r="1.6" fill="#ff4a6a"/>',
+  sd_cherry:'<path d="M6 20h12l-2-6H8z" fill="#a0603a"/><path d="M12 14V5" stroke="#6a4a2a" stroke-width="1.8"/><circle cx="12" cy="6" r="4" fill="#4fa03a"/><circle cx="10" cy="7" r="1" fill="#c0203a"/>',
+  sd_apple:'<path d="M6 20h12l-2-6H8z" fill="#a0603a"/><path d="M12 14V5" stroke="#6a4a2a" stroke-width="1.8"/><circle cx="12" cy="6" r="4.5" fill="#3f8f3a"/><circle cx="14" cy="7" r="1.2" fill="#e8402a"/>',
+  sd_pumpkin:'<path d="M5 17c4-7 10-7 14 0z" fill="#8a6a40"/><g fill="#f8e0a0"><ellipse cx="9" cy="14" rx="1.4" ry=".9"/><ellipse cx="12" cy="13" rx="1.4" ry=".9"/><ellipse cx="15" cy="14" rx="1.4" ry=".9"/></g><circle cx="17" cy="7" r="2.5" fill="#f08a20"/>',
+  sd_melon:'<path d="M5 17c4-7 10-7 14 0z" fill="#8a6a40"/><g fill="#2a2a2a"><ellipse cx="9" cy="14" rx="1.2" ry=".8"/><ellipse cx="12" cy="13" rx="1.2" ry=".8"/><ellipse cx="15" cy="14" rx="1.2" ry=".8"/></g><circle cx="17" cy="7" r="2.8" fill="#3a9a4a"/>',
   trout:FISHP('#8aa36a','#6a8350')+'<circle cx="10" cy="13" r=".9" fill="#e0573f"/><circle cx="13" cy="11" r=".9" fill="#e0573f"/>',
   koi:FISHP('#f0c64a','#e0903a')+'<path d="M9 9q2 3 0 6" stroke="#fff3b0" fill="none"/>',
   berry:'<circle cx="8.5" cy="14.5" r="4" fill="#d8404c"/><circle cx="15.5" cy="15" r="4" fill="#c03440"/><circle cx="12" cy="9" r="4" fill="#e04a56"/><path d="M12 5.5l3-3.5" stroke="#4a7a3a" stroke-width="2"/><circle cx="11" cy="8" r="1" fill="#ffb0b8"/>',
@@ -928,7 +955,8 @@ const BOOK=(c,g)=>'<path d="M4 5c3-1 6-1 8 1v15c-2-2-5-2-8-1z" fill="'+c+'" stro
   SI('smnhat','소환술사의 모자','head','summoner',{def:4,hp:20},HAT('#2a6a5a'));SI('smnrobe','소환술사의 로브','body','summoner',{def:6,hp:30},ROBE('#2a6a5a'));SI('smnamulet','소환술사의 목걸이','neck','summoner',{atk:7},AMULET('#7fe8e0'));SI('smnring','소환술사의 반지','acc','summoner',{def:3,hp:20},RING('#2a6a5a','#7fe8e0'));
   SI('wndhood','바람 사냥꾼의 두건','head','wind',{def:4,hp:15,spd:.04},HOOD('#5aa0a0'));SI('wndglove','바람 사냥꾼의 장갑','hands','wind',{atk:6,def:2},GLOVE('#5aa0a0'));SI('wndboots','바람 사냥꾼의 장화','feet','wind',{def:3,spd:.07},BOOT('#5aa0a0'));SI('wndamulet','바람 사냥꾼의 목걸이','neck','wind',{atk:7},AMULET('#9fe8e0'));
 })();
-function itemIcon(k){
+const DISH_ALIAS={csoup:'carrot',bakepot:'potato',scake:'strawberry',cpie:'cherry',ajuice:'apple',pporridge:'pumpkin',wmelon:'melon',eelgrill:'eel',salmon:'salmon',catstew:'catfish'};
+function itemIcon(k){if(k.slice(0,2)==='d_'&&DISH_ALIAS[k.slice(2)])return itemIcon(DISH_ALIAS[k.slice(2)]);
   if(IC[k]){const a=iconAura(k);if(!a)return SV(IC[k]);const id='au'+a.col.slice(1)+a.lv;
     let bg='<defs><radialGradient id="'+id+'"><stop offset="0" stop-color="'+a.col+'" stop-opacity="'+(.18+a.lv*.07)+'"/><stop offset="1" stop-color="'+a.col+'" stop-opacity="0"/></radialGradient></defs><circle cx="12" cy="12" r="12" fill="url(#'+id+')"/>';
     if(a.lv>=6)bg+='<g opacity=".55"><path d="M12 0v5M12 19v5M0 12h5M19 12h5M3.5 3.5l3.4 3.4M17.1 17.1l3.4 3.4M20.5 3.5l-3.4 3.4M6.9 17.1l-3.4 3.4" stroke="'+a.col+'" stroke-width="1.1" stroke-linecap="round"><animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="9s" repeatCount="indefinite"/></path></g>';
@@ -947,7 +975,7 @@ const GHOST={weapon:'sword',head:'lhat',body:'larmor',hands:'lglove',feet:'lboot
 const MAT_DESC={w:'건설과 제작의 기본 재료',s:'벽과 탑, 돌 도구에 쓰인다',i:'철 장비와 철 건물의 재료. 철 제품은 대장간 근처에서 만든다',c:'마법탑, 마력검, 광부의 램프 재료',
   fish:'요리 재료 · 생선구이, 매운탕, 일꾼 도시락',trout:'요리 재료 · 송어 스테이크',koi:'희귀한 물고기 · 황금 잉어찜으로 영구히 강해진다',berry:'요리 재료 · 베리 파이, 매운탕, 스튜',
   meat:'요리 재료 · 고기 구이, 든든한 스튜, 고기 파이',leather:'가죽 장비와 고급 낚싯대 재료',tusk:'엄니 목걸이 재료',worm:'미끼 · 낚시할 때 자동으로 써서 좋은 물고기가 더 잘 잡힌다',
-  seed:'밭 위를 지나가면 자동으로 심는다',m:'서리 설원의 미스릴. 최상급 장비와 곡괭이 재료. 흑요석 곡괭이로 캔다',keyfrag:'고대 열쇠 조각. 5개를 모으면 고대 열쇠가 된다. 지역 보스, 도전의 탑 10층 단위 신기록, 설원의 몬스터에게서 얻는다',akey:'숨겨진 고대 보물고의 문을 여는 열쇠. 한 번 들어갈 때 하나를 쓴다',b:'최고 단계 장비와 곡괭이 재료. 화산 지대에서 다이아 곡괭이로 캔다',u:'구리 장비와 첫 업그레이드 재료. 숲에서 흔하게 캔다',a:'황금 장비 재료. 숲 동굴과 늪에서 캔다',o:'코발트 장비와 독안개탑, 업그레이드 재료. 늪에서 캔다',e:'에메랄드 장비와 다이아 장비 재료. 협곡에서 캔다',d:'다이아 장비와 다이아 포탑, 최고 단계 업그레이드 재료. 협곡에서 캔다',mapfrag:'세 조각을 모으면 숨겨진 제단의 위치가 드러난다',wheat:'요리 재료 · 빵, 고기 파이'};
+  seed:'밀 씨앗 · 밭 위에 서 있으면 심어요',carrot:'당근 수프, 메기 찜 재료',potato:'감자 구이, 연어 스테이크 재료',strawberry:'딸기 케이크 재료',cherry:'체리 파이 재료',apple:'사과 주스 재료',pumpkin:'호박죽 재료',melon:'통째로 먹으면 체력이 가득!',eel:'늪에서 잡히는 장어 · 장어 구이',salmon:'설원 물가의 연어 · 연어 스테이크',catfish:'협곡 물가의 메기 · 메기 찜',m:'서리 설원의 미스릴. 최상급 장비와 곡괭이 재료. 흑요석 곡괭이로 캔다',keyfrag:'고대 열쇠 조각. 5개를 모으면 고대 열쇠가 된다. 지역 보스, 도전의 탑 10층 단위 신기록, 설원의 몬스터에게서 얻는다',akey:'숨겨진 고대 보물고의 문을 여는 열쇠. 한 번 들어갈 때 하나를 쓴다',b:'최고 단계 장비와 곡괭이 재료. 화산 지대에서 다이아 곡괭이로 캔다',u:'구리 장비와 첫 업그레이드 재료. 숲에서 흔하게 캔다',a:'황금 장비 재료. 숲 동굴과 늪에서 캔다',o:'코발트 장비와 독안개탑, 업그레이드 재료. 늪에서 캔다',e:'에메랄드 장비와 다이아 장비 재료. 협곡에서 캔다',d:'다이아 장비와 다이아 포탑, 최고 단계 업그레이드 재료. 협곡에서 캔다',mapfrag:'세 조각을 모으면 숨겨진 제단의 위치가 드러난다',wheat:'요리 재료 · 빵, 고기 파이'};
 const IMG={};
 function iconImg(k){
   if(typeof Image==='undefined')return null;
@@ -961,6 +989,13 @@ const TOOLS_EQ={
   shovel:{n:'삽',pw:'굴착력',tiers:[{n:'없음',p:0,col:'#c9b08a'},{n:'나무 삽',col:'#a06a3c',p:1,r:{w:6,s:2},note:'X 표시된 흙더미를 파낼 수 있다'},{n:'철 삽',col:'#d5dbde',p:2,r:{w:3,i:5},forge:1,note:'더 빨리 파고 보상을 두 번 얻는다'},{n:'에메랄드 삽',col:'#4fd08a',p:3,r:{w:3,e:4},forge:1,note:'보상을 세 번 얻는다'}]},
   rod:{n:'낚싯대',pw:'낚시력',tiers:[{n:'없음',p:0},{n:'낚싯대',p:1,r:{w:5},note:'물가에서 낚시할 수 있다'},{n:'고급 낚싯대',p:1.6,r:{w:4,i:4,leather:2},forge:1,note:'입질이 빠르고 여유 시간이 길다'}]},
 };
+const CROPS={wheat:{n:'밀',seed:'seed',g:38,y:[2,3],col:'#f0d27a'},carrot:{n:'당근',seed:'sd_carrot',g:40,y:[2,3],col:'#ff8a3a'},potato:{n:'감자',seed:'sd_potato',g:45,y:[2,4],col:'#c8a070'},
+ strawberry:{n:'딸기',seed:'sd_straw',g:50,y:[3,5],col:'#ff4a6a'},cherry:{n:'체리',seed:'sd_cherry',g:65,y:[3,5],col:'#c0203a'},apple:{n:'사과',seed:'sd_apple',g:75,y:[2,4],col:'#e8402a'},
+ pumpkin:{n:'호박',seed:'sd_pumpkin',g:85,y:[1,2],col:'#f08a20'},melon:{n:'수박',seed:'sd_melon',g:100,y:[1,2],col:'#3a9a4a'}};
+const SEED_OF={};for(const c in CROPS)SEED_OF[CROPS[c].seed]=c;
+function seedKeys(){return Object.keys(SEED_OF)}
+function pickSeed(){const pref=S.seedSel&&SEED_OF[S.seedSel]?S.seedSel:null;if(pref&&(S.items[pref]||0)>0)return pref;for(const k of seedKeys())if((S.items[k]||0)>0)return k;return null}
+function plantField(i,who,want){const b=S.bld[i];if(!b||b.seeded)return false;const k=want&&(S.items[want]||0)>0?want:pickSeed();if(!k)return false;S.items[k]--;b.seeded=true;b.g=0;b.crop=SEED_OF[k];const [x,y]=cCenter(i);if(who==='p'||Math.hypot(x-S.p.x,y-S.p.y)<6*T)float(x,y-10,CROPS[b.crop].n+' 심기','#bfe3a8');return true}
 const RECIPES=[
   {id:'grill',n:'생선구이',need:{fish:1},d:'체력 40 회복'},
   {id:'pie',n:'베리 파이',need:{berry:3},d:'다음 아침까지 체력이 계속 회복된다'},
@@ -973,6 +1008,16 @@ const RECIPES=[
   {id:'feast',n:'고기 파이',need:{meat:1,wheat:2},d:'체력 40 회복, 다음 아침까지 공격력 +5 · 방어 +3'},
   {id:'koi',n:'황금 잉어찜',need:{koi:1},d:'영구히 최대 체력 +15, 공격력 +3'},
   {id:'potion',n:'체력 물약',need:{},d:'체력 60 회복',shop:1},
+  {id:'csoup',n:'당근 수프',need:{carrot:2},d:'체력 45 회복, 다음 아침까지 채집 속도 +30%',hp:45,buff:'bread'},
+  {id:'bakepot',n:'감자 구이',need:{potato:2},d:'체력 55 회복',hp:55},
+  {id:'scake',n:'딸기 케이크',need:{strawberry:3,wheat:1},d:'체력 30 회복, 다음 아침까지 체력이 계속 차올라요',hp:30,buff:'pie'},
+  {id:'cpie',n:'체리 파이',need:{cherry:3,wheat:2},d:'체력 40 회복, 다음 아침까지 공격력 +5 · 방어 +3',hp:40,buff:'feast'},
+  {id:'ajuice',n:'사과 주스',need:{apple:2},d:'체력 50 회복, 다음 아침까지 이동 속도 +25%',hp:50,buff:'steak'},
+  {id:'pporridge',n:'호박죽',need:{pumpkin:1,wheat:1},d:'체력 60 회복, 다음 아침까지 방어 +5',hp:60,buff:'hearty'},
+  {id:'wmelon',n:'시원한 수박',need:{melon:1},d:'체력을 모두 채우고, 다음 아침까지 공격력 +8',hp:9999,buff:'stew'},
+  {id:'eelgrill',n:'장어 구이',need:{eel:1},d:'체력 50 회복, 다음 아침까지 공격력 +8',hp:50,buff:'stew'},
+  {id:'salmon',n:'연어 스테이크',need:{salmon:1,potato:1},d:'체력 70 회복, 다음 아침까지 방어 +5',hp:70,buff:'hearty'},
+  {id:'catstew',n:'메기 찜',need:{catfish:1,carrot:1},d:'체력 65 회복, 다음 아침까지 채집 속도 +30%',hp:65,buff:'bread'},
   {id:'bomb',n:'폭탄',need:{s:6,w:3},d:'X키(또는 폭탄 버튼)로 던져요. 주변 적에게 큰 피해를 주고 나무·바위·광석도 한 번에 부숴요',throw:1},
 ];
 const BUFF_NAME={bread:'빵',feast:'고기 파이',hearty:'든든한 스튜',pie:'베리 파이',stew:'매운탕',steak:'스테이크',lunch:'도시락'};
@@ -1416,11 +1461,11 @@ function collectPick(k){
 function waterNear(i,r){const x0=i%W,y0=(i/W)|0;for(let y=y0-r;y<=y0+r;y++)for(let x=x0-r;x<=x0+r;x++){if(x<0||y<0||x>=W||y>=H)continue;if(S.water[idx(x,y)]===1)return true;}return false}
 function harvestField(i,who){
   const b=S.bld[i],[x,y]=cCenter(i);if(!b)return;
-  const w=2+Math.floor(Math.random()*2),sd=1+(Math.random()<.4?1:0);
-  S.items.wheat+=w;S.items.seed+=sd;b.g=0;b.seeded=false;
-  if(who==='p')float(x,y-12,'+'+w+' 밀','#f0d27a');
-  burst(x,y,'#e8c25a',8);
-  if(S.items.seed>0){S.items.seed--;b.seeded=true;}
+  const C=CROPS[b.crop||'wheat']||CROPS.wheat,ck=b.crop||'wheat',w=C.y[0]+Math.floor(Math.random()*(C.y[1]-C.y[0]+1))+(who&&who.tr==='farmer'?1:0),sd=Math.random()<.85?1:0,sd2=Math.random()<.3?1:0;
+  S.items[ck]=(S.items[ck]||0)+w;S.items[C.seed]=(S.items[C.seed]||0)+sd+sd2;b.g=0;b.seeded=false;S.stats=S.stats||{};S.stats.harvest=(S.stats.harvest||0)+1;
+  if(who==='p'||Math.hypot(x-S.p.x,y-S.p.y)<6*T)float(x,y-12,'+'+w+' '+C.n,C.col);
+  burst(x,y,C.col,8);
+  plantField(i,who,C.seed);
 }
 function farmHere(dt){
   const p=S.p;p.farmCd=(p.farmCd||0)-dt;if(p.farmCd>0)return;
@@ -1429,9 +1474,9 @@ function farmHere(dt){
     const x=cx+dx,y=cy+dy;if(x<0||y<0||x>=W||y>=H)continue;const i=idx(x,y),b=S.bld[i];
     if(!b||b.t!=='field')continue;const [ox,oy]=cCenter(i);if(Math.hypot(ox-p.x,oy-p.y)>T*1.15)continue;
     if(b.g>=1){harvestField(i,'p');p.farmCd=.25;return;}
-    if(!b.seeded){if(S.items.seed>0){S.items.seed--;b.seeded=true;b.g=0;float(ox,oy-10,'심기','#bfe3a8');p.farmCd=.25;return;}empty=true;}
+    if(!b.seeded){if(plantField(i,'p')){p.farmCd=.25;return;}empty=true;}
   }
-  if(empty&&S.oreHintT<=0){S.oreHintT=8;toast('씨앗이 없네. 베리 덤불이나 흙더미를 뒤져 보자',2600);}
+  if(empty&&S.oreHintT<=0){S.oreHintT=8;toast('씨앗이 없네. 잡화점에서 사거나 베리 덤불·흙더미를 뒤져 보자',2600);}
 }
 function burrowTarget(e){
   let best=CI,bd=1e9;
@@ -1531,7 +1576,8 @@ function hook(){
   const p=S.p;if(!(p.bite>0))return;
   sfx('splash');p.bite=0;const bait=S.items.worm>0;if(bait)S.items.worm--;const r=Math.random()/(bait?2:1);let k='fish';
   if(r<.05+Math.min(.05,S.day*.005)+skBonus('fish')*.3)k='koi';else if(r<.33+skBonus('fish'))k='trout';
-  S.items[k]++;S.stats=S.stats||{};S.stats.fish=(S.stats.fish||0)+1;skXp('fish',k==='koi'?20:k==='trout'?9:6);if(Math.random()<dblChance('fish')){S.items[k]++;S.stats.fish++;float(p.x,p.y-44,'두 마리!','#9fd3ff');}
+  if(k!=='koi'&&p.fishW>=0&&Math.random()<.4){const rg=regionOfCell(p.fishW);if(rg===1)k='eel';else if(rg===4)k='salmon';else if(rg===2)k='catfish';}
+  S.items[k]=(S.items[k]||0);S.items[k]++;S.stats=S.stats||{};S.stats.fish=(S.stats.fish||0)+1;skXp('fish',k==='koi'?20:k==='fish'?6:9);if(Math.random()<dblChance('fish')){S.items[k]++;S.stats.fish++;float(p.x,p.y-44,'두 마리!','#9fd3ff');}
   float(p.x,p.y-28,ITEM_NAME[k]+'!',k==='koi'?'#ffd23a':'#9fd3ff');
   if(p.fishW>=0){const [ox,oy]=cCenter(p.fishW);burst(ox,oy,'#bfe6ff',8);}
   if(k==='koi')toast('우와, 황금 잉어다! 요리해 먹으면 몸이 영영 튼튼해질 거야',3000);
@@ -1639,7 +1685,9 @@ function renderBag(){
     const owned=RECIPES.filter(r=>it['d_'+r.id]>0);
     if(!owned.length)h+='<p>아직 만든 음식이 없어요.</p>';
     for(const r of owned)h+=row('eat:'+r.id,false,r.n+' ×'+it['d_'+r.id],r.d,r.throw?'던지기':'먹기',itemIcon('d_'+r.id));
-    h+='</div></div><div class="sec"><h3>재료</h3><div class="inv">'+['fish','trout','koi','berry','meat','worm'].map(k=>'<span>'+ITEM_NAME[k]+' <b>'+(it[k]||0)+'</b></span>').join('')+'</div></div>';
+    h+='</div></div><div class="sec"><h3>재료</h3><div class="inv">'+['fish','trout','koi','eel','salmon','catfish','berry','meat','worm','wheat','carrot','potato','strawberry','cherry','apple','pumpkin','melon'].filter(k=>k==='fish'||k==='berry'||(it[k]||0)>0).map(k=>'<span>'+ITEM_NAME[k]+' <b>'+(it[k]||0)+'</b></span>').join('')+'</div></div>';
+    {const own=seedKeys().filter(k=>(it[k]||0)>0);h+='<div class="sec"><h3>밭 · 심을 씨앗</h3><p>밭 위에 서 있으면 골라 둔 씨앗을 심어요. 주민들도 같은 씨앗으로 밭을 가꿔요. 씨앗은 잡화점에서 살 수 있어요.</p><div class="trades">';
+      if(!own.length)h+='<p>지금은 씨앗이 없어요.</p>';for(const k of own){const c=CROPS[SEED_OF[k]];h+=row('seedsel:'+k,false,ITEM_NAME[k]+' ×'+it[k]+(S.seedSel===k||(!S.seedSel&&k==='seed')?' · 심는 중':''),c.n+' · 자라는 데 '+c.g+'초쯤 (물가 근처면 더 빨라요)',S.seedSel===k?'선택됨':'이걸로 심기',itemIcon(k));}h+='</div></div>';}
   }
   $('bagBody').innerHTML=h;
 }
@@ -1707,12 +1755,14 @@ function bagAct(act,arg){setTimeout(renderAbil,0);
   }else if(act==='cook'){
     const r=RECIPES.find(x=>x.id===arg);if(!r||!nearFire()||!haveItems(r.need))return;
     if(Math.random()>=dblChance('cook'))for(const k in r.need)addAmt(k,-r.need[k]);else toast('손이 익었는지 재료를 아꼈어!',1400);S.items['d_'+r.id]=(S.items['d_'+r.id]||0)+1;skXp('cook',10);if(Math.random()<skBonus('cook'))S.items['d_'+r.id]++;
+  }else if(act==='seedsel'){S.seedSel=arg;toast(ITEM_NAME[arg]+'(으)로 심을게요',1400);
   }else if(act==='eat'){const r=RECIPES.find(x=>x.id===arg);if(r)eat(r);return;}
   renderBag();
 }
 function eat(r){
   const it=S.items,p=S.p;if(r.id==='bomb'){closeBag&&!$('ovBag').hidden&&closeBag();throwBomb();return;}if(!(it['d_'+r.id]>0))return;it['d_'+r.id]--;
-  if(r.id==='grill')p.hp=Math.min(pMax(),p.hp+40);
+  if(r.hp!=null){p.hp=Math.min(pMax(),p.hp+r.hp);if(r.buff)S.buffs[r.buff]=1;}
+  else if(r.id==='grill')p.hp=Math.min(pMax(),p.hp+40);
   else if(r.id==='potion')p.hp=Math.min(pMax(),p.hp+60);
   else if(r.id==='meat')p.hp=Math.min(pMax(),p.hp+50);
   else if(r.id==='bread'){p.hp=Math.min(pMax(),p.hp+35);S.buffs.bread=1;}
@@ -1731,8 +1781,8 @@ const SHOPS={
   incub:{t:'부화기',line:'"따뜻하게 품으면 알이 깨어난다."'},
   tower:{t:'도전의 탑',line:'"끝없이 이어진 층계다. 오를수록 적은 강해지고, 보상도 커진다."'},
   shop:{t:'잡화점',line:'"필요한 건 웬만큼 다 있다네. 남는 건 사주기도 하지."',
-    buy:[{k:'w',n:10,g:5},{k:'s',n:10,g:8},{k:'seed',n:5,g:6},{k:'worm',n:3,g:6},{k:'fish',n:3,g:6},{k:'leather',n:2,g:14},{k:'d_potion',n:1,g:15}],
-    sell:[{k:'w',n:10,g:3},{k:'s',n:10,g:4},{k:'berry',n:5,g:3},{k:'wheat',n:5,g:6},{k:'meat',n:2,g:5},{k:'fish',n:3,g:4},{k:'tusk',n:1,g:5}]},
+    buy:[{k:'w',n:10,g:5},{k:'s',n:10,g:8},{k:'seed',n:5,g:6},{k:'sd_carrot',n:3,g:8},{k:'sd_potato',n:3,g:8},{k:'sd_straw',n:3,g:10},{k:'sd_cherry',n:2,g:16,prog:1},{k:'sd_apple',n:2,g:18,prog:1},{k:'sd_pumpkin',n:2,g:20,prog:2},{k:'sd_melon',n:1,g:22,prog:2},{k:'worm',n:3,g:6},{k:'fish',n:3,g:6},{k:'leather',n:2,g:14},{k:'d_potion',n:1,g:15}],
+    sell:[{k:'w',n:10,g:3},{k:'s',n:10,g:4},{k:'berry',n:5,g:3},{k:'wheat',n:5,g:6},{k:'carrot',n:5,g:7},{k:'potato',n:5,g:7},{k:'strawberry',n:5,g:9},{k:'cherry',n:5,g:13},{k:'apple',n:3,g:11},{k:'pumpkin',n:1,g:9},{k:'melon',n:1,g:15},{k:'eel',n:1,g:7},{k:'salmon',n:1,g:8},{k:'catfish',n:1,g:7},{k:'meat',n:2,g:5},{k:'fish',n:3,g:4},{k:'tusk',n:1,g:5}]},
   gem:{t:'보석상',line:'"반짝이는 건 뭐든 다룬다오. 대신 값은 비싸지."',
     buy:[{k:'u',n:3,g:6},{k:'i',n:1,g:6},{k:'a',n:1,g:14},{k:'c',n:1,g:20},{k:'o',n:1,g:35,prog:1},{k:'e',n:1,g:50,prog:2},{k:'d',n:1,g:90,prog:3},{k:'b',n:1,g:160,prog:4},{k:'m',n:1,g:260,prog:5}],
     sell:[{k:'u',n:5,g:3},{k:'i',n:1,g:2},{k:'a',n:1,g:5},{k:'c',n:1,g:8},{k:'o',n:1,g:14},{k:'e',n:1,g:20},{k:'d',n:1,g:36},{k:'b',n:1,g:60},{k:'m',n:1,g:100}]},
@@ -1845,6 +1895,7 @@ function shopAct(act,arg){
   renderShop();
 }
 function closeTopOverlay(){
+  if(!$('ovBk').hidden){closeBk();return true;}
   if(!$('ovNet').hidden){closeNet();return true;}
   if(!$('ovDiff').hidden){$('ovDiff').hidden=true;$('ovStart').hidden=false;return true;}
   if(!$('ovStory').hidden){closeStory();return true;}
@@ -1876,6 +1927,8 @@ const VTRAIT={diligent:{n:'부지런함',d:'채집이 30% 빨라요',l:['오늘�
  brave:{n:'용감함',d:'싸울 때 공격력이 1.5배예요',l:['괴물이 오면 저한테 맡겨요!','더 좋은 무기 없을까요?','밤이 좀 기다려지는데요?']},
  timid:{n:'겁 많음',d:'밤엔 집에 숨지만, 낮엔 채집이 15% 빨라요',l:['바, 밤엔 집에 있을래요…','방금 무슨 소리 났죠?','불 옆이 제일 좋아요']},
  handy:{n:'손재주',d:'근처 건물을 조금씩 고쳐요',l:['벽에 금 간 거 제가 손볼게요','망치 소리 좋다~','이 정도는 금방 고쳐요']},
+ angler:{n:'낚시꾼',d:'물가에서 물고기를 낚아 와요',l:['오늘은 월척이다!','물고기 냄새가 나요','붕어보단 잉어죠~']},
+ farmer:{n:'농사꾼',d:'밭일을 먼저 챙기고, 수확할 때 하나 더 거둬요',l:['흙 냄새가 좋아요','올해 농사는 잘될 거예요','물만 잘 주면 쑥쑥 커요']},
  cheerful:{n:'명랑함',d:'함께 있으면 다른 주민들 채집이 빨라져요',l:['다들 힘내요! 우리 잘하고 있어요','오늘 날씨 좋다~','같이 하니까 하나도 안 힘들어요']}};
 const VTR_KEYS=Object.keys(VTRAIT);
 function villMul(v){let m=v.tr==='diligent'?1.3:v.tr==='timid'?1.15:1;if(v.home==null||v.home<0)m*=.85;const ch=Math.min(2,S.vill.filter(o=>o!==v&&o.tr==='cheerful').length);return m*(1+ch*.06)}
@@ -3006,7 +3059,7 @@ const keys={};
 let tool=null,hover=null,joy=null,touchUI=false;
 const ptrs=new Map();
 window.addEventListener('keydown',e=>{
-  if(e.repeat)return;
+  if(e.repeat)return;{const tg=e.target&&e.target.tagName;if((tg==='INPUT'||tg==='TEXTAREA')&&e.key!=='Escape')return;}
   const k=e.key.toLowerCase();keys[k]=true;touchUI=false;
   if(!$('ovStory').hidden){if(k==='enter'||k===' '||k==='arrowright'||k==='f'){e.preventDefault&&e.preventDefault();storyNext();}else if(k==='arrowleft'&&storyPg>0){storyPg--;renderStory();}else if(k==='escape')closeStory();return;}
   if(!running)return;
@@ -3359,6 +3412,7 @@ function update(dt){
   // villagers
   if(!NC())for(const v of S.vill)updVillager(v,dt);
   S.picks=S.picks.filter(k=>!k.got);
+  if(!NC()&&S.phase==='day'&&!S.tower){S.asT=(S.asT||60)-dt;if(S.asT<=0){S.asT=60;save();}}
   updAllies(dt);updPet(dt);updHazard(dt);updCold(dt);S.achT=(S.achT||0)-dt;if(S.achT<=0){S.achT=1;checkAch();}if(S.p.chill>0)S.p.chill-=dt;S.gt+=dt;
 
   // buildings
@@ -3410,7 +3464,7 @@ function update(dt){
         const bb=S.bld[j];if(bb&&bb!==b&&bb.hp<bb.max){bb.hp=Math.min(bb.max,bb.hp+rate);b.work=1;}}
     }else if(D.farm){
       if(b.wet==null)b.wet=waterNear(i,3);
-      if(b.seeded&&S.phase==='day'&&b.g<1)b.g=Math.min(1,(b.g||0)+dt/(b.wet?38:58));
+      if(b.seeded&&S.phase==='day'&&b.g<1){const G=(CROPS[b.crop||'wheat']||CROPS.wheat).g;b.g=Math.min(1,(b.g||0)+dt/(b.wet?G:G*1.5));}
     }else if(b.t==='fire'&&!p.dead){
       if(Math.hypot(x-p.x,y-p.y)<2.6*T)p.hp=Math.min(pMax(),p.hp+5*dt);
     }
@@ -3561,14 +3615,18 @@ function updVillager(v,dt){
     const [kx,ky]=cCenter(CI);const a=S.vill.indexOf(v)/Math.max(1,S.vill.length)*Math.PI*2;
     tx=kx+Math.cos(a)*T*1.3;ty=ky+Math.sin(a)*T*1.3;v.ti=-1;
   }else{
-    if(v.fi>=0){const fb=S.bld[v.fi];if(!fb||fb.t!=='field'||!(fb.g>=1))v.fi=-1;}
+    const canSeed=!!pickSeed();
+    if(v.fi>=0){const fb=S.bld[v.fi];if(!fb||fb.t!=='field'||!(fb.g>=1||(!fb.seeded&&canSeed)))v.fi=-1;}
     if(v.fi==null||v.fi<0){v.fi=-1;let bd=14*T;
-      for(let i=0;i<W*H;i++){const fb=S.bld[i];if(!fb||fb.t!=='field'||!(fb.g>=1))continue;if(S.vill.some(o=>o!==v&&o.fi===i))continue;const [fx,fy]=cCenter(i),d=Math.hypot(fx-v.x,fy-v.y);if(d<bd){bd=d;v.fi=i;}}}
+      if(!v.fsT||v.fsT<=0){v.fsT=1.5;for(let i=0;i<W*H;i++){const fb=S.bld[i];if(!fb||fb.t!=='field'||!(fb.g>=1||(!fb.seeded&&canSeed)))continue;if(S.vill.some(o=>o!==v&&o.fi===i))continue;const [fx,fy]=cCenter(i),d=Math.hypot(fx-v.x,fy-v.y)*(v.tr==='farmer'?.5:1);if(d<bd){bd=d;v.fi=i;}}}else v.fsT-=dt;}
     if(v.fi>=0){
       const [fx,fy]=cCenter(v.fi);
-      if(Math.hypot(fx-v.x,fy-v.y)<T*.7){harvestField(v.fi,'v');v.fi=-1;return;}
+      if(Math.hypot(fx-v.x,fy-v.y)<T*.7){const fb=S.bld[v.fi];if(fb&&fb.g>=1)harvestField(v.fi,v);else plantField(v.fi,'v');v.fi=-1;return;}
       const dx=fx-v.x,dy=fy-v.y,d=Math.hypot(dx,dy);v.face=Math.atan2(dy,dx);v.x+=dx/d*Math.min(sp*dt,d);v.y+=dy/d*Math.min(sp*dt,d);return;
     }
+    if(v.tr==='angler'&&S.tools){if(v.wi==null||v.wi<0||!S.water[v.wi]){v.wi=-1;let bd=13*T;for(let y=CY-13;y<=CY+13;y++)for(let x=CX-13;x<=CX+13;x++){const i=idx(x,y);if(S.water[i]!==1)continue;const [wx,wy]=cCenter(i),d=Math.hypot(wx-v.x,wy-v.y);if(d<bd){bd=d;v.wi=i;}}}
+      if(v.wi>=0){const [wx,wy]=cCenter(v.wi),d=Math.hypot(wx-v.x,wy-v.y);if(d>T*1.1){const st=Math.min(sp*dt,d-T);v.face=Math.atan2(wy-v.y,wx-v.x);v.x+=(wx-v.x)/d*st;v.y+=(wy-v.y)/d*st;return;}
+        v.face=Math.atan2(wy-v.y,wx-v.x);v.fT=(v.fT||0)+dt*villMul(v);if(v.fT>=11){v.fT=0;const r=Math.random(),k=r<.04?'koi':r<.28?'trout':'fish';S.items[k]=(S.items[k]||0)+1;if(Math.hypot(v.x-S.p.x,v.y-S.p.y)<8*T)float(v.x,v.y-30,ITEM_NAME[k]+'!','#9fd3ff');burst(wx,wy,'#bfe6ff',5);}return;}}
     if(v.ti<0||!S.res[v.ti]){
       const opts=[[S.wood,1],[S.stone,2],[S.copper*1.5,11]];if(forgeOn)opts.push([S.iron*2,3]);opts.sort((a,b)=>a[0]-b[0]);
       v.ti=-1;for(const o of opts){v.ti=findRes(v,o[1]);if(v.ti>=0)break;}v.gT=0;
@@ -3946,13 +4004,21 @@ function drawBld(b,i,now){
   }else if(b.t==='field'){
     ctx.fillStyle=b.wet?'#4a3220':'#5a3d24';ctx.fillRect(px+1,py+1,T-2,T-2);
     ctx.fillStyle='rgba(0,0,0,.22)';for(let k=0;k<3;k++)ctx.fillRect(px+3,py+6+k*9,T-6,2);
-    if(b.seeded){
+    if(b.seeded&&b.crop&&b.crop!=='wheat'){const g=b.g||0,C=CROPS[b.crop],cx2=px+T/2,cy2=py+T/2;
+      if(g<.35){ctx.fillStyle='#7fb85a';for(const [ox,oy] of [[-7,-5],[6,-4],[0,6]])ctx.fillRect(cx2+ox-1,cy2+oy-2,2,3);}
+      else if(b.crop==='apple'||b.crop==='cherry'){const s2=.5+Math.min(1,g)*.5;ctx.fillStyle='#6a4a2a';ctx.fillRect(cx2-1.5,cy2-2,3,12*s2);ctx.fillStyle='#3f8f3a';ctx.beginPath();ctx.arc(cx2,cy2-6*s2,10*s2,0,7);ctx.fill();ctx.fillStyle='#4fa84a';ctx.beginPath();ctx.arc(cx2-3,cy2-9*s2,5*s2,0,7);ctx.fill();if(g>=1){ctx.fillStyle=C.col;for(const [ox,oy] of [[-5,-6],[4,-9],[5,-2],[-2,-1],[0,-12]]){ctx.beginPath();ctx.arc(cx2+ox,cy2+oy,b.crop==='apple'?2.6:1.8,0,7);ctx.fill();}}}
+      else if(b.crop==='pumpkin'||b.crop==='melon'){ctx.strokeStyle='#4f9a3a';ctx.lineWidth=1.6;ctx.beginPath();ctx.moveTo(px+4,py+T-6);ctx.quadraticCurveTo(cx2,py+4,px+T-4,py+T-8);ctx.stroke();ctx.fillStyle='#5aa84a';for(const [ox,oy] of [[-8,4],[8,-6],[-2,-8]]){ctx.beginPath();ctx.ellipse(cx2+ox,cy2+oy,4,3,0,0,7);ctx.fill();}
+        if(g>=.6){const r=4+Math.min(1,g)*6;ctx.fillStyle=g>=1?C.col:'#8ac86a';ctx.beginPath();ctx.ellipse(cx2+2,cy2+3,r*1.2,r,0,0,7);ctx.fill();if(b.crop==='melon'&&g>=1){ctx.strokeStyle='#1f6a2a';ctx.lineWidth=1.2;for(const k of [-5,0,5]){ctx.beginPath();ctx.moveTo(cx2+2+k,cy2+3-r+2);ctx.lineTo(cx2+2+k*.6,cy2+3+r-2);ctx.stroke();}}}}
+      else{for(let k=0;k<3;k++)for(let c=0;c<3;c++){const sx=px+7+c*9,sy=py+8+k*9,h2=3+Math.min(1,g)*5;ctx.fillStyle='#5aa84a';ctx.beginPath();ctx.ellipse(sx-2,sy-h2/2,1.6,h2/2,-.4,0,7);ctx.ellipse(sx+2,sy-h2/2,1.6,h2/2,.4,0,7);ctx.fill();if(g>=1){ctx.fillStyle=C.col;ctx.beginPath();if(b.crop==='carrot'){ctx.moveTo(sx-2.5,sy-1);ctx.lineTo(sx+2.5,sy-1);ctx.lineTo(sx,sy+4);}else ctx.arc(sx,sy+1,b.crop==='strawberry'?2.2:2.6,0,7);ctx.fill();}}}
+      if(g>=1&&Math.sin(now/300+i)>.7){ctx.fillStyle='rgba(255,255,220,.8)';ctx.beginPath();ctx.arc(px+T-6,py+5,1.6,0,7);ctx.fill();}
+    }else if(b.seeded){
       const g=b.g||0;
       for(let k=0;k<3;k++)for(let c=0;c<3;c++){
         const sx=px+7+c*9,sy=py+8+k*9;
         if(g<.35){ctx.fillStyle='#7fb85a';ctx.fillRect(sx-1,sy-2,2,3);}
         else if(g<1){const hgt=3+g*6;ctx.strokeStyle='#6fa84a';ctx.lineWidth=1.6;ctx.beginPath();ctx.moveTo(sx,sy+1);ctx.lineTo(sx,sy-hgt);ctx.stroke();}
         else{ctx.strokeStyle='#c8a03a';ctx.lineWidth=1.6;ctx.beginPath();ctx.moveTo(sx,sy+1);ctx.lineTo(sx,sy-8);ctx.stroke();ctx.fillStyle='#f0d27a';ctx.beginPath();ctx.ellipse(sx,sy-9,2,3.5,0,0,Math.PI*2);ctx.fill();}
+        if(b.crop&&b.crop!=='wheat')break;
       }
     }
   }else if(b.t==='incub'){
@@ -4415,8 +4481,8 @@ function save(){
 }
 function buildSave(){
   {
-    const bl=[];forB((b,i)=>bl.push([i,b.t,Math.round(b.hp),b.max,+(b.g||0).toFixed(2),b.seeded?1:0,b.lv||1]));
-    const o={v:9,lanes:1,vplot:1,pname:S.pname,hired:S.hired||0,tut:S.tut,diff:S.diff,got:S.got,skill:S.skill,codex:S.codex,codexR:S.codexR,bounty:S.bounty,stats:S.stats,ach:S.ach,sunOff:S.sunOff,chiefSun:S.chiefSun,stash:S.stash,warm:S.warm,story:S.story,nests:S.nests,incub:S.incub,relicMiss:S.relicMiss,mithril:S.mithril,vault:S.vault,haz:enc(S.haz||new Uint8Array(W*H)),towerBest:S.towerBest,tbuy:S.tbuy,pets:S.pets,petOn:S.petOn,obsidian:S.obsidian,copper:S.copper,goldore:S.goldore,cobalt:S.cobalt,gold:S.gold,enh:S.enh,day:S.day,wood:S.wood,stone:S.stone,iron:S.iron,crystal:S.crystal,emerald:S.emerald,diamond:S.diamond,core:S.core,coreLv:S.coreLv,mods:S.mods,kills:S.kills,
+    const bl=[];forB((b,i)=>bl.push([i,b.t,Math.round(b.hp),b.max,+(b.g||0).toFixed(2),b.seeded?1:0,b.lv||1,b.crop||0]));
+    const o={v:9,seedSel:S.seedSel||null,lanes:1,vplot:1,pname:S.pname,hired:S.hired||0,tut:S.tut,diff:S.diff,got:S.got,skill:S.skill,codex:S.codex,codexR:S.codexR,bounty:S.bounty,stats:S.stats,ach:S.ach,sunOff:S.sunOff,chiefSun:S.chiefSun,stash:S.stash,warm:S.warm,story:S.story,nests:S.nests,incub:S.incub,relicMiss:S.relicMiss,mithril:S.mithril,vault:S.vault,haz:enc(S.haz||new Uint8Array(W*H)),towerBest:S.towerBest,tbuy:S.tbuy,pets:S.pets,petOn:S.petOn,obsidian:S.obsidian,copper:S.copper,goldore:S.goldore,cobalt:S.cobalt,gold:S.gold,enh:S.enh,day:S.day,wood:S.wood,stone:S.stone,iron:S.iron,crystal:S.crystal,emerald:S.emerald,diamond:S.diamond,core:S.core,coreLv:S.coreLv,mods:S.mods,kills:S.kills,
       prog:S.prog,lairs:S.lairs,abil:S.abil,fragHint:S.fragHint,hiddenDone:S.hiddenDone,
       p:{hp:S.p.hp,max:S.p.max,dmg:S.p.dmg,spd:S.p.spd,lvl:S.p.lvl,xp:S.p.xp},
       vill:S.vill.length,villD:S.vill.map(v=>({n:v.name,w:v.w,a:v.a,tr:v.tr})),lost:S.lost,items:S.items,buffs:S.buffs,tools:S.tools,eq:S.eq,inv:S.inv,digs:S.digs,chests:S.chests,
@@ -4431,6 +4497,15 @@ function applyConsent(c){if(c&&c.fonts)loadFonts();else{const l=document.getElem
 function setConsent(fonts){const c={v:1,fonts:!!fonts,at:new Date().toISOString().slice(0,10)};try{localStorage.setItem(CONSENT_KEY,JSON.stringify(c));}catch(_){}applyConsent(c);$('consent').hidden=true;}
 function openConsent(){$('consent').hidden=false;setTimeout(()=>$('consentEss').focus(),0);}
 function deleteMyData(){try{localStorage.removeItem(SAVE_KEY);localStorage.removeItem(CONSENT_KEY);localStorage.removeItem(AU_KEY);localStorage.removeItem(CHAR_KEY);}catch(_){}applyConsent(null);$('delBox').hidden=true;$('btnLoad').hidden=true;toast('이 기기에 저장된 게임 데이터를 모두 삭제했어요',3000);openConsent();}
+function bkEncode(o){return 'CS1:'+btoa(unescape(encodeURIComponent(JSON.stringify(o))))}
+async function bkEncodeZ(o){try{if(typeof CompressionStream==='undefined')throw 0;const st=new Blob([JSON.stringify(o)]).stream().pipeThrough(new CompressionStream('gzip'));const buf=new Uint8Array(await new Response(st).arrayBuffer());let bin='';for(let i=0;i<buf.length;i+=8192)bin+=String.fromCharCode.apply(null,buf.subarray(i,i+8192));return 'CS2:'+btoa(bin);}catch(_){return bkEncode(o);}}
+async function bkDecode(t){t=(t||'').replace(/\s+/g,'');let o;
+  if(t.slice(0,4)==='CS2:'){const bin=atob(t.slice(4)),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);const st=new Blob([u]).stream().pipeThrough(new DecompressionStream('gzip'));o=JSON.parse(await new Response(st).text());}
+  else if(t.slice(0,4)==='CS1:')o=JSON.parse(decodeURIComponent(escape(atob(t.slice(4)))));else throw new Error('fmt');if(!o||typeof o!=='object'||!o.res||!o.p)throw new Error('data');return o}
+let bkFrom=null,bkArm=false;
+async function openBk(from){bkFrom=from;bkArm=false;$('bkMsg').textContent='';$('bkCode').value='';let code='';try{if(running&&S&&!NC()){save();code=await bkEncodeZ(buildSave());}else{const sv=readSave();code=sv?await bkEncodeZ(sv):'';}}catch(_){}
+  $('bkCode').value=code;$('bkCopy').hidden=!code;$('bkLoad').textContent='붙여 넣은 코드로 불러오기';if(from==='pause')$('ovPause').hidden=true;$('ovBk').hidden=false;}
+function closeBk(){$('ovBk').hidden=true;if(bkFrom==='pause'&&running)$('ovPause').hidden=false;}
 function readSave(){try{const s=localStorage.getItem(SAVE_KEY);return s?JSON.parse(s):null;}catch(_){return null;}}
 function loadGame(o){
   S=newState();
@@ -4450,10 +4525,10 @@ function loadGame(o){
   S.prog=v2?(o.prog||0):(o.day>5?1:0);S.fragHint=o.fragHint||0;S.abil=o.abil||{};S.hiddenDone=o.hiddenDone||0;
   S.towerBest=o.towerBest||0;S.tbuy=o.tbuy||{};S.relicMiss=o.relicMiss||{};
   S.pets=(o.pets||[]).filter(x=>PETS[x.t]);S.petOn=o.petOn==null?-1:o.petOn;if(S.petOn>=S.pets.length)S.petOn=-1;
-  S.pname=o.pname||'';S.hired=o.hired!=null?o.hired:Math.max(0,(o.vill||[]).length-3);  S.tut=o.tut==null?TUT.length:o.tut;S.diff=o.diff||'normal';S.got=o.got||(v2?{u:1,i:1,a:1,o:1,c:1,e:1,d:1,b:1,m:1,egg:1}:{});S.skill=o.skill||{};S.codex=o.codex||{};S.codexR=o.codexR||{};S.bounty=o.bounty||null;S.stats=o.stats||{};S.ach=o.ach||{};S.sunOff=o.sunOff||0;S.chiefSun=o.chiefSun||0;S.nests=o.nests||null;S.incub=o.incub||{};S.stash=o.stash||{};
+  S.pname=o.pname||'';S.seedSel=o.seedSel||null;S.hired=o.hired!=null?o.hired:Math.max(0,(o.vill||[]).length-3);  S.tut=o.tut==null?TUT.length:o.tut;S.diff=o.diff||'normal';S.got=o.got||(v2?{u:1,i:1,a:1,o:1,c:1,e:1,d:1,b:1,m:1,egg:1}:{});S.skill=o.skill||{};S.codex=o.codex||{};S.codexR=o.codexR||{};S.bounty=o.bounty||null;S.stats=o.stats||{};S.ach=o.ach||{};S.sunOff=o.sunOff||0;S.chiefSun=o.chiefSun||0;S.nests=o.nests||null;S.incub=o.incub||{};S.stash=o.stash||{};
   if(!o.pets){const g=t=>{if(!S.pets.some(x=>x.t===t))S.pets.push({t,lv:1,xp:0});};if(S.prog>=1)g('wolf');if(S.prog>=2)g('toad');if(S.prog>=3)g('sprite');if(S.prog>=4)g('imp');if(S.pets.length)S.petOn=0;}
   Object.assign(S.p,o.p);
-  for(const [i,t,hp,max,g,sd,lv] of o.bld){if(!B[t])continue;const j=map?map(i):i;if(j<0)continue;S.bld[j]={t,hp,max,cd:0,hurt:0,pt:0,idle:false,g:g||0,seeded:!!sd,lv:lv||1};}
+  for(const [i,t,hp,max,g,sd,lv,cr] of o.bld){if(!B[t])continue;const j=map?map(i):i;if(j<0)continue;S.bld[j]={t,hp,max,cd:0,hurt:0,pt:0,idle:false,g:g||0,seeded:!!sd,lv:lv||1,crop:cr||'wheat'};}
   if(o.items)Object.assign(S.items,o.items);if(o.buffs)S.buffs=o.buffs;
   if(o.tools)Object.assign(S.tools,o.tools);else S.tools={axe:1,pick:2,shovel:0,rod:1};
   if((o.v||0)<5&&o.tools){let pk=o.tools.pick||0,ax=o.tools.axe||0;if((o.v||0)<4){pk=[0,1,2,4,6,8][pk]??pk;ax=[0,1,2,4,6][ax]??ax;}S.tools.pick=[0,1,2,2,3,4,6,6,7][pk]??pk;S.tools.axe=[0,1,2,2,3,4,6][ax]??ax;}
@@ -4543,6 +4618,14 @@ $('helpClose').addEventListener('click',closeHelp);
 window.addEventListener('keydown',e=>{if($('ovHelp').hidden)return;if(e.key==='ArrowRight')$('helpNext').click();else if(e.key==='ArrowLeft')$('helpPrev').click();else if(e.key==='Escape')closeHelp();});
 $('btnNew').addEventListener('click',newGame);
 $('btnLoad').addEventListener('click',()=>{const s=readSave();if(s)loadGame(s);});
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&S&&S.phase==='day'&&!S.tower)save();});
+$('btnBk').addEventListener('click',()=>{if(NC()){toast('친구 방에 들어와 있을 땐 호스트 쪽에서 백업해 주세요',2200);return;}openBk('pause');});
+$('btnBkStart').addEventListener('click',()=>openBk('start'));
+$('bkClose').addEventListener('click',closeBk);
+$('bkCopy').addEventListener('click',()=>{const t=$('bkCode').value;const ok=()=>{$('bkMsg').textContent='복사했어요! 안전한 곳에 붙여 넣어 보관해 두세요';};try{navigator.clipboard.writeText(t).then(ok,()=>{$('bkCode').select();$('bkMsg').textContent='자동 복사가 안 돼서 코드를 선택해 뒀어요. 길게 눌러 복사해 주세요';});}catch(_){$('bkCode').select();$('bkMsg').textContent='코드를 선택해 뒀어요. 복사해 주세요';}});
+$('bkLoad').addEventListener('click',async()=>{let o;try{o=await bkDecode($('bkCode').value);}catch(_){$('bkMsg').textContent='코드가 올바르지 않아요. 처음부터 끝까지 빠짐없이 붙여 넣었는지 확인해 주세요';return;}
+  if(!bkArm&&readSave()){bkArm=true;$('bkLoad').textContent='정말 불러올까요? (지금 저장은 덮어써져요)';$('bkMsg').textContent='한 번 더 누르면 이 코드로 바꿔요';return;}
+  try{localStorage.setItem(SAVE_KEY,JSON.stringify(o));}catch(_){}$('ovBk').hidden=true;$('ovPause').hidden=true;paused=false;loadGame(o);toast('백업에서 불러왔어요. 이어서 해 봐요!',2600);});
 $('btnRetry').addEventListener('click',newGame);
 $('btnNight').addEventListener('click',()=>{if(running&&!paused)startNight();});
 $('btnPause').addEventListener('click',togglePause);
