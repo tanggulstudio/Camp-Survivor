@@ -1981,7 +1981,7 @@ function startNight(){
   if(NC()){netSend({night:1});toast('호스트에게 밤을 부르자고 알렸어요',1600);return;}
   if(S.phase!=='day')return;
   if(S.tower){toast('탑 안에서는 밤을 부를 수 없어요',1600);return;}
-  S.phase='night';S.nightT=0;sfx('night');
+  S.phase='night';S.nightT=0;sfx('night');S.strT=0;S.strPull=0;S.strMsg=0;S.strMsg2=0;
   const d=S.day,howl=d%7===0;
   const n=Math.round((5+d*2.6)*dif().cnt*S.mods.enemy*(S.event&&S.event.id==='blood'?1.5:1));
   if(S.merchant){S.merchant=null;}
@@ -3291,6 +3291,11 @@ function update(dt){
       if(sg.st===1&&S.nightT>=sg.at){sg.st=2;const pool=S.spawnQ.length?S.spawnQ.map(q=>q.t):['goblin','wolf'];for(let k=0;k<sg.n;k++)S.spawnQ.push({t:pool[(Math.random()*pool.length)|0],at:S.nightT+k*.18,side:sg.side});S.spawnQ.sort((a,b)=>a.at-b.at);}}
     while(S.spawnQ.length&&S.spawnQ[0].at<=S.nightT){const q=S.spawnQ.shift();spawnEnemy(q.t,q.side);}
     if(!S.spawnQ.length&&!S.enemies.some(e=>!e.wild&&!e.lair)&&S.nightT>15){dawn();return;}
+    if(!S.spawnQ.length&&S.nightT>15){const rem=S.enemies.filter(e=>!e.dead&&!e.wild&&!e.lair);
+      if(rem.length&&rem.length<=6){S.strT=(S.strT||0)+dt;S.strPull=(S.strPull||0)-dt;
+        if(S.strT>6&&!S.strMsg){S.strMsg=1;toast('남은 괴물 '+rem.length+'마리! 화면 가장자리 빨간 화살표랑 지도의 빨간 점 쪽에 있어요. 조금 있으면 불빛을 보고 몰려올 거예요',3800);}
+        if(S.strT>14&&S.strPull<=0){S.strPull=5;const [kx,ky]=cCenter(CI);let n=0;for(const e of rem){if(Math.hypot(e.x-kx,e.y-ky)>12*T){const c=openCell(10,12);if(c){smoke(e.x,e.y,6);e.x=c[0];e.y=c[1];e.angry=5;smoke(e.x,e.y,8);burst(e.x,e.y,'#ff5a4a',8);n++;}}}if(n&&!S.strMsg2){S.strMsg2=1;toast('숨어 있던 괴물들이 모닥불 불빛을 보고 캠프 앞으로 몰려왔어요!',3000);}}}
+      else S.strT=0;}
     if(S.nightT>100){for(const e of S.enemies)if(!e.wild&&!e.lair)burst(e.x,e.y,'#ffa047',8);S.enemies=S.enemies.filter(e=>e.wild||e.lair);S.spawnQ.length=0;toast('해가 뜨자 남은 괴물들이 연기처럼 사라졌어');}
   }
   for(const mt of S.meteors){
@@ -3797,7 +3802,7 @@ function draw(now){
 
   // screen space
   ctx.setTransform(dpr,0,0,dpr,0,0);
-  if(S.phase==='night'){const es=S.enemies.filter(e=>!e.dead&&!e.wild&&!e.lair&&!e.burrow).sort((a,b)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y)).slice(0,6);for(const e of es)edgeArrow(e.x,e.y,'#ff5a4a',now,.6);
+  if(S.phase==='night'){const es=S.enemies.filter(e=>!e.dead&&!e.wild&&!e.lair&&!e.burrow).sort((a,b)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y)).slice(0,6);const big=!S.spawnQ.length&&es.length<=6;for(const e of es)edgeArrow(e.x,e.y,'#ff5a4a',now,big?1.1:.6);
     const cr=S.core.hp/S.core.max,pr=p.hp/pMax(),dg=Math.max(cr<.4?(.4-cr)/.4:0,pr<.35?(.35-pr)/.35:0);
     if(dg>0&&!p.dead){const pu=.5+.5*Math.sin(now/140);const g=ctx.createRadialGradient(vw/2,vh/2,Math.min(vw,vh)*.3,vw/2,vh/2,Math.max(vw,vh)*.75);g.addColorStop(0,'rgba(180,0,0,0)');g.addColorStop(1,'rgba(180,10,10,'+(.18+.3*dg)*(.6+.4*pu)+')');ctx.fillStyle=g;ctx.fillRect(0,0,vw,vh);if(!paused)sfx('heart');}}
   if(S.lost)edgeArrow(S.lost.x,S.lost.y,'#e4c79a',now);
@@ -4414,6 +4419,8 @@ function drawMini(){
   const V=40,p=S.p;const sx=Math.max(0,Math.min(W-V,p.x/T-V/2)),sy=Math.max(0,Math.min(H-V,p.y/T-V/2)),k=px/V;
   g.imageSmoothingEnabled=false;if(mapCv)g.drawImage(mapCv,sx,sy,V,V,0,0,px,px);
   mapMarkers(g,sx,sy,k,dp*.9);
+  if(S.phase==='night'){const rem=S.enemies.filter(e=>!e.dead&&!e.wild&&!e.lair&&!e.burrow);if(rem.length&&rem.length<=8){const pu=.6+.4*Math.sin(performance.now()/200);
+    for(const e of rem){let x=(e.x/T-sx)*k,y=(e.y/T-sy)*k;const out=x<0||y<0||x>px||y>px;x=Math.max(4*dp,Math.min(px-4*dp,x));y=Math.max(4*dp,Math.min(px-4*dp,y));g.fillStyle='rgba(255,70,60,'+pu+')';g.beginPath();g.arc(x,y,(out?2.5:3.5)*dp,0,7);g.fill();g.strokeStyle='#fff';g.lineWidth=dp;g.stroke();}}}
 }
 function drawBig(){
   const c=$('bigmap');if(!c||!c.getContext)return;
@@ -4424,6 +4431,7 @@ function drawBig(){
   g.imageSmoothingEnabled=false;if(mapCv)g.drawImage(mapCv,0,0,W,H,0,0,px,px);
   const k=px/W;
   g.font=Math.round(12*dp)+'px "Gowun Dodum",sans-serif';g.textAlign='center';
+  if(S.phase==='night'){const rem=S.enemies.filter(e=>!e.dead&&!e.wild&&!e.lair&&!e.burrow);if(rem.length<=8)for(const e of rem){g.fillStyle='#ff463c';g.beginPath();g.arc(e.x/T*k,e.y/T*k,4*dp,0,7);g.fill();g.strokeStyle='#fff';g.lineWidth=dp;g.stroke();}}
   REGION.forEach((r,n)=>{const rad=[R1-5,R1+6,R2+5,R3+6,R4+6][n]||0;const y=(CY-rad)*k,x=CX*k;if(n&&!S.seen.some((v,i)=>v&&regionOfCell(i)===n))return;
     g.fillStyle='rgba(0,0,0,.55)';g.fillText(r.n,x+1*dp,y+1*dp);g.fillStyle='#f0eedf';g.fillText(r.n,x,y);});
   mapMarkers(g,0,0,k,dp*1.1);
