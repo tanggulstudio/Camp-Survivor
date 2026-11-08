@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>며칠 버틸래?</title>
+<title>Camp Survivor</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -169,6 +169,12 @@ button:focus-visible{outline:2px solid var(--ember);outline-offset:2px}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 .chip{padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:#1d2e22;font-size:13px;cursor:pointer;font-family:inherit;color:var(--ink)}
 .chip.on{background:var(--ember);color:#24160a;border-color:var(--ember)}
+.mini{width:132px;height:132px;border-radius:10px;border:1px solid var(--line);background:#0b120e;pointer-events:auto;cursor:pointer;image-rendering:pixelated}
+@media (max-width:420px){.mini{width:104px;height:104px}}
+.bigmap{width:min(100%,calc(100vh - 260px));min-width:200px;align-self:center;aspect-ratio:1;max-width:100%;border-radius:10px;border:1px solid var(--line);background:#0b120e;image-rendering:pixelated}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12.5px;color:var(--dim)}
+.legend span{display:flex;align-items:center;gap:6px}
+.legend i{width:10px;height:10px;border-radius:2px;display:inline-block}
 .tabs{display:flex;gap:6px;padding-right:46px}
 .hhead{padding-right:46px}
 .tab{flex:1;padding:10px;border-radius:9px;border:1px solid var(--line);background:#1d2e22;font-family:var(--f-disp);font-size:16px;cursor:pointer}
@@ -240,6 +246,7 @@ button.slot:disabled{cursor:default}
         <button class="hbtn warn" id="btnNight">밤 부르기</button>
         <button class="hbtn" id="btnPause">일시정지</button>
       </div>
+      <canvas class="mini" id="mini" aria-label="미니맵 (누르면 전체 지도)"></canvas>
     </div>
   </header>
 
@@ -253,7 +260,7 @@ button.slot:disabled{cursor:default}
 
   <div class="overlay" id="ovStart">
     <div class="panel">
-      <h1>며칠<br><em>버틸래?</em></h1>
+      <h1>Camp<br><em>Survivor</em></h1>
       <p>낮에는 모으고 짓고, 밤에는 화톳불을 지키세요. 보스를 쓰러뜨리면 숲 너머 새 지역이 열립니다.</p>
       <div class="row">
         <button class="big pri" id="btnNew">새로 시작</button>
@@ -315,6 +322,18 @@ button.slot:disabled{cursor:default}
       <p id="shopLine"></p>
       <div id="shopBody" class="shopbody"></div>
       <div class="row"><button class="big" id="shopClose">떠나기</button></div>
+    </div>
+  </div>
+
+  <div class="overlay" id="ovMap" hidden>
+    <div class="panel wide">
+      <button class="xbtn" id="mapX" aria-label="닫기"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button>
+      <div class="hhead"><span class="pg">M키로 열고 닫기</span><h2>지도</h2></div>
+      <canvas id="bigmap" class="bigmap"></canvas>
+      <div class="legend">
+        <span><i style="background:#ffffff"></i>나</span><span><i style="background:#ffa047"></i>화톳불</span><span><i style="background:#ff5a4a"></i>몬스터</span><span><i style="background:#ff4a3a;border-radius:50%;box-shadow:0 0 0 2px #ff4a3a inset"></i>보스 둥지</span>
+        <span><i style="background:#ffd23a"></i>상자</span><span><i style="background:#ffe08a"></i>NPC·주민</span><span><i style="background:#ee9058"></i>구리</span><span><i style="background:#cd8c5a"></i>철</span><span><i style="background:#ffd23a"></i>금</span><span><i style="background:#5a8aff"></i>코발트</span><span><i style="background:#4fd08a"></i>에메랄드</span><span><i style="background:#9fe8ff"></i>다이아</span>
+      </div>
     </div>
   </div>
 
@@ -703,7 +722,7 @@ function hash(i){let x=(i*374761393)^0x5bd1e995;x=(x^(x>>>13))*1274126177;return
 
 function newState(){
   return {day:1,phase:'day',t:0,wood:15,stone:5,iron:0,crystal:0,oreHintT:0,
-    res:new Uint8Array(W*H),rhp:new Uint8Array(W*H),water:new Uint8Array(W*H),trail:new Uint8Array(W*H),road:new Uint8Array(W*H),town:new Uint8Array(W*H),npcAt:new Int8Array(W*H).fill(-1),npcNear:-1,gold:20,enh:{},
+    res:new Uint8Array(W*H),rhp:new Uint8Array(W*H),water:new Uint8Array(W*H),trail:new Uint8Array(W*H),seen:new Uint8Array(W*H),road:new Uint8Array(W*H),town:new Uint8Array(W*H),npcAt:new Int8Array(W*H).fill(-1),npcNear:-1,gold:20,enh:{},
     items:{fish:0,trout:0,koi:0,berry:0,meat:0,leather:0,tusk:0,worm:0,seed:3,wheat:0,mapfrag:0},earrows:[],
     tools:{axe:0,pick:0,shovel:0,rod:0},eq:{weapon:null,head:null,body:null,acc1:null,acc2:null},inv:[],digs:[],buffs:{},menu:false,fishHint:0,bld:new Array(W*H).fill(null),
     core:{hp:300,max:300},
@@ -731,6 +750,7 @@ function genMap(s){
   for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(rr(x,y)<5.5)setRes(s,idx(x,y),0);
   for(let k=0;k<3;k++){const [x,y]=polar(7,9);setRes(s,idx(Math.round(x),Math.round(y)),2);}
   addOre(s);addPonds(s);addCaves(s);addSwamp(s);addCanyon(s);addBushes(s);applyTown(s,true);addNewOres(s);addBarriers(s);addLairs(s);
+  for(let i=0;i<W*H;i++)if(rr(i%W,Math.floor(i/W))<12)s.seen[i]=1;
 }
 const TOWN_R=7;
 const NPCS=[{id:'shop',n:'잡화점',dx:-4,dy:-4},{id:'smith',n:'대장장이',dx:4,dy:-4},{id:'gem',n:'보석상',dx:-4,dy:4},{id:'inn',n:'여관',dx:4,dy:4}];
@@ -1566,6 +1586,7 @@ window.addEventListener('keydown',e=>{
   else if(k==='z'||k==='x'||k==='c'||k==='v'){const a=ABIL.find(x=>x.key===k);if(a)castAbil(a.id);}
   else if(k==='f'||k===' '){hook();e.preventDefault&&e.preventDefault();}
   else if(k==='b'){S.menu?closeBag():openBag();}
+  else if(k==='m'){if(!$('ovMap').hidden)closeMap();else openMap();}
   else if(k==='p')togglePause();
 });
 window.addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=false;});
@@ -1811,6 +1832,7 @@ function update(dt){
     const rg=eqSum('regen');if(rg)p.hp=Math.min(pMax(),p.hp+rg*dt);
     p.hp=Math.min(p.hp,pMax());
     farmHere(dt);
+    seenT-=dt;if(seenT<=0){seenT=.3;revealAround();}
     if(p.shield>0)p.shield-=dt;
     let cdc=false;for(const k in S.acd)if(S.acd[k]>0){const b=Math.ceil(S.acd[k]);S.acd[k]=Math.max(0,S.acd[k]-dt);if(Math.ceil(S.acd[k])!==b)cdc=true;}if(cdc)renderAbil();
     if(p.poison>0){p.poison-=dt;p.hp-=4*dt;if(p.hp<=0){p.hp=.5;hurtPlayer(5);}}
@@ -2583,6 +2605,68 @@ function drawEnemy(e,now){
 /* ---------- HUD ---------- */
 const $=id=>document.getElementById(id);
 let hudT=0;
+let mapCv=null,mapCtx=null,mapT=0,seenT=0;
+const MAPC={1:[34,74,40],2:[125,134,138],3:[205,140,90],4:[70,120,56],5:[60,48,40],6:[180,140,240],7:[86,96,46],8:[70,100,150],9:[79,208,138],10:[159,232,255],11:[238,144,88],12:[255,210,58],13:[90,138,255],14:[230,90,40],15:[60,40,80]};
+const GRASSC=[[54,92,54],[44,66,48],[106,83,64],[58,48,46]];
+function mapColor(i){
+  if(!S.seen[i])return [12,18,14];
+  if(S.npcAt[i]>=0)return [255,224,138];
+  const b=S.bld[i];if(b){if(b.t==='twall')return [96,96,108];return B[b.t].solid?[245,235,215]:[190,170,130];}
+  if(S.water[i])return [42,90,110];
+  const v=S.res[i];if(v){const c=MAPC[v]||[90,90,90];if(v===1&&regionOfCell(i)===1)return [52,64,44];if(v===5&&regionOfCell(i)>=2)return [78,50,40];return c;}
+  if(S.town[i])return [122,112,96];if(S.road[i])return [130,106,74];
+  return GRASSC[regionOfCell(i)]||GRASSC[0];
+}
+function rebuildMap(){
+  if(!mapCv){mapCv=document.createElement('canvas');mapCv.width=W;mapCv.height=H;mapCtx=mapCv.getContext('2d');}
+  if(!mapCtx||typeof mapCtx.createImageData!=='function')return;
+  const img=mapCtx.createImageData(W,H);if(!img||!img.data)return;const d=img.data;
+  for(let i=0;i<W*H;i++){const c=mapColor(i);d[i*4]=c[0];d[i*4+1]=c[1];d[i*4+2]=c[2];d[i*4+3]=255;}
+  mapCtx.putImageData(img,0,0);
+}
+function lairKnown(L){return L.state!=='dead'&&(L.hidden?(S.items.mapfrag>=3&&S.prog>=2):(L.id==='hydra'?S.prog>=1:L.id==='golem'?S.prog>=2:S.prog>=3))}
+function mapMarkers(g,sx,sy,k,s){
+  const P=(x,y)=>[(x/T-sx)*k,(y/T-sy)*k];
+  const dot=(x,y,col,r)=>{const [a,b]=P(x,y);g.fillStyle=col;g.beginPath();g.arc(a,b,r*s,0,Math.PI*2);g.fill();};
+  const seenAt=(x,y)=>{const c=cellAt(x,y);return c>=0&&S.seen[c];};
+  const [kx,ky]=cCenter(CI);dot(kx,ky,'#ffa047',3.2);
+  for(const v of S.vill)dot(v.x,v.y,'#e4c79a',1.3);
+  for(const c of S.chests)if(seenAt(c.x,c.y))dot(c.x,c.y,c.kind==='gold'?'#ffd23a':'#e8c98a',c.kind==='gold'?2.8:1.8);
+  if(S.merchant)dot(S.merchant.x,S.merchant.y,'#8fd3ff',2.6);
+  if(S.lost)dot(S.lost.x,S.lost.y,'#ffe08a',2.4);
+  for(const L of S.lairs)if(lairKnown(L)){const [a,b]=P(L.x,L.y);g.strokeStyle=L.hidden?'#c9a6ff':'#ff4a3a';g.lineWidth=2*s;g.beginPath();g.arc(a,b,4.5*s,0,Math.PI*2);g.stroke();g.fillStyle=g.strokeStyle;g.beginPath();g.arc(a,b,1.8*s,0,Math.PI*2);g.fill();}
+  for(const e of S.enemies){if(e.burrow||!seenAt(e.x,e.y))continue;dot(e.x,e.y,(e.lair||e.t==='chief')?'#ff2a2a':e.wild?'#e08a6a':'#ff5a4a',(e.lair||e.t==='chief')?3.5:1.6);}
+  const p=S.p,[a,b]=P(p.x,p.y);g.save();g.translate(a,b);g.rotate(p.face);g.fillStyle='#ffffff';g.strokeStyle='#000';g.lineWidth=1.2*s;
+  g.beginPath();g.moveTo(5*s,0);g.lineTo(-3.5*s,-3.5*s);g.lineTo(-2*s,0);g.lineTo(-3.5*s,3.5*s);g.closePath();g.fill();g.stroke();g.restore();
+}
+function drawMini(){
+  const c=$('mini');if(!c||!c.getContext||!S)return;
+  const sz=c.clientWidth||120,dp=Math.min(2,window.devicePixelRatio||1),px=Math.round(sz*dp);
+  if(c.width!==px){c.width=px;c.height=px;}
+  const g=c.getContext('2d');if(!g||typeof g.drawImage!=='function')return;
+  g.setTransform(1,0,0,1,0,0);g.fillStyle='#0b120e';g.fillRect(0,0,px,px);
+  const V=40,p=S.p;const sx=Math.max(0,Math.min(W-V,p.x/T-V/2)),sy=Math.max(0,Math.min(H-V,p.y/T-V/2)),k=px/V;
+  g.imageSmoothingEnabled=false;if(mapCv)g.drawImage(mapCv,sx,sy,V,V,0,0,px,px);
+  mapMarkers(g,sx,sy,k,dp*.9);
+}
+function drawBig(){
+  const c=$('bigmap');if(!c||!c.getContext)return;
+  const sz=c.clientWidth||500,dp=Math.min(2,window.devicePixelRatio||1),px=Math.round(sz*dp);
+  if(c.width!==px){c.width=px;c.height=px;}
+  const g=c.getContext('2d');if(!g||typeof g.drawImage!=='function')return;
+  rebuildMap();g.setTransform(1,0,0,1,0,0);g.fillStyle='#0b120e';g.fillRect(0,0,px,px);
+  g.imageSmoothingEnabled=false;if(mapCv)g.drawImage(mapCv,0,0,W,H,0,0,px,px);
+  const k=px/W;
+  g.font=Math.round(12*dp)+'px "Gowun Dodum",sans-serif';g.textAlign='center';
+  REGION.forEach((r,n)=>{const rad=[R1-5,R1+6,R2+5,(R3+(typeof R4!=='undefined'?R4:R3+10))/2][n]||0;const y=(CY-rad)*k,x=CX*k;if(n&&!S.seen.some((v,i)=>v&&regionOfCell(i)===n))return;
+    g.fillStyle='rgba(0,0,0,.55)';g.fillText(r.n,x+1*dp,y+1*dp);g.fillStyle='#f0eedf';g.fillText(r.n,x,y);});
+  mapMarkers(g,0,0,k,dp*1.1);
+}
+function openMap(){if(!running||paused||S.phase==='dawn'||S.trading||S.menu)return;S.menu=true;rebuildMap();$('ovMap').hidden=false;setTimeout(drawBig,0);}
+function closeMap(){$('ovMap').hidden=true;S.menu=false;}
+function revealAround(){const p=S.p,cx=Math.floor(p.x/T),cy=Math.floor(p.y/T),R=9;let ch=false;
+  for(let dy=-R;dy<=R;dy++)for(let dx=-R;dx<=R;dx++){if(dx*dx+dy*dy>R*R)continue;const x=cx+dx,y=cy+dy;if(x<0||y<0||x>=W||y>=H)continue;const i=idx(x,y);if(!S.seen[i]){S.seen[i]=1;ch=true;}}
+  return ch;}
 function hud(){
   const p=S.p;
   $('day').textContent=S.day+'일째';
@@ -2630,7 +2714,7 @@ function save(){
       prog:S.prog,lairs:S.lairs,abil:S.abil,fragHint:S.fragHint,hiddenDone:S.hiddenDone,
       p:{hp:S.p.hp,max:S.p.max,dmg:S.p.dmg,spd:S.p.spd,lvl:S.p.lvl,xp:S.p.xp},
       vill:S.vill.length,lost:S.lost,items:S.items,buffs:S.buffs,tools:S.tools,eq:S.eq,inv:S.inv,digs:S.digs,chests:S.chests,
-      water:enc(S.water),trail:enc(S.trail),res:enc(S.res),rhp:enc(S.rhp),bld:bl};
+      water:enc(S.water),trail:enc(S.trail),seen:enc(S.seen),res:enc(S.res),rhp:enc(S.rhp),bld:bl};
     localStorage.setItem(SAVE_KEY,JSON.stringify(o));
   }catch(_){}
 }
@@ -2659,6 +2743,7 @@ function loadGame(o){
   if(o.digs)S.digs=o.digs.map(d=>({x:shift(d.x),y:shift(d.y)}));
   if(o.chests&&v2)S.chests=o.chests;
   if(v2&&o.trail)decTo(o.trail,S.trail);
+  if(o.seen)decTo(o.seen,S.seen);else{for(let i=0;i<W*H;i++)if(rr(i%W,Math.floor(i/W))<12)S.seen[i]=1;}
   applyTown(S,!(o.v>=3));
   if((o.v||0)<5){for(let i=0;i<W*H;i++){if(S.res[i]===9)S.res[i]=13;else if(S.res[i]===13)S.res[i]=9;}}
   if((o.v||0)<4)addNewOres(S);S.gold=o.gold==null?20:o.gold;S.enh=o.enh||{};
@@ -2674,7 +2759,7 @@ function newGame(){
   begin();S.phase='dawn';
   showCards('첫날 아침','숲 한가운데 화톳불을 피웠다. 축복 하나를 고르고 시작하세요.');
 }
-function begin(){setTimeout(renderAbil,0);$('ovTrade').hidden=true;$('ovShop').hidden=true;$('ovBag').hidden=true;$('ovStart').hidden=true;$('ovOver').hidden=true;$('ovPause').hidden=true;running=true;paused=false;selectTool(null);resize();}
+function begin(){$('ovMap').hidden=true;mapT=0;setTimeout(renderAbil,0);$('ovTrade').hidden=true;$('ovShop').hidden=true;$('ovBag').hidden=true;$('ovStart').hidden=true;$('ovOver').hidden=true;$('ovPause').hidden=true;running=true;paused=false;selectTool(null);resize();}
 function gameOver(){
   running=false;
   try{localStorage.removeItem(SAVE_KEY);}catch(_){}
@@ -2726,6 +2811,8 @@ $('btnPause').addEventListener('click',togglePause);
 $('btnResume').addEventListener('click',togglePause);
 $('btnQuit').addEventListener('click',showStart);
 $('btnBag').addEventListener('click',openBag);
+$('mini').addEventListener('click',openMap);$('mapX').addEventListener('click',closeMap);
+window.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('ovMap').hidden)closeMap();});
 $('shopX').addEventListener('click',closeShop);$('shopClose').addEventListener('click',closeShop);
 $('shopBody').addEventListener('click',e=>{const b=e.target.closest('button[data-act]');if(!b||b.disabled||!b.dataset.act)return;const a=b.dataset.act,i=a.indexOf(':');shopAct(a.slice(0,i),a.slice(i+1));});
 $('abil').addEventListener('click',e=>{const b=e.target.closest('[data-ab]');if(!b)return;if(b.dataset.ab==='wskill')castW();else castAbil(b.dataset.ab);});
@@ -2748,7 +2835,7 @@ function frame(now){
   if(S){
     if(running&&!paused&&S.phase!=='dawn'&&!S.trading&&!S.menu)update(dt);
     draw(now);
-    hudT-=dt;if(hudT<=0){hudT=.1;hud();}
+    hudT-=dt;if(hudT<=0){hudT=.1;hud();if(running){mapT-=.1;if(mapT<=0){mapT=.5;rebuildMap();}drawMini();}}
   }
   requestAnimationFrame(frame);
 }
