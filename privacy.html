@@ -28,13 +28,15 @@ table{border-collapse:collapse;width:100%;font-size:14.5px}th,td{border:1px soli
 <h2>1. 수집하는 개인정보</h2><p>운영자는 이름, 이메일, 전화번호, 결제 정보 등 어떠한 개인정보도 수집하지 않습니다. 게임에는 개인정보를 입력받는 양식이 없습니다.</p>
 <h2>2. 이용자 기기에 저장되는 정보</h2><div class="wrap"><table><tr><th>항목</th><th>저장 위치</th><th>목적</th><th>보관 기간</th></tr>
 <tr><td>게임 진행 데이터</td><td>브라우저 저장소(localStorage) · 키 <code>mbr-save-v1</code></td><td>이어하기 기능</td><td>이용자가 삭제할 때까지</td></tr>
+<tr><td>함께하기 캐릭터 정보(레벨·장비·가방)</td><td>브라우저 저장소 · 키 <code>cs-mp-char-v1</code></td><td>친구의 캠프에 참가할 때 내 캐릭터 유지</td><td>이용자가 삭제할 때까지</td></tr>
 <tr><td>소리 설정(음량·음소거)</td><td>브라우저 저장소 · 키 <code>cs-audio-v1</code></td><td>소리 설정 기억</td><td>이용자가 삭제할 때까지</td></tr>
 <tr><td>개인정보 설정 값</td><td>브라우저 저장소 · 키 <code>cs-consent-v1</code></td><td>글꼴 불러오기 동의 여부 기억</td><td>이용자가 삭제할 때까지</td></tr></table></div>
 <p>이 정보는 이용자의 기기에만 있으며 운영자에게 전송되지 않습니다.</p>
 <h2>3. 외부 서비스</h2><ul>
 <li><b>GitHub Pages (게임 호스팅)</b> · 페이지에 접속할 때 GitHub가 서비스 운영을 위해 IP 주소 등 접속 기록을 처리할 수 있습니다. <a href="https://docs.github.com/ko/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noopener">GitHub 개인정보 보호정책</a></li>
+<li><b>친구와 함께하기 (선택)</b> · 이용자가 연결 안내에 동의하고 방을 만들거나 참가할 때만 PeerJS 연결 중개 서버(0.peerjs.com)와 WebRTC를 사용합니다. 이때 IP 주소 등 접속 정보가 중개 서버와 함께 플레이하는 상대방에게 전달될 수 있고, 연결을 위해 Google STUN 서버를 이용할 수 있습니다. 게임 내용은 이용자끼리 직접 주고받으며 운영자 서버에 저장되지 않습니다. 입력한 닉네임은 함께 플레이하는 상대방에게만 보입니다. <a href="https://peerjs.com" target="_blank" rel="noopener">PeerJS</a></li>
 <li><b>Google Fonts (선택)</b> · 이용자가 "글꼴까지 허용"을 고른 경우에만 글꼴을 불러오며, 이때 IP 주소 등이 Google에 전송될 수 있습니다. 거절해도 게임을 똑같이 이용할 수 있습니다. <a href="https://policies.google.com/privacy?hl=ko" target="_blank" rel="noopener">Google 개인정보처리방침</a></li></ul>
-<p>광고, 분석 도구, 추적 SDK는 사용하지 않습니다.</p>
+<p>광고, 분석 도구, 추적 SDK는 사용하지 않습니다. 함께하기용 PeerJS 라이브러리는 이용자가 함께하기를 시작할 때만 불러옵니다.</p>
 <h2>4. 제3자 제공 및 처리 위탁</h2><p>개인정보를 수집하지 않으므로 제3자 제공이나 처리 위탁이 없습니다.</p>
 <h2>5. 아동의 개인정보</h2><p>만 14세 미만 아동을 포함해 누구의 개인정보도 수집하지 않으므로 법정대리인 동의 절차가 필요하지 않습니다. 앞으로 개인정보를 수집하게 되면 연령 확인과 법정대리인 동의 절차를 먼저 마련하고 이 방침을 개정합니다.</p>
 <h2>6. 데이터 삭제 방법</h2><p>게임 시작 화면의 <b>"내 데이터 삭제"</b>를 누르면 이 기기에 저장된 진행 데이터와 설정이 모두 지워집니다. 브라우저 설정에서 이 사이트의 데이터를 삭제해도 됩니다.</p>
