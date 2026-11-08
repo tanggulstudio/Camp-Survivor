@@ -457,7 +457,7 @@ button.slot:disabled{cursor:default}
     <div class="panel">
       <button class="xbtn" id="netX" aria-label="닫기"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button>
       <h2>친구와 함께하기</h2>
-      <p>최대 4명이 한 캠프에서 함께 버텨요. 방을 만들면 내 저장(없으면 새 캠프)으로 방이 열려요. 자원·건물·밤의 습격은 함께 쓰고, 장비·가방·숙련도는 각자 관리해요. 방은 호스트가 게임 중일 때 열 수 있어요.</p>
+      <p>최대 4명이 한 캠프에서 함께 버텨요. 방을 만들면 내 저장(없으면 새 캠프)으로 방이 열려요. 자원·건물·밤의 습격은 함께 쓰고, 장비·가방·숙련도는 각자 관리해요. 도전의 탑은 호스트가 들어가면 다 같이 이동하고, 층을 깰 때마다 모두 보상을 받아요. 방은 호스트가 게임 중일 때 열 수 있어요.</p>
       <p class="dim2">연결 안내 · 친구와 직접 연결(WebRTC)하기 위해 연결 중개 서버(PeerJS)와 상대방에게 IP 주소 등 접속 정보가 전달돼요. 닉네임은 서버에 저장하지 않아요. <a href="https://tanggulstudio.github.io/Camp-Survivor/privacy.html" target="_blank" rel="noopener">개인정보처리방침</a></p>
       <label class="netok"><input type="checkbox" id="netAgree"> 위 연결 안내를 확인했어요</label>
       <label class="netrow">닉네임 <input type="text" id="netName" maxlength="10" placeholder="모험가" autocomplete="off"></label>
@@ -1062,7 +1062,7 @@ function inTower(){return !!(S.tower)}
 const TW_POOL=[[1,['goblin','wolf','boar']],[3,['archer']],[6,['toad','boar']],[10,['shard']],[15,['imp','magma']],[22,['mimic']]];
 function towerFloorSpawn(f){
   const pool=[];for(const [mn,ts] of TW_POOL)if(f>=mn)pool.push(...ts);
-  const n=Math.min(16,4+Math.floor(f*.7)),hpM=1+f*.24,dmM=1+f*.08,[cx,cy]=arenaCenter();
+  const np=NH()?1+Object.keys(NET.ghosts).length:1,n=Math.min(16,4+Math.floor(f*.7))+(np-1)*2,hpM=(1+f*.24)*(1+.5*(np-1)),dmM=1+f*.08,[cx,cy]=arenaCenter();
   const spots=[];for(let y=AR.y0+1;y<AR.y0+AR.n-1;y++)for(let x=AR.x0+1;x<AR.x0+AR.n-1;x++){const i=idx(x,y);if(!S.res[i]&&Math.hypot((x+.5)*T-cx,(y+.5)*T-cy)>4*T)spots.push(i);}
   const add=(t,mul)=>{const i=spots[Math.floor(Math.random()*spots.length)],[x,y]=cCenter(i);makeEnemy(t,x,y);const e=S.enemies[S.enemies.length-1];
     e.wild=1;e.arena=1;e.hx=cx;e.hy=cy;e.max=e.hp=ET[t].hp*hpM*(mul||1);e.m=dmM*(mul?1.4:1);if(mul){e.elite=1;e.sz=1.35;}return e;};
@@ -1072,13 +1072,14 @@ function towerFloorSpawn(f){
   S.tower.left=S.enemies.filter(e=>e.arena&&!e.dead).length;
 }
 function enterTower(f){
-  if(NET.role){toast('멀티플레이 중에는 도전의 탑에 들어갈 수 없어요',2200);return;}
   if(S.phase!=='day'){toast('밤에는 탑 문이 닫혀 있어. 낮에 다시 오자',1800);return;}
+  if(NC()){closeShop();netSend({twreq:f});toast('호스트에게 '+f+'층에 같이 가자고 말했어요. 호스트가 들어가면 함께 이동해요',3000);return;}
   closeShop();S.enemies=S.enemies.filter(e=>!e.arena);
   const p=S.p;S.tower={floor:f,state:'fight',rx:p.x,ry:p.y,start:f};
   const [cx,cy]=arenaCenter();p.x=cx;p.y=cy+3*T;if(S.petE){S.petE.x=p.x-20;S.petE.y=p.y;}
   for(let y=AR.y0;y<AR.y0+AR.n;y++)for(let x=AR.x0;x<AR.x0+AR.n;x++)S.seen[idx(x,y)]=1;
   towerFloorSpawn(f);floorBanner();
+  if(NH()){const gs=Object.values(NET.ghosts);gs.forEach((g,k)=>{const a=k/Math.max(1,gs.length)*Math.PI*2;g.x=cx+Math.cos(a)*T*1.5;g.y=cy+3*T+Math.sin(a)*T*.8;netTo(g.id,{tw:{f,x:g.x,y:g.y}});});}
 }
 function floorBanner(){const f=S.tower.floor;toast('도전의 탑 '+f+'층'+(f%5===0?' · 수문장이 기다린다!':''),2200);}
 function towerClear(){
@@ -1088,6 +1089,7 @@ function towerClear(){
   S.towerBest=Math.max(S.towerBest||0,f);
   const tok=1+Math.floor(f/5)+(f%5===0?2:0),g=Math.round(20+f*7);
   S.items.token=(S.items.token||0)+tok;S.gold+=g;
+  if(NH())netAllSend({twclr:{f,tok,g}});
   const [cx,cy]=arenaCenter(),mats=f<5?['u','i']:f<10?['a','o']:f<20?['o','e']:f<30?['e','d']:['d','b'];
   for(let k=0;k<2+Math.floor(f/4);k++)drop(cx,cy,mats[k%2],1+Math.floor(f/10));
   towerGearDrop(f,cx,cy);
@@ -1100,7 +1102,7 @@ function towerClear(){
 }
 const MAT_RANK={leather:0,w:0,s:0,c:0,u:1,i:2,a:3,o:4,e:5,d:6,b:7,m:8};
 function gearTier(id){const r=ITEMS[id].recipe;if(!r)return -1;let t=0;for(const k in r)t=Math.max(t,MAT_RANK[k]||0);return t}
-function towerGearDrop(f,x,y){
+function towerGearDrop(f,x,y,direct){if(direct){const kp=S.picks;S.picks=[];towerGearDrop(f,x,y);const got=S.picks;S.picks=kp;for(const k of got)collectPick(k);return got;}
   const boss=f%5===0,ft=Math.min(8,1+Math.floor(f/6));
   if(Math.random()<(boss?.3:.1)){const tier=Math.random()<.3?Math.max(0,ft-1):ft;let pool=Object.keys(ITEMS).filter(id=>ITEMS[id].recipe&&gearTier(id)===tier&&!owns(id));
     if(!pool.length)pool=Object.keys(ITEMS).filter(id=>ITEMS[id].recipe&&gearTier(id)<=ft&&!owns(id));
@@ -1108,16 +1110,17 @@ function towerGearDrop(f,x,y){
   if(f>=15&&Math.random()<(boss?.06:.015)){const tp=TOKEN_GEAR.map(o=>o.id).filter(id=>!owns(id));if(tp.length)drop(x,y,'eq:'+tp[Math.floor(Math.random()*tp.length)],1);}
   if(f>=8&&Math.random()<(boss?.08:.02)){const id=pickRare();if(id)drop(x,y,'eq:'+id,1);}
 }
-function towerNext(){$('ovFloor').hidden=true;if(!S.tower)return;S.p.hp=Math.min(pMax(),S.p.hp+pMax()*.25);S.tower.floor++;S.tower.state='fight';towerFloorSpawn(S.tower.floor);floorBanner();}
+function towerNext(){$('ovFloor').hidden=true;if(!S.tower)return;if(NH())netAllSend({twnext:S.tower.floor+1});S.p.hp=Math.min(pMax(),S.p.hp+pMax()*.25);S.tower.floor++;S.tower.state='fight';towerFloorSpawn(S.tower.floor);floorBanner();}
 function leaveTower(msg){
   $('ovFloor').hidden=true;$('floorNext').hidden=false;const t=S.tower;if(!t)return;
-  for(const k of S.picks)if(k.x<(AR.x0+AR.n)*T&&k.y<(AR.y0+AR.n)*T)collectPick(k),k.got=true;S.picks=S.picks.filter(k=>!k.got);
+  if(!NC()){for(const k of S.picks)if(k.x<(AR.x0+AR.n)*T&&k.y<(AR.y0+AR.n)*T)collectPick(k),k.got=true;S.picks=S.picks.filter(k=>!k.got);}
+  if(NH()&&!t.vault){for(const g of Object.values(NET.ghosts)){netTo(g.id,{twout:1});}}
   S.enemies=S.enemies.filter(e=>!e.arena);S.tower=null;
   const p=S.p;p.x=t.rx;p.y=t.ry;if(S.petE){S.petE.x=p.x-20;S.petE.y=p.y;}
   toast(msg||('탑에서 나왔다 · 최고 기록 '+(S.towerBest||0)+'층'),2600);
 }
 function updTower(){
-  const t=S.tower;if(!t||t.state!=='fight')return;
+  const t=S.tower;if(!t||t.state!=='fight'||NC())return;
   const left=S.enemies.filter(e=>e.arena&&!e.dead).length;t.left=left;
   if(!left){if(t.vault)vaultClear();else towerClear();}
 }
@@ -2635,6 +2638,7 @@ function netHostMsg(conn,m){const id=conn.peer;
   else if(m.build){const kp=S.p,kt=tool;S.p=g;tool=m.build;try{placeAt(m.i,true);}catch(_){}tool=kt;S.p=kp;}
   else if(m.add){for(const k in m.add)if(RK[k])S[RK[k]]=Math.max(0,S[RK[k]]+m.add[k]);}
   else if(m.night){startNight();}
+  else if(m.twreq){if(!S.tower)toast(g.name+' 님이 도전의 탑 '+m.twreq+'층에 같이 가자고 해요! 탑 앞에서 입장하면 다 같이 들어가요',3600);}
   else if(m.summon){const L=S.lairs.find(l=>l.id===m.summon);if(L&&L.state==='sleep'){L.summoned=1;wakeBoss(L);}}
   else if(m.vote!=null){NET.votes[id]=m.vote;netVoteCheck();}
   else if(m.unpause){paused=false;$('ovPause').hidden=true;netAllSend({pause:0});}
@@ -2648,7 +2652,7 @@ function netHostTick(dt){
     const pl=[['h',Math.round(S.p.x),Math.round(S.p.y),+S.p.face.toFixed(2),S.p.dead?1:0,S.eq.weapon,S.eq.body,S.eq.head,S.eq.feet,S.p.moving?1:0,NET.name]];
     for(const g of Object.values(NET.ghosts))pl.push([g.id,Math.round(g.x),Math.round(g.y),g.face,g.dead?1:0,g.eqw,g.eqb,g.eqh,g.eqf,g.moving?1:0,g.name]);
     const rs={};for(const k in RK)if(k!=='g')rs[k]=S[RK[k]];
-    netAllSend({snap:{t:Math.round(S.t*10)/10,ph:S.phase,day:S.day,nt:S.nightT,core:[Math.round(S.core.hp),S.core.max,S.coreLv],rs,en,pl,pk:S.picks.map(k=>[Math.round(k.x),Math.round(k.y),k.kind]),ld:S.lairs.map(l=>l.state),prog:S.prog,ev:S.event?S.event.id:null,warm:S.warm}});}
+    netAllSend({snap:{t:Math.round(S.t*10)/10,ph:S.phase,day:S.day,nt:S.nightT,core:[Math.round(S.core.hp),S.core.max,S.coreLv],rs,en,pl,pk:S.picks.map(k=>[Math.round(k.x),Math.round(k.y),k.kind]),ld:S.lairs.map(l=>l.state),prog:S.prog,ev:S.event?S.event.id:null,warm:S.warm,tw:S.tower&&!S.tower.vault?[S.tower.floor,S.tower.state,S.tower.left||0]:null}});}
   if(NET.dT<=0){NET.dT=.3;const r=[],b=[];
     if(!NET.lastRes||NET.lastRes.length!==S.res.length){NET.lastRes=Uint8Array.from(S.res);NET.lastBld=new Array(W*H).fill('');}
     for(let i=0;i<W*H;i++){if(S.res[i]!==NET.lastRes[i]){r.push([i,S.res[i],S.rhp[i]]);NET.lastRes[i]=S.res[i];}const bb=S.bld[i],sig=bb?bb.t+':'+(bb.lv||1)+':'+Math.round(bb.hp/bb.max*20)+':'+(bb.idle?1:0):'';if(sig!==NET.lastBld[i]){b.push(bb?[i,bb.t,bb.lv||1,Math.round(bb.hp),bb.max,bb.idle?1:0]:[i,0]);NET.lastBld[i]=sig;}}
@@ -2660,7 +2664,7 @@ function netClientMsg(m){
   if(m.full){netStatus('방이 가득 찼어요 (최대 '+MP_MAX+'명)');return;}
   if(m.init){NET.role='client';NET.myId=m.you;loadGame(m.init);loadChar();S.p.x=cCenter(freeCellNear(CI))[0];S.p.y=cCenter(freeCellNear(CI))[1]+T;NET.lastRes=null;$('ovNet').hidden=true;$('netRoom').hidden=true;toast((m.host||'호스트')+' 님의 캠프에 들어왔어요! 자원과 건물은 함께 쓰고, 장비와 가방은 각자 관리해요',4200);return;}
   if(!NC())return;
-  if(m.snap){const s=m.snap;S.t=s.t;if(S.phase!==s.ph){if(s.ph==='night')sfx('night');else if(s.ph==='day'&&S.phase==='night')sfx('dawn');}S.phase=s.ph==='dawn'?'day':s.ph;S.day=s.day;S.nightT=s.nt;S.core.hp=s.core[0];S.core.max=s.core[1];S.coreLv=s.core[2];S.prog=s.prog;S.warm=s.warm;
+  if(m.snap){const s=m.snap;S.t=s.t;if(S.phase!==s.ph){if(s.ph==='night')sfx('night');else if(s.ph==='day'&&S.phase==='night')sfx('dawn');}S.phase=s.ph==='dawn'?'day':s.ph;S.day=s.day;S.nightT=s.nt;S.core.hp=s.core[0];S.core.max=s.core[1];S.coreLv=s.core[2];S.prog=s.prog;S.warm=s.warm;if(S.tower&&s.tw){S.tower.floor=s.tw[0];S.tower.state=s.tw[1]==='clear'?'clear':'fight';S.tower.left=s.tw[2];}
     for(const k in s.rs)S[RK[k]]=s.rs[k];
     const old={};for(const e of S.enemies)old[e.id]=e;const ne=[];
     for(const a of s.en){let e=old[a[0]];if(!e){e={id:a[0],t:a[1],x:a[2],y:a[3],m:1,cd:0,spd:ET[a[1]].spd,face:a[6],hurt:0};}e.tx=a[2];e.ty=a[3];e.hp=a[4];e.max=a[5];e.face=a[6];e.burrow=!!a[7];e.lair=a[8]?(e.lair||{}):null;e.sz=a[9]||0;if(a[10])e.hurt=.12;e.slam=a[11]?.3:0;ne.push(e);}
@@ -2676,6 +2680,11 @@ function netClientMsg(m){
   if(m.kill){S.kills++;codexKill(m.kill);skXp(combatSkill(),Math.max(1,Math.round(ET[m.kill].xp*.6)));gainXp(m.xp);S.gold+=m.g;float(m.x+10,m.y-26,'+'+m.g+'G','#ffd23a');return;}
   if(m.give){collectPick({kind:m.give,n:m.n||1,x:S.p.x,y:S.p.y});return;}
   if(m.toast){toast(m.toast,3000);return;}
+  if(m.tw){closeShop&&closeShop();const p=S.p;S.tower={floor:m.tw.f,state:'fight',rx:p.x,ry:p.y,start:m.tw.f,mp:1};p.x=m.tw.x;p.y=m.tw.y;if(p.dead){p.dead=0;p.hp=pMax()*.5;}for(let y=AR.y0;y<AR.y0+AR.n;y++)for(let x=AR.x0;x<AR.x0+AR.n;x++)S.seen[idx(x,y)]=1;toast('다 같이 도전의 탑 '+m.tw.f+'층으로! 힘내요',2600);return;}
+  if(m.twclr){if(!S.tower)return;const c=m.twclr;S.items.token=(S.items.token||0)+c.tok;S.gold+=c.g;S.towerBest=Math.max(S.towerBest||0,c.f);const gg=towerGearDrop(c.f,S.p.x,S.p.y,true)||[];sfx('achieve');
+    toast(c.f+'층 돌파! 탑 증표 +'+c.tok+' · 금화 +'+c.g+(gg.length?' · 장비: '+gg.map(k=>ITEMS[k.kind.slice(3)]?ITEMS[k.kind.slice(3)].n:k.kind).join(', '):'')+' — 호스트가 다음 층을 고르는 중이에요',4200);return;}
+  if(m.twnext){if(S.tower){S.tower.floor=m.twnext;S.tower.state='fight';S.p.hp=Math.min(pMax(),S.p.hp+pMax()*.25);floorBanner();}return;}
+  if(m.twout){if(S.tower)leaveTower('다 같이 탑에서 나왔어요 · 최고 기록 '+(S.towerBest||0)+'층');return;}
   if(m.pause!=null){paused=!!m.pause;$('ovPause').hidden=!paused;return;}
 }
 function netClientTick(dt){
@@ -2687,7 +2696,7 @@ function netOthersLerp(dt){for(const o of Object.values(NET.others)){const k=Mat
 function drawOthers(now){
   const list=NH()?Object.values(NET.ghosts).map(g=>({x:g.x,y:g.y,face:g.face,dead:g.dead,eqw:g.eqw,eqb:g.eqb,eqh:g.eqh,eqf:g.eqf,moving:g.moving,name:g.name,ref:g})):Object.values(NET.others).map(o=>({x:o.rx,y:o.ry,face:o.face,dead:o.dead,eqw:o.eqw,eqb:o.eqb,eqh:o.eqh,eqf:o.eqf,moving:o.moving,name:o.name,ref:o}));
   if(!list.length)return;const kp=S.p,ke=S.eq;
-  for(const o of list){if(o.dead)continue;const r=o.ref;r.gp=r.gp||{x:o.x,y:o.y,face:0,fishW:-1,gI:-1,atkT:0,walk:0};const gp=r.gp;gp.x=o.x;gp.y=o.y;gp.face=o.face;gp.moving=!!o.moving;gp.fishW=-1;gp.gI=-1;gp.atkT=0;gp.digT=0;gp.shield=0;gp.bite=0;
+  for(const o of list){if(o.dead)continue;const r=o.ref;r.gp=r.gp||{x:o.x,y:o.y,face:0,fishW:-1,gI:-1,atkT:0,walk:0};const gp=r.gp;gp.ghost=1;gp.x=o.x;gp.y=o.y;gp.face=o.face;gp.moving=!!o.moving;gp.fishW=-1;gp.gI=-1;gp.atkT=0;gp.digT=0;gp.shield=0;gp.bite=0;
     S.p=gp;S.eq={weapon:o.eqw,body:o.eqb,head:o.eqh,feet:o.eqf,hands:null};try{drawPlayer(now);}catch(_){}S.p=kp;S.eq=ke;
     ctx.font='bold 11px "Gowun Dodum",sans-serif';ctx.textAlign='center';ctx.fillStyle='rgba(0,0,0,.6)';ctx.fillText(o.name,o.x+1,o.y-33);ctx.fillStyle='#9fe8ff';ctx.fillText(o.name,o.x,o.y-34);ctx.textAlign='left';}
 }
@@ -3932,7 +3941,7 @@ function drawPlayer(now){
   ctx.fillStyle='#d5dbde';ctx.beginPath();ctx.moveTo(18,-5);ctx.lineTo(24,0);ctx.lineTo(18,5);ctx.fill();}
   ctx.restore();
   if(behind)drawHero(now);
-  if(S.pname&&!p.dead){ctx.font='bold 11px "Gowun Dodum",sans-serif';ctx.textAlign='center';ctx.fillStyle='rgba(0,0,0,.6)';ctx.fillText(S.pname,p.x+1,p.y-33);ctx.fillStyle='#ffe6a8';ctx.fillText(S.pname,p.x,p.y-34);ctx.textAlign='left';}
+  if(S.pname&&!p.dead&&!p.ghost){ctx.font='bold 11px "Gowun Dodum",sans-serif';ctx.textAlign='center';ctx.fillStyle='rgba(0,0,0,.6)';ctx.fillText(S.pname,p.x+1,p.y-33);ctx.fillStyle='#ffe6a8';ctx.fillText(S.pname,p.x,p.y-34);ctx.textAlign='left';}
   if(p.shield>0){const g=(Math.sin(now/90)+1)/2;ctx.fillStyle='rgba(201,166,255,'+(.15+g*.1)+')';ctx.strokeStyle='rgba(230,216,255,.8)';ctx.lineWidth=2;ctx.beginPath();ctx.arc(p.x,p.y,20,0,Math.PI*2);ctx.fill();ctx.stroke();}
   if(p.fishW>=0){
     const [ox,oy]=cCenter(p.fishW),dip=p.bite>0?4+Math.sin(now/40)*3:Math.sin(now/400)*1.2;
@@ -4060,7 +4069,7 @@ function drawMerchant(m,now){
 function drawVillager(v){
   if(v.hid&&S.phase!=='day')return;
   if(v.sayL>0&&v.say){ctx.font='11px "Gowun Dodum",sans-serif';const tw=ctx.measureText(v.say).width+14,bx=v.x-tw/2,by=v.y-62;ctx.globalAlpha=Math.min(1,v.sayL*2);ctx.fillStyle='rgba(250,244,228,.95)';ctx.beginPath();ctx.roundRect?ctx.roundRect(bx,by,tw,20,8):ctx.rect(bx,by,tw,20);ctx.fill();ctx.beginPath();ctx.moveTo(v.x-4,by+20);ctx.lineTo(v.x,by+26);ctx.lineTo(v.x+4,by+20);ctx.fill();ctx.fillStyle='#3a2a1a';ctx.textAlign='center';ctx.fillText(v.say,v.x,by+14);ctx.textAlign='left';ctx.globalAlpha=1;}
-  if(v.name){const kp=S.p,ke=S.eq;const gp=v.gp||(v.gp={fishW:-1,gI:-1,atkT:0,walk:0});Object.assign(gp,{x:v.x,y:v.y,face:v.face||0,fishW:-1,gI:-1,atkT:v.cd>.8?.1:0,digT:0,shield:0,bite:0,hair:VCOL[v.col||0][0],scarf:VCOL[v.col||0][1]});S.p=gp;S.eq={weapon:v.w,body:v.a,head:null,feet:null,hands:null};try{drawPlayer(performance.now());}catch(_){}S.p=kp;S.eq=ke;
+  if(v.name){const kp=S.p,ke=S.eq;const gp=v.gp||(v.gp={fishW:-1,gI:-1,atkT:0,walk:0,ghost:1});Object.assign(gp,{x:v.x,y:v.y,face:v.face||0,fishW:-1,gI:-1,atkT:v.cd>.8?.1:0,digT:0,shield:0,bite:0,hair:VCOL[v.col||0][0],scarf:VCOL[v.col||0][1]});S.p=gp;S.eq={weapon:v.w,body:v.a,head:null,feet:null,hands:null};try{drawPlayer(performance.now());}catch(_){}S.p=kp;S.eq=ke;
     ctx.font='bold 10px "Gowun Dodum",sans-serif';ctx.textAlign='center';ctx.fillStyle='rgba(0,0,0,.55)';ctx.fillText(v.name,v.x+1,v.y-31);ctx.fillStyle='#f0e0b0';ctx.fillText(v.name,v.x,v.y-32);ctx.textAlign='left';return;}
   ctx.fillStyle='rgba(0,0,0,.25)';ctx.beginPath();ctx.ellipse(v.x,v.y+8,8,3,0,0,Math.PI*2);ctx.fill();
   ctx.fillStyle='#8c6a44';ctx.beginPath();ctx.arc(v.x,v.y,8,0,Math.PI*2);ctx.fill();
