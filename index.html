@@ -254,7 +254,7 @@ body.bopen .bossbar{bottom:calc(196px + env(safe-area-inset-bottom,0px))}
 .disc p{margin:4px 0;font-size:13px;color:#f0eedf;line-height:1.5}
 .disc ul{margin:0;padding-left:16px;font-size:12.5px;color:#d8d4c4;line-height:1.55}
 .disc ul b{font-family:inherit;font-size:12.5px;color:#9fe8ff;margin-right:4px}
-@media (max-width:580px){.tut{top:auto;bottom:calc(96px + env(safe-area-inset-bottom,0px));width:calc(100% - 32px);font-size:12.5px;padding:8px 10px}body.bopen .tut{bottom:calc(200px + env(safe-area-inset-bottom,0px))}}
+@media (max-width:580px){.tut .gl+.gl{display:none}.tut{top:auto;bottom:calc(162px + env(safe-area-inset-bottom,0px));width:calc(100% - 32px);font-size:12.5px;padding:8px 10px}body.bopen .tut{bottom:calc(206px + env(safe-area-inset-bottom,0px))}}
 .tut span{color:#e8e4d4}
 .tut .linkbtn{align-self:flex-start;font-size:11.5px}
 .res{pointer-events:auto}
@@ -462,7 +462,7 @@ button.slot:disabled{cursor:default}
       <button class="xbtn" id="netX" aria-label="닫기"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button>
       <h2>친구와 함께하기</h2>
       <p>최대 4명이 한 캠프에서 함께 버텨요. 방을 만들면 내 저장(없으면 새 캠프)으로 방이 열려요. 자원·건물·밤의 습격은 함께 쓰고, 장비·가방·숙련도는 각자 관리해요. 도전의 탑은 호스트가 들어가면 다 같이 이동하고, 층을 깰 때마다 모두 보상을 받아요. 방은 호스트가 게임 중일 때 열 수 있어요.</p>
-      <p class="dim2">연결 안내 · 친구와 직접 연결(WebRTC)하기 위해 연결 중개 서버(PeerJS)와 상대방에게 IP 주소 등 접속 정보가 전달돼요. 닉네임은 서버에 저장하지 않아요. <a href="https://tanggulstudio.github.io/Camp-Survivor/privacy.html" target="_blank" rel="noopener">개인정보처리방침</a></p>
+      <p class="dim2">연결 안내 · 친구와 직접 연결(WebRTC)하기 위해 연결 중개 서버(PeerJS)와 상대방에게 IP 주소 등 접속 정보가 전달돼요. 직접 연결이 안 되는 망에서는 중계 서버(Open Relay)를 거칠 수 있어요. 닉네임은 서버에 저장하지 않아요. <a href="https://tanggulstudio.github.io/Camp-Survivor/privacy.html" target="_blank" rel="noopener">개인정보처리방침</a></p>
       <label class="netok"><input type="checkbox" id="netAgree"> 위 연결 안내를 확인했어요</label>
       <label class="netrow">닉네임 <input type="text" id="netName" maxlength="10" placeholder="모험가" autocomplete="off"></label>
       <div class="row"><button class="big pri" id="netHostBtn">방 만들기</button></div>
@@ -2204,6 +2204,29 @@ Object.assign(WSKILL,{
   sgolem:{n:'돌 골렘 소환',cd:30,d:'25초 동안 돌 골렘이 주변 적을 내리찍어요'},
   sfairy:{n:'치유 요정 소환',cd:28,d:'18초 동안 요정 둘이 내 체력을 채워 주고 적을 쏴요'},
 });
+{const I={
+ inferno:'<path d="M12 21c-5 0-8-3-7-8 1 2 3 3 4 2-1-4 1-8 5-11 0 4 3 5 4 8 1-1 1-3 1-4 2 3 2 6 1 8-1 3-4 5-8 5z" fill="#ff6a2a"/><path d="M12 20c-2 0-3-2-2-4 1 1 2 1 2 0 0-2 1-3 2-4 0 2 2 3 1 6-1 1-2 2-3 2z" fill="#ffe08a"/>',
+ thunder:'<path d="M5 9c0-3 3-5 6-4 1-2 4-3 6-1 2 0 4 2 3 4z" fill="#8a9ab0"/><path d="M10 11l-3 6h3l-2 5 6-8h-3l2-3z" fill="#ffe08a"/><path d="M17 11l-2 4h2l-1 3 3-5h-2l1-2z" fill="#bfe0ff"/>',
+ overload:'<circle cx="12" cy="12" r="5" fill="#6fb8ff"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4M5 5l3 3M16 16l3 3M19 5l-3 3M5 19l3-3" stroke="#bfe0ff" stroke-width="1.6"/><path d="M13 8l-3 4h3l-2 4" stroke="#fff" stroke-width="1.4" fill="none"/>',
+ iceshard:'<path d="M3 21L13 9l2 2L3 21z" fill="#bfeeff"/><path d="M13 9l7-6-2 8z" fill="#e8fbff" stroke="#6fb8ff" stroke-width=".8"/><path d="M8 20l9-8M6 14l3 1" stroke="#9fd8e8" stroke-width="1"/>',
+ blizzard:'<path d="M12 2v20M3 7l18 10M21 7L3 17" stroke="#e8fbff" stroke-width="2" stroke-linecap="round"/><path d="M12 5l-2-2M12 5l2-2M12 19l-2 2M12 19l2 2" stroke="#9fd8e8" stroke-width="1.4"/>',
+ glacier:'<path d="M2 20l5-12 3 5 3-9 4 8 2-3 3 11z" fill="#bfeeff" stroke="#6fb8ff" stroke-width=".9"/><path d="M7 8l1 6M13 4l1 8" stroke="#fff" stroke-width="1"/>',
+ whirl:'<path d="M12 4a8 8 0 1 1-8 8" stroke="#f0eedf" stroke-width="2.6" fill="none" stroke-linecap="round"/><path d="M4 7v5h5" stroke="#f0eedf" stroke-width="2.6" fill="none"/><path d="M9 15l6-6" stroke="#d5dbde" stroke-width="3"/>',
+ skyblade:'<path d="M3 20L19 4l2 1-1 2L5 22z" fill="#e8f4ff" stroke="#6fb8ff" stroke-width=".8"/><path d="M6 10c4-1 8-4 10-8M10 20c4-2 8-6 10-10" stroke="#bfe0ff" stroke-width="1.4" fill="none"/>',
+ pierce:'<path d="M2 12h17" stroke="#c8a070" stroke-width="2.2"/><path d="M19 8l4 4-4 4z" fill="#d5dbde"/><path d="M2 9l3 3-3 3" stroke="#e8e4d0" stroke-width="1.4" fill="none"/><circle cx="10" cy="12" r="4" fill="none" stroke="#ffd27a" stroke-width="1"/>',
+ rain:'<path d="M5 3l-2 6M10 3l-2 6M15 3l-2 6M20 3l-2 6M7 12l-2 6M12 12l-2 6M17 12l-2 6" stroke="#c8a070" stroke-width="1.8" stroke-linecap="round"/>',
+ fan:'<g fill="#d5dbde"><path d="M12 12l-8-5 2 6z"/><path d="M12 12l8-5-2 6z"/><path d="M12 12l-5 8 6-2z"/><path d="M12 12l5 8-6-2z"/></g><circle cx="12" cy="12" r="2" fill="#6a7a80"/>',
+ shadow:'<circle cx="8" cy="10" r="3" fill="#7a4ab8"/><circle cx="16" cy="10" r="3" fill="#a070e0"/><path d="M5 20c1-4 5-5 6-5M13 20c1-4 5-5 6-5" stroke="#d0a0ff" stroke-width="2" fill="none"/>',
+ multi:'<path d="M3 8c3-2 6-1 9 3-2-1-4-1-6 0 2 1 3 4 3 7C7 15 5 12 3 8z" fill="#c8a070"/><path d="M11 6c3-2 6-1 9 3-2-1-4-1-6 0 2 1 3 4 3 7-2-3-4-6-6-10z" fill="#e8c890"/>',
+ tornado:'<path d="M4 4h16M6 8h12M8 12h8M9 16h5M10 20h2" stroke="#dcf0f0" stroke-width="2.4" stroke-linecap="round"/>',
+ charge:'<path d="M3 12h12" stroke="#c8a070" stroke-width="2.4"/><path d="M15 7l7 5-7 5z" fill="#d5dbde"/><path d="M2 8h5M2 16h5" stroke="#e0573f" stroke-width="1.6"/>',
+ skewer:'<path d="M2 12h18" stroke="#c8a070" stroke-width="2.2"/><path d="M20 9l3 3-3 3z" fill="#d5dbde"/><circle cx="8" cy="12" r="3" fill="#e0573f" opacity=".8"/><circle cx="14" cy="12" r="3" fill="#e0573f" opacity=".6"/>',
+ quake:'<path d="M2 18h20" stroke="#8a6a4a" stroke-width="3"/><path d="M12 18l-2-5 3-3-2-5" stroke="#3a2a1a" stroke-width="1.8" fill="none"/><path d="M5 14l2-3M19 14l-2-3" stroke="#c8a070" stroke-width="1.6"/>',
+ smash:'<rect x="9" y="3" width="8" height="6" fill="#9aa3a8" stroke="#14100c" stroke-width=".8"/><path d="M13 9v7" stroke="#7a4d2a" stroke-width="2.4"/><path d="M2 20h20M5 17l-2-3M19 17l2-3M9 18l-2-4M15 18l2-4" stroke="#c8a070" stroke-width="1.6"/>',
+ sgolem:'<ellipse cx="12" cy="13" rx="7" ry="7" fill="#8a7a66"/><circle cx="5" cy="15" r="3" fill="#6a5a4a"/><circle cx="19" cy="15" r="3" fill="#6a5a4a"/><rect x="9" y="10" width="2" height="2" fill="#7fe8aa"/><rect x="13" y="10" width="2" height="2" fill="#7fe8aa"/>',
+ sfairy:'<ellipse cx="7" cy="9" rx="5" ry="3" fill="#dcefff" opacity=".85" transform="rotate(-25 7 9)"/><ellipse cx="17" cy="9" rx="5" ry="3" fill="#dcefff" opacity=".85" transform="rotate(25 17 9)"/><circle cx="12" cy="12" r="3.4" fill="#ffe8f8"/><path d="M12 17v4M10 19h4" stroke="#ff9ac8" stroke-width="1.6"/>',
+ flame:'<path d="M5 19L19 5" stroke="#d5dbde" stroke-width="3"/><path d="M14 4c3 2 5 5 3 9-1-2-3-2-3-4-1 2-3 3-5 2 2-2 3-4 5-7z" fill="#ff8a3a"/>'};
+ for(const k in I)if(WSKILL[k]&&!WSKILL[k].ic)WSKILL[k].ic=I[k];}
 const WKEYS=['R','T','C'];
 function setCounts(){const c={};for(const sl of SLOT_KEYS){const id=S.eq[sl];if(id&&ITEMS[id].set)c[ITEMS[id].set]=(c[ITEMS[id].set]||0)+1;}return c}
 function setBonus(key){let v=0;const c=setCounts();for(const k in c){const st=SETS[k];if(c[k]>=2&&st.b2[key])v+=st.b2[key];if(c[k]>=4&&st.b4[key])v+=st.b4[key];}return v}
@@ -2742,15 +2765,23 @@ function loadPeer(){return new Promise((ok,no)=>{if(window.Peer)return ok();if(t
 function bcTransport(){const ch=new BroadcastChannel('cs-net');return ch;}
 function mkCode(){const a='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let c='';for(let k=0;k<6;k++)c+=a[Math.floor(Math.random()*a.length)];return c}
 function wrapBC(myId,peerId,ch){const L={};const c={open:true,peer:peerId,send:m=>ch.postMessage({to:peerId,from:myId,m}),on:(ev,f)=>{(L[ev]=L[ev]||[]).push(f);},_emit:(ev,a)=>(L[ev]||[]).forEach(f=>f(a)),close:()=>{c.open=false;}};return c}
+async function iceConfig(){const sv=[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'}];
+  try{const user=Math.floor(Date.now()/1000+6*3600)+':campsv',enc=new TextEncoder(),key=await crypto.subtle.importKey('raw',enc.encode('openrelayprojectsecret'),{name:'HMAC',hash:'SHA-1'},false,['sign']);
+    const sig=new Uint8Array(await crypto.subtle.sign('HMAC',key,enc.encode(user)));let bin='';for(const b of sig)bin+=String.fromCharCode(b);const cred=btoa(bin);
+    sv.push({urls:['turn:staticauth.openrelay.metered.ca:80','turn:staticauth.openrelay.metered.ca:443','turns:staticauth.openrelay.metered.ca:443?transport=tcp'],username:user,credential:cred});}catch(_){}
+  return {iceServers:sv}}
+const NET_ERR={'network':'인터넷 연결이 불안정해요. 와이파이나 데이터를 확인하고 다시 해 봐요','server-error':'연결 서버가 잠시 바빠요. 조금 뒤에 다시 해 봐요','socket-error':'연결 서버와 통신이 끊겼어요. 조금 뒤에 다시 해 봐요','socket-closed':'연결 서버와 통신이 끊겼어요. 조금 뒤에 다시 해 봐요','browser-incompatible':'이 브라우저는 멀티플레이를 지원하지 않아요. 크롬이나 사파리 최신 버전으로 열어 주세요','webrtc':'친구 기기와 직접 연결이 안 됐어요. 둘 다 같은 와이파이에 있거나, 한쪽이 휴대폰 데이터를 쓰면 잘 되는 경우가 많아요','peer-unavailable':'방을 찾지 못했어요. 코드를 다시 확인하거나 호스트가 방을 열어 뒀는지 물어봐요','unavailable-id':'방 코드가 겹쳤어요. 방 만들기를 한 번 더 눌러 주세요'};
+function netErr(e){const t=e&&e.type;return NET_ERR[t]||('연결 오류가 났어요 ('+(t||e)+'). 잠시 뒤 다시 해 봐요')}
 async function netHost(){
   if(!running||NET.role){return;}NET.name=($('netName').value||'호스트').slice(0,10);const code=mkCode();NET.code=code;
   const onConn=conn=>{conn.on('data',m=>netHostMsg(conn,m));conn.on('close',()=>netDrop(conn.peer));};
   if(location.search.includes('bc')){const ch=bcTransport();NET.bc=ch;NET.role='host';const map={};ch.onmessage=ev=>{const d=ev.data;if(d.to!=='host-'+code)return;let c=map[d.from];if(!c){if(Object.keys(NET.conns).length>=MP_MAX-1)return;c=map[d.from]=wrapBC('host-'+code,d.from,ch);onConn(c);}c._emit('data',d.m);};netShowRoom();return;}
   netStatus('연결 준비 중…');try{await loadPeer();}catch(e){netStatus('이 화면에서는 멀티플레이를 쓸 수 없어요. GitHub 사이트(tanggulstudio.github.io/Camp-Survivor)에서 열어 주세요.');return;}
-  const peer=new Peer('campsv-'+code);NET.peer=peer;
+  const peer=new Peer('campsv-'+code,{config:await iceConfig()});NET.peer=peer;
   peer.on('open',()=>{NET.role='host';netShowRoom();});
+  peer.on('disconnected',()=>{if(NH()){netStatus('연결 서버와 잠깐 끊겼어요. 다시 잇는 중…');try{peer.reconnect();}catch(_){}}});
   peer.on('connection',conn=>{if(Object.keys(NET.conns).length>=MP_MAX-1){conn.on('open',()=>{conn.send({full:1});setTimeout(()=>conn.close(),500);});return;}conn.on('open',()=>onConn(conn));});
-  peer.on('error',e=>netStatus('연결 오류: '+(e.type||e)));
+  peer.on('error',e=>{netStatus(netErr(e));if(e.type==='unavailable-id'){try{peer.destroy();}catch(_){}NET.peer=null;}});
 }
 async function netJoin(){
   if(NET.role)return;const code=($('netCode').value||'').trim().toUpperCase();if(code.length<6){netStatus('방 코드 6자리를 입력하세요');return;}
@@ -2758,8 +2789,10 @@ async function netJoin(){
   const onOpen=conn=>{NET.host=conn;conn.send({hello:1,name:NET.name});conn.on('data',m=>netClientMsg(m));conn.on('close',()=>{if(NET.role==='client'){toast('호스트와 연결이 끊어졌어요',3000);netLeave(true);}});};
   if(location.search.includes('bc')){const ch=bcTransport();NET.bc=ch;const me='c'+Math.random().toString(36).slice(2,7);const c=wrapBC(me,'host-'+code,ch);ch.onmessage=ev=>{const d=ev.data;if(d.to!==me)return;c._emit('data',d.m);};NET.joinPending=1;onOpen(c);return;}
   try{await loadPeer();}catch(e){netStatus('이 화면에서는 멀티플레이를 쓸 수 없어요. GitHub 사이트에서 열어 주세요.');return;}
-  const peer=new Peer();NET.peer=peer;peer.on('open',()=>{const conn=peer.connect('campsv-'+code,{reliable:true});conn.on('open',()=>onOpen(conn));conn.on('error',()=>netStatus('방을 찾지 못했어요'));});
-  peer.on('error',e=>netStatus(e.type==='peer-unavailable'?'방을 찾지 못했어요. 코드를 확인하세요':'연결 오류: '+(e.type||e)));
+  const peer=new Peer({config:await iceConfig()});NET.peer=peer;let opened=false;
+  peer.on('open',()=>{const conn=peer.connect('campsv-'+code,{reliable:true});conn.on('open',()=>{opened=true;onOpen(conn);});conn.on('error',()=>netStatus(NET_ERR['peer-unavailable']));});
+  setTimeout(()=>{if(!opened&&NET.peer===peer&&!NET.role){netStatus('20초 동안 연결이 안 됐어요. '+NET_ERR.webrtc+'. 다시 참가를 눌러 볼까요?');try{peer.destroy();}catch(_){}NET.peer=null;}},20000);
+  peer.on('error',e=>{netStatus(netErr(e));});
 }
 function netShowRoom(){$('netRoom').hidden=false;$('netCodeShow').textContent=NET.code;netStatus('친구에게 방 코드를 알려 주세요. 최대 '+MP_MAX+'명');netList();}
 function netList(){const el=$('netPlayers');if(!el)return;const a=[NET.name+(NH()?' (호스트)':'')].concat(Object.values(NET.ghosts).map(g=>g.name));el.textContent='참가자: '+a.join(', ');}
@@ -2922,7 +2955,7 @@ function updAllies(dt){
     let tg=null,td=6*T;
     for(const e of S.enemies){if(e.dead||e.burrow)continue;const d=Math.hypot(e.x-a.x,e.y-a.y);if(d<td&&Math.hypot(e.x-p.x,e.y-p.y)<12*T){td=d;tg=e;}}
     let tx,ty,sp=150;
-    if(tg){if(td<ET[tg.t].r+14){if(a.cd<=0&&a.kind!=='golem'){a.cd=.7;hitEnemy(tg,pAtk()*(a.pet?.4:a.fam?.45:.55)*sm);a.face=Math.atan2(tg.y-a.y,tg.x-a.x);}return;}tx=tg.x;ty=tg.y;sp=170;}
+    if(tg){if(td<ET[tg.t].r+14){if(a.cd<=0&&a.kind!=='golem'){a.cd=a.fam?.85:.7;hitEnemy(tg,pAtk()*(a.pet?.4:a.fam?.35:.55)*sm);a.face=Math.atan2(tg.y-a.y,tg.x-a.x);}return;}tx=tg.x;ty=tg.y;sp=170;}
     else{const ang=p.face+Math.PI+(k-(S.allies.length-1)/2)*.6;tx=p.x+Math.cos(ang)*36;ty=p.y+Math.sin(ang)*36;if(Math.hypot(tx-a.x,ty-a.y)<6)return;}
     const dx=tx-a.x,dy=ty-a.y,d=Math.hypot(dx,dy);if(d>1){const st=Math.min(sp*dt*(d>8*T?3:1),d);a.x+=dx/d*st;a.y+=dy/d*st;a.face=Math.atan2(dy,dx);}
   });
