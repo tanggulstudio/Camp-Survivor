@@ -173,6 +173,16 @@ body.bopen .bossbar{bottom:calc(196px + env(safe-area-inset-bottom,0px))}
 .isl.empty{cursor:default;opacity:.45}
 .ghost{opacity:.18;display:flex;width:72%;height:72%}.ghost svg{width:100%;height:100%}
 .igrid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:5px}
+.cmp{margin:4px 0 8px;font-size:13px}
+.cmph{margin:0 0 4px;color:var(--dim);font-size:12.5px}
+.cmph b{font:inherit;font-weight:700;color:var(--ink)}
+.cmp ul{list-style:none;margin:0;padding:0;display:grid;gap:3px}
+.cmp li{display:grid;grid-template-columns:5.5em 4em 1fr;gap:6px;align-items:baseline}
+.cmp li span{color:var(--dim)}
+.cmp li b{font-weight:600}
+.cmp i{font-style:normal;font-size:12.5px}
+.cmp i.up{color:#7fe08a}.cmp i.dn{color:#ff8a7a}.cmp i.eq{color:var(--dim)}
+@media (max-width:580px){.detail{position:sticky;bottom:-1px;z-index:3;box-shadow:0 -10px 24px rgba(0,0,0,.55);border-color:rgba(255,160,71,.45);max-height:46vh;overflow-y:auto}.gridcol{order:-1}.dicon{width:44px;height:44px;flex-basis:44px}.cmp li{grid-template-columns:5em 3.6em 1fr}}
 .detail{display:flex;gap:12px;align-items:flex-start;padding:12px;border-radius:10px;background:#1d2e22;border:1px solid var(--line);min-height:86px}
 .dicon{width:54px;height:54px;flex:0 0 54px;border-radius:10px;background:#16241a;border:1px solid var(--line);display:flex;align-items:center;justify-content:center}
 .dicon svg{width:76%;height:76%}
@@ -1538,6 +1548,17 @@ function renderBag(){
   }
   $('bagBody').innerHTML=h;
 }
+function eqTarget(id){const sl=ITEMS[id].slot;if(sl==='acc')return !S.eq.acc1?'acc1':!S.eq.acc2?'acc2':'acc1';return sl}
+const CMP_KEYS=[['atk','공격력',1],['def','방어',1],['hp','최대 체력',1],['spd','이동 속도',100],['regen','체력 재생',1],['gather','채집 속도',100]];
+function itemStat(id,k){if(!id||!ITEMS[id])return 0;const b=ITEMS[id][k]||0;return ENH_KEYS[k]?b*(1+.1*((S.enh&&S.enh[id])||0)):b}
+function compareHtml(id,cur){
+  const rows=[];for(const [k,n,m] of CMP_KEYS){const a=itemStat(id,k),c=itemStat(cur,k);if(!a&&!c)continue;const d=(a-c)*m;const unit=m===100?'%':'';
+    rows.push('<li><span>'+n+'</span><b>'+(Math.round(a*m*10)/10)+unit+'</b><i class="'+(d>0?'up':d<0?'dn':'eq')+'">'+(d>0?'▲ +':d<0?'▼ ':'')+(d?Math.round(d*10)/10+unit:'변화 없음')+'</i></li>');}
+  const e=ITEMS[id],ce=cur&&ITEMS[cur];let head='';
+  if(cur){head='<p class="cmph">지금 끼고 있는 <b>'+itemName(cur)+'</b>와 비교</p>';if(e.slot==='weapon'&&(e.cls||'sword')!==(ce.cls||'sword'))rows.push('<li><span>무기 종류</span><b>'+({sword:'검',bow:'활',staff:'지팡이',star:'표창',boom:'부메랑',lance:'장창',hammer:'망치'}[e.cls||'sword'])+'</b><i class="eq">'+({sword:'검',bow:'활',staff:'지팡이',star:'표창',boom:'부메랑',lance:'장창',hammer:'망치'}[ce.cls||'sword'])+'에서 바뀜</i></li>');}
+  else head='<p class="cmph">이 칸은 지금 비어 있어요</p>';
+  return '<div class="cmp">'+head+(rows.length?'<ul>'+rows.join('')+'</ul>':'')+'</div>';
+}
 function detailHtml(){
   const wrap=(ic,tag,name,desc,extra,act)=>'<div class="detail"><div class="dicon">'+ic+'</div><div class="dtxt"><span class="tag'+(tag.indexOf('세트')>=0?' setc':tag.indexOf('고유 장비')>=0||tag.indexOf('보스 유물')>=0?' uniq':tag.indexOf('희귀')===0?' rare':'')+'">'+tag+'</span><b>'+name+'</b><p>'+desc+'</p>'+(extra?'<p>'+extra+'</p>':'')+(act||'')+'</div></div>';
   if(!bagSel)return '<div class="detail"><div class="dtxt"><p>칸을 누르면 아이템 정보와 사용 버튼이 나와요.</p></div></div>';
@@ -1546,7 +1567,8 @@ function detailHtml(){
   if(k==='dish'){const r=RECIPES.find(x=>x.id===v),n=it['d_'+v]||0;if(!r||n<=0){bagSel=null;return detailHtml();}
     return wrap(itemIcon('d_'+v),'음식',r.n,r.d,'보유 '+n+'개','<button class="act" data-act="eat:'+v+'">먹기</button>');}
   if(k==='inv'){const id=S.inv[+v];if(!id){bagSel=null;return detailHtml();}const e=ITEMS[id];
-    const qi=eqInfo(id);return wrap(itemIcon(id),qi.tag,itemName(id),e.d,qi.extra,'<button class="act" data-act="equip:'+v+'">장착</button>');}
+    const qi=eqInfo(id),tk=eqTarget(id),cur=tk?S.eq[tk]:null;
+    return wrap(itemIcon(id),qi.tag,itemName(id),e.d,qi.extra,compareHtml(id,cur)+'<button class="act" data-act="equip:'+v+'">'+(cur?'교체':'장착')+'</button>');}
   if(k==='slot'){const id=S.eq[v];
     if(!id)return wrap('<span class="ghost">'+itemIcon(GHOST[v])+'</span>',SLOT_LABEL[v]+' 칸','비어 있음','제작하거나 적에게서 얻은 장비를 가방에서 눌러 장착하세요.');
     const e=ITEMS[id],qi=eqInfo(id);return wrap(itemIcon(id),'장착 중 · '+qi.tag,itemName(id),e.d,qi.extra,'<button class="act" data-act="unequip:'+v+'">해제</button>');}
