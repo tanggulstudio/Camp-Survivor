@@ -215,6 +215,13 @@ body.bopen .bossbar{bottom:calc(196px + env(safe-area-inset-bottom,0px))}
 .diffb b{font-family:var(--f-disp);font-weight:400;font-size:20px}
 .diffb span{font-size:13.5px;color:#d8d4c4;line-height:1.5}
 .diffb:hover{border-color:var(--ember)}
+.tut{position:absolute;left:max(16px,env(safe-area-inset-left,0px));top:calc(178px + env(safe-area-inset-top,0px));width:min(270px,calc(100% - 32px));background:rgba(20,30,22,.92);border:1px solid rgba(255,210,122,.6);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:4px;font-size:13px;line-height:1.5;pointer-events:auto}
+.tut b{color:#ffd27a;font-size:13.5px}
+@media (max-width:580px){.tut{top:auto;bottom:calc(96px + env(safe-area-inset-bottom,0px));width:calc(100% - 32px);font-size:12.5px;padding:8px 10px}body.bopen .tut{bottom:calc(200px + env(safe-area-inset-bottom,0px))}}
+.tut span{color:#e8e4d4}
+.tut .linkbtn{align-self:flex-start;font-size:11.5px}
+.res{pointer-events:auto}
+.res span{cursor:help}
 .legal{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12.5px;justify-content:center;border-top:1px solid var(--line);padding-top:12px}
 .legal a,.linkbtn{color:var(--dim);text-decoration:underline;text-underline-offset:2px;background:none;border:0;padding:0;font-size:12.5px;cursor:pointer}
 .legal a:hover,.linkbtn:hover{color:var(--ink)}
@@ -328,6 +335,7 @@ button.slot:disabled{cursor:default}
   </header>
 
   <div id="toast"></div>
+  <div class="tut" id="tutBox" hidden role="status"><b id="tutT"></b><span id="tutD"></span><button type="button" class="linkbtn" id="tutSkip">튜토리얼 건너뛰기</button></div>
   <div class="coldbar" id="coldBar" hidden>체온이 떨어지고 있다<div class="bar"><i id="coldFill"></i></div></div>
   <div class="bossbar" id="bossbar" hidden><b id="bossName"></b><div class="bar"><i id="bossFill"></i></div></div>
 
@@ -1029,8 +1037,9 @@ function towerClear(){
   for(let k=0;k<2+Math.floor(f/4);k++)drop(cx,cy,mats[k%2],1+Math.floor(f/10));
   towerGearDrop(f,cx,cy);
   if(Math.random()<.35)drop(cx,cy,'d_potion',1);
+  const got={};for(const k of S.picks){if(k.got)continue;if(k.x<(AR.x0+AR.n)*T&&k.y<(AR.y0+AR.n)*T){k.got=true;collectPick(k);const nm=k.kind.slice(0,3)==='eq:'?'['+SLOT_KIND[ITEMS[k.kind.slice(3)].slot]+'] '+ITEMS[k.kind.slice(3)].n:nameOf(k.kind);got[nm]=(got[nm]||0)+(k.n||1);}}S.picks=S.picks.filter(k=>!k.got);
   $('floorTitle').textContent=f+'층 돌파!';
-  $('floorSum').textContent='탑 증표 +'+tok+' · 금화 +'+g+' · 재료와 장비는 바닥에서 주우세요';
+  $('floorSum').textContent='탑 증표 +'+tok+' · 금화 +'+g+(Object.keys(got).length?' · 가방에 넣었어요: '+Object.entries(got).map(([n,c])=>n+(c>1?' ×'+c:'')).join(', '):'');
   $('floorNext').textContent=(f+1)+'층 도전';
   setTimeout(()=>{if(S.tower&&S.tower.state==='clear')$('ovFloor').hidden=false;},1400);
 }
@@ -1563,7 +1572,7 @@ function detailHtml(){
   const wrap=(ic,tag,name,desc,extra,act)=>'<div class="detail"><div class="dicon">'+ic+'</div><div class="dtxt"><span class="tag'+(tag.indexOf('세트')>=0?' setc':tag.indexOf('고유 장비')>=0||tag.indexOf('보스 유물')>=0?' uniq':tag.indexOf('희귀')===0?' rare':'')+'">'+tag+'</span><b>'+name+'</b><p>'+desc+'</p>'+(extra?'<p>'+extra+'</p>':'')+(act||'')+'</div></div>';
   if(!bagSel)return '<div class="detail"><div class="dtxt"><p>칸을 누르면 아이템 정보와 사용 버튼이 나와요.</p></div></div>';
   const i=bagSel.indexOf(':'),k=bagSel.slice(0,i),v=bagSel.slice(i+1),it=S.items;
-  if(k==='mat'){const n=getAmt(v);if(n<=0){bagSel=null;return detailHtml();}return wrap(itemIcon(v),RK[v]?'자원':'재료',nameOf(v),MAT_DESC[v]||'','보유 '+n+'개');}
+  if(k==='mat'){const n=getAmt(v);if(n<=0){bagSel=null;return detailHtml();}return wrap(itemIcon(v),RK[v]?'자원':'재료',nameOf(v),MAT_DESC[v]||'','보유 '+n+'개 · 쓰는 곳: '+resUses(v));}
   if(k==='dish'){const r=RECIPES.find(x=>x.id===v),n=it['d_'+v]||0;if(!r||n<=0){bagSel=null;return detailHtml();}
     return wrap(itemIcon('d_'+v),'음식',r.n,r.d,'보유 '+n+'개','<button class="act" data-act="eat:'+v+'">먹기</button>');}
   if(k==='inv'){const id=S.inv[+v];if(!id){bagSel=null;return detailHtml();}const e=ITEMS[id];
@@ -1644,7 +1653,7 @@ function talkTargets(){const a=NPCS.map((n,k)=>({k,x:(CX+n.dx+.5)*T,y:(CY+n.dy+.
   if(S.vault&&((S.items.akey>0)||(S.items.keyfrag>0)))a.push({k:'v',x:S.vault.x,y:S.vault.y,n:'고대 보물고'});if(S.merchant)a.push({k:'m',x:S.merchant.x,y:S.merchant.y,n:'떠돌이 상인'});return a}
 function nearTalk(r,wx,wy){const p=S.p;let best=null,bd=r;for(const t of talkTargets()){const d=Math.hypot(t.x-(wx==null?p.x:wx),t.y-(wy==null?p.y:wy))-(wx==null?(t.r||0):0);if(d<bd){bd=d;best=t;}}return best}
 function talkTo(t){if(!t||S.trading||S.menu)return;if(t.k==='v'){enterVault();return;}if(t.k==='n'){takeNest(t.q);return;}if(t.k==='L'){offerSummon(t.L);return;}if(t.k==='i'){incubSel=t.i;openShop('incub');return;}if(t.k==='s'){stashSel=t.i;stashCleanup();openShop('stash');return;}if(t.k==='m')openTrade();else openShop(NPCS[t.k].id);}
-function openShop(id){shopId=id;S.trading=true;renderShop();$('ovShop').hidden=false;}
+function openShop(id){if(S)S.tutShop=1;shopId=id;S.trading=true;renderShop();$('ovShop').hidden=false;}
 function closeShop(){$('ovShop').hidden=true;S.trading=false;}
 function renderShop(){
   const sh=SHOPS[shopId];$('shopTitle').textContent=sh.t;$('shopLine').textContent=sh.line;$('shopGold').textContent='보유 금화 '+S.gold+'G';
@@ -2574,6 +2583,32 @@ function checkUnlocks(){if(!S||!running)return;S.got=S.got||{};const nw=[];
   for(const k of ['u','i','a','o','c','e','d','b','m'])if(!S.got[k]&&getAmt(k)>0){S.got[k]=1;for(const t in UNLOCK)if(UNLOCK[t]===k)nw.push(t);}
   if(!S.got.egg&&(Object.keys(S.items).some(k=>k.startsWith('egg_')&&S.items[k]>0)||S.pets.length)){S.got.egg=1;nw.push('incub');}
   if(nw.length){S.newB=S.newB||{};for(const t of nw)S.newB[t]=1;toast('새로 지을 수 있어요: '+nw.map(t=>B[t].n).join(', ')+' — 건설(B)에서 확인해 봐!',3600);sfx('upgrade');setBcat(bcat);}}
+function resUses(k){const out=[];
+  for(const t in B){const c=B[t].cost;if(c&&c[k]&&t!=='twall')out.push(B[t].n);}
+  for(const tk in TOOLS_EQ)for(const tr of TOOLS_EQ[tk].tiers)if(tr.r&&tr.r[k])out.push(tr.n);
+  let eqN=0;for(const id in ITEMS){const r=ITEMS[id].recipe;if(r&&r[k])eqN++;}
+  for(const r of RECIPES)if(r.need&&r.need[k])out.push(r.n);
+  for(const id in SUMMON)if(SUMMON[id].need[k])out.push(SUMMON[id].n);
+  if(UPG.some(u=>u&&u[k]))out.push('건물 업그레이드');
+  const uniq=[...new Set(out)];let txt=uniq.slice(0,8).join(', ')+(uniq.length>8?' 외 '+(uniq.length-8)+'개':'');if(eqN)txt+=(txt?' · ':'')+'장비 '+eqN+'종 제작';return txt||'아직 쓰는 곳이 없어요'}
+function resInfo(k){const name=nameOf(k);return name+' · 쓰는 곳: '+resUses(k)}
+const TUT=[
+  {t:'나무를 모아 보자',d:'나무 옆에 가만히 서 있으면 저절로 베어요. 나무 10개를 모아 봐요',c:()=>S.wood>=25,arrow:1},
+  {t:'돌도 조금',d:'회색 바위 옆에 서 있으면 돌을 캐요. 돌 10개를 모아 봐요',c:()=>S.stone>=15,arrow:2},
+  {t:'도끼 만들기',d:'I키(또는 오른쪽 위 가방) → 제작 탭에서 나무 도끼를 만들어요. 나무를 훨씬 빨리 베요',c:()=>S.tools.axe>=1},
+  {t:'곡괭이 만들기',d:'같은 곳에서 나무 곡괭이도 만들어요. 이게 있어야 구리 광석을 캘 수 있어요',c:()=>S.tools.pick>=1},
+  {t:'벽 세우기',d:'B키(또는 건설 버튼) → 벽 분류에서 나무 벽을 골라 땅을 눌러요. 3개만 세워 봐요',c:()=>{let n=0;forB(b=>{if(b.t==='wall'||b.t==='swall')n++;});return n>=3}},
+  {t:'화살탑 짓기',d:'건설 → 포탑 분류에서 화살탑을 지어요. 밤에 몬스터를 알아서 쏴 줘요',c:()=>{let n=0;forB(b=>{if(b.t==='tower')n++;});return n>=1}},
+  {t:'첫 밤 버티기',d:'해가 지면 길을 따라 몬스터가 와요. 화톳불을 지켜 내면 아침이 와요 (준비됐으면 N키로 밤을 앞당길 수 있어요)',c:()=>S.day>=2},
+  {t:'상점 구경하기',d:'마을 NPC 앞에서 F키를 누르거나 NPC를 눌러 봐요. 잡화점에서 재료를 사고팔 수 있어요',c:()=>!!S.tutShop},
+];
+function tutStep(){return S&&S.tut!=null&&S.tut<TUT.length?TUT[S.tut]:null}
+function tutCheck(){const st=tutStep();if(!st||!running||NC())return;let ok=false;try{ok=st.c();}catch(_){}if(ok){S.tut++;sfx('achieve');S.gold+=10;const nx=tutStep();toast(nx?'좋아요! 금화 +10 · 다음: '+nx.t:'튜토리얼 끝! 이제 마음껏 살아남아 봐요. 막히면 일시정지 → 게임 방법을 봐요',3600);renderTut();}}
+function renderTut(){const el=$('tutBox');if(!el)return;const st=tutStep();el.hidden=!st||!running;if(!st)return;$('tutT').textContent=(S.tut+1)+' / '+TUT.length+' · '+st.t;$('tutD').textContent=st.d;}
+function tutArrow(now){const st=tutStep();if(!st||!st.arrow||S.p.dead)return;const p=S.p,cx=Math.floor(p.x/T),cy=Math.floor(p.y/T);let best=-1,bd=1e9;
+  for(let dy=-14;dy<=14;dy++)for(let dx=-14;dx<=14;dx++){const x=cx+dx,y=cy+dy;if(x<0||y<0||x>=W||y>=H)continue;const v=S.res[idx(x,y)];if(st.arrow===1?v===1:(v===2)){const d=dx*dx+dy*dy;if(d<bd){bd=d;best=idx(x,y);}}}
+  if(best<0)return;const [tx,ty]=cCenter(best),a=Math.atan2(ty-p.y,tx-p.x),dist=Math.hypot(tx-p.x,ty-p.y);if(dist<T*1.5){ctx.strokeStyle='rgba(255,224,138,'+(.6+Math.sin(now/150)*.3)+')';ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(tx,ty,T*.7,0,Math.PI*2);ctx.stroke();return;}
+  const r=34+Math.sin(now/200)*4,ax=p.x+Math.cos(a)*r,ay=p.y-4+Math.sin(a)*r;ctx.save();ctx.translate(ax,ay);ctx.rotate(a);ctx.fillStyle='#ffe08a';ctx.strokeStyle='rgba(40,25,10,.7)';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(10,0);ctx.lineTo(-6,-7);ctx.lineTo(-3,0);ctx.lineTo(-6,7);ctx.closePath();ctx.fill();ctx.stroke();ctx.restore();}
 function updAllies(dt){
   const p=S.p;
   const petOn=isEq('wolfflute');
@@ -3339,6 +3374,7 @@ function draw(now){
   for(const a of S.allies)drawAlly(a,now);
   drawPet(now);
   for(const e of S.enemies)drawEnemy(e,now);
+  tutArrow(now);
   if(!p.dead)drawPlayer(now);
   if(NET.role)drawOthers(now);
   for(const sh of S.shots){ctx.globalAlpha=.35;ctx.fillStyle=sh.col;ctx.beginPath();ctx.arc(sh.x,sh.y,9,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;ctx.beginPath();ctx.arc(sh.x,sh.y,4.5,0,Math.PI*2);ctx.fill();}
@@ -4022,7 +4058,7 @@ function revealAround(){const p=S.p,cx=Math.floor(p.x/T),cy=Math.floor(p.y/T),R=
   for(let dy=-R;dy<=R;dy++)for(let dx=-R;dx<=R;dx++){if(dx*dx+dy*dy>R*R)continue;const x=cx+dx,y=cy+dy;if(x<0||y<0||x>=W||y>=H)continue;const i=idx(x,y);if(!S.seen[i]){S.seen[i]=1;ch=true;}}
   return ch;}
 function hud(){
-  checkUnlocks();
+  checkUnlocks();tutCheck();renderTut();
   const p=S.p;
   $('day').textContent=S.day+'일째';
   const pf=$('phaseFill');
@@ -4069,7 +4105,7 @@ function save(){
 function buildSave(){
   {
     const bl=[];forB((b,i)=>bl.push([i,b.t,Math.round(b.hp),b.max,+(b.g||0).toFixed(2),b.seeded?1:0,b.lv||1]));
-    const o={v:9,diff:S.diff,got:S.got,skill:S.skill,codex:S.codex,codexR:S.codexR,bounty:S.bounty,stats:S.stats,ach:S.ach,sunOff:S.sunOff,chiefSun:S.chiefSun,stash:S.stash,warm:S.warm,story:S.story,nests:S.nests,incub:S.incub,relicMiss:S.relicMiss,mithril:S.mithril,vault:S.vault,haz:enc(S.haz||new Uint8Array(W*H)),towerBest:S.towerBest,tbuy:S.tbuy,pets:S.pets,petOn:S.petOn,obsidian:S.obsidian,copper:S.copper,goldore:S.goldore,cobalt:S.cobalt,gold:S.gold,enh:S.enh,day:S.day,wood:S.wood,stone:S.stone,iron:S.iron,crystal:S.crystal,emerald:S.emerald,diamond:S.diamond,core:S.core,coreLv:S.coreLv,mods:S.mods,kills:S.kills,
+    const o={v:9,tut:S.tut,diff:S.diff,got:S.got,skill:S.skill,codex:S.codex,codexR:S.codexR,bounty:S.bounty,stats:S.stats,ach:S.ach,sunOff:S.sunOff,chiefSun:S.chiefSun,stash:S.stash,warm:S.warm,story:S.story,nests:S.nests,incub:S.incub,relicMiss:S.relicMiss,mithril:S.mithril,vault:S.vault,haz:enc(S.haz||new Uint8Array(W*H)),towerBest:S.towerBest,tbuy:S.tbuy,pets:S.pets,petOn:S.petOn,obsidian:S.obsidian,copper:S.copper,goldore:S.goldore,cobalt:S.cobalt,gold:S.gold,enh:S.enh,day:S.day,wood:S.wood,stone:S.stone,iron:S.iron,crystal:S.crystal,emerald:S.emerald,diamond:S.diamond,core:S.core,coreLv:S.coreLv,mods:S.mods,kills:S.kills,
       prog:S.prog,lairs:S.lairs,abil:S.abil,fragHint:S.fragHint,hiddenDone:S.hiddenDone,
       p:{hp:S.p.hp,max:S.p.max,dmg:S.p.dmg,spd:S.p.spd,lvl:S.p.lvl,xp:S.p.xp},
       vill:S.vill.length,lost:S.lost,items:S.items,buffs:S.buffs,tools:S.tools,eq:S.eq,inv:S.inv,digs:S.digs,chests:S.chests,
@@ -4103,7 +4139,7 @@ function loadGame(o){
   S.prog=v2?(o.prog||0):(o.day>5?1:0);S.fragHint=o.fragHint||0;S.abil=o.abil||{};S.hiddenDone=o.hiddenDone||0;
   S.towerBest=o.towerBest||0;S.tbuy=o.tbuy||{};S.relicMiss=o.relicMiss||{};
   S.pets=(o.pets||[]).filter(x=>PETS[x.t]);S.petOn=o.petOn==null?-1:o.petOn;if(S.petOn>=S.pets.length)S.petOn=-1;
-  S.diff=o.diff||'normal';S.got=o.got||(v2?{u:1,i:1,a:1,o:1,c:1,e:1,d:1,b:1,m:1,egg:1}:{});S.skill=o.skill||{};S.codex=o.codex||{};S.codexR=o.codexR||{};S.bounty=o.bounty||null;S.stats=o.stats||{};S.ach=o.ach||{};S.sunOff=o.sunOff||0;S.chiefSun=o.chiefSun||0;S.nests=o.nests||null;S.incub=o.incub||{};S.stash=o.stash||{};
+  S.tut=o.tut==null?TUT.length:o.tut;S.diff=o.diff||'normal';S.got=o.got||(v2?{u:1,i:1,a:1,o:1,c:1,e:1,d:1,b:1,m:1,egg:1}:{});S.skill=o.skill||{};S.codex=o.codex||{};S.codexR=o.codexR||{};S.bounty=o.bounty||null;S.stats=o.stats||{};S.ach=o.ach||{};S.sunOff=o.sunOff||0;S.chiefSun=o.chiefSun||0;S.nests=o.nests||null;S.incub=o.incub||{};S.stash=o.stash||{};
   if(!o.pets){const g=t=>{if(!S.pets.some(x=>x.t===t))S.pets.push({t,lv:1,xp:0});};if(S.prog>=1)g('wolf');if(S.prog>=2)g('toad');if(S.prog>=3)g('sprite');if(S.prog>=4)g('imp');if(S.pets.length)S.petOn=0;}
   Object.assign(S.p,o.p);
   for(const [i,t,hp,max,g,sd,lv] of o.bld){if(!B[t])continue;const j=map?map(i):i;if(j<0)continue;S.bld[j]={t,hp,max,cd:0,hurt:0,pt:0,idle:false,g:g||0,seeded:!!sd,lv:lv||1};}
@@ -4141,8 +4177,8 @@ function newGame(){
 function startNew(diff){
   $('ovDiff').hidden=true;
   S=newState();S.diff=diff;genMap(S);makeGrass();flowDirty=true;if(DIFF[diff].core){S.core.max+=DIFF[diff].core;S.core.hp=S.core.max;}
-  begin();S.phase='dawn';
-  showStory('prologue',()=>beginDay());
+  S.tut=0;begin();S.phase='dawn';
+  showStory('prologue',()=>{beginDay();renderTut();});
 }
 function begin(){$('ovMap').hidden=true;mapT=0;setTimeout(renderAbil,0);$('ovTrade').hidden=true;$('ovShop').hidden=true;$('ovBag').hidden=true;$('ovStart').hidden=true;$('ovOver').hidden=true;$('ovPause').hidden=true;running=true;paused=false;selectTool(null);resize();}
 function gameOver(){
@@ -4202,6 +4238,8 @@ $('btnQuit').addEventListener('click',showStart);
 $('btnBag').addEventListener('click',openBag);
 document.addEventListener('click',e=>{if(e.target.closest('button'))sfx('ui');});
 $('consentEss').addEventListener('click',()=>setConsent(false));
+document.querySelector('.card-hud.res').addEventListener('click',e=>{const sp=e.target.closest('span[title]');if(!sp||!S)return;const ic=sp.querySelector('[data-icon]');const k=ic&&ic.dataset.icon;if(!k||k==='g'){toast('금화 · 몬스터를 잡거나 재료를 팔면 모여요. 상점에서 쓰는 돈이에요',3200);return;}toast(resInfo(k)+(MAT_DESC[k]?' — '+MAT_DESC[k]:''),4200);});
+$('tutSkip').addEventListener('click',()=>{S.tut=TUT.length;renderTut();toast('튜토리얼을 건너뛰었어요. 궁금한 건 일시정지 → 게임 방법에서 볼 수 있어요',3000);});
 $('diffList').addEventListener('click',e=>{const b=e.target.closest('[data-diff]');if(b)startNew(b.dataset.diff);});
 $('diffBack').addEventListener('click',()=>{$('ovDiff').hidden=true;$('ovStart').hidden=false;});
 function closeNet(){$('ovNet').hidden=true;if(NET.fromPause&&paused)$('ovPause').hidden=false;NET.fromPause=0;}
