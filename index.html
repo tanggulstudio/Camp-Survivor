@@ -10,9 +10,6 @@
 <meta property="og:url" content="https://tanggulstudio.github.io/Camp-Survivor/">
 <title>캠프 서바이버</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Gowun+Dodum&display=swap">
 <style>
 /* Layout: full-bleed forest canvas; HUD floats in the top corners; build tray docked at the bottom like a satchel */
 :root{
@@ -188,6 +185,19 @@ body.bopen .bossbar{bottom:calc(196px + env(safe-area-inset-bottom,0px))}
 .ri svg{width:76%;height:76%}
 .trade>div{flex:1}
 .panel{position:relative}
+.legal{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12.5px;justify-content:center;border-top:1px solid var(--line);padding-top:12px}
+.legal a,.linkbtn{color:var(--dim);text-decoration:underline;text-underline-offset:2px;background:none;border:0;padding:0;font-size:12.5px;cursor:pointer}
+.legal a:hover,.linkbtn:hover{color:var(--ink)}
+.delbox{display:flex;flex-direction:column;gap:8px;border:1px solid rgba(255,140,120,.5);border-radius:10px;padding:12px;background:#24150f;font-size:13px}
+.delbox p{margin:0;color:#e8d8c8;line-height:1.5}
+.big.danger{background:#7a2a1e;border-color:#c0503a;color:#fff}
+.consent{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom,0px));width:min(560px,calc(100% - 32px));z-index:50;background:#14211a;border:1px solid rgba(255,160,71,.55);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;font-size:13px;line-height:1.55;box-shadow:0 8px 30px rgba(0,0,0,.5)}
+.consent p{margin:0;color:#e4e2d4}
+.consent a{color:#ffc58a;font-size:12.5px}
+.consent .big{flex:1 1 140px}
+:focus-visible{outline:3px solid #ffd27a;outline-offset:2px}
+.isl:focus-visible,.tool:focus-visible,.trade:focus-visible,.tab:focus-visible,.chip:focus-visible,.big:focus-visible{outline:3px solid #ffd27a;outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
 .panel.story{gap:12px}
 .sart{border-radius:10px;overflow:hidden;aspect-ratio:320/140;max-width:100%;border:1px solid var(--line)}
 .sart svg{display:block;width:100%;height:100%}
@@ -245,7 +255,7 @@ button.slot:disabled{cursor:default}
 </head>
 <body>
 <div id="game">
-  <canvas id="cv"></canvas>
+  <canvas id="cv" role="img" aria-label="게임 화면: 마을과 화톳불을 중심으로 한 위에서 내려다보는 생존 디펜스 맵. 키보드 WASD로 이동, B 건설, I 가방, M 지도, F 상호작용, Esc 창 닫기"></canvas>
 
   <header class="hud">
     <div class="left">
@@ -306,7 +316,27 @@ button.slot:disabled{cursor:default}
         <button class="big" id="btnLoad" hidden>이어하기</button>
         <button class="big" id="btnHelp">게임 방법</button>
       </div>
+      <nav class="legal" aria-label="법적 고지">
+        <a href="https://tanggulstudio.github.io/Camp-Survivor/privacy.html" target="_blank" rel="noopener">개인정보처리방침</a>
+        <a href="https://tanggulstudio.github.io/Camp-Survivor/terms.html" target="_blank" rel="noopener">이용약관</a>
+        <a href="https://tanggulstudio.github.io/Camp-Survivor/refund.html" target="_blank" rel="noopener">환불정책</a>
+        <a href="https://tanggulstudio.github.io/Camp-Survivor/cookies.html" target="_blank" rel="noopener">쿠키정책</a>
+        <a href="https://tanggulstudio.github.io/Camp-Survivor/business.html" target="_blank" rel="noopener">사업자 정보</a>
+        <button type="button" class="linkbtn" id="btnConsentOpen">개인정보 설정</button>
+        <button type="button" class="linkbtn" id="btnDataDel">내 데이터 삭제</button>
+      </nav>
+      <div class="delbox" id="delBox" hidden role="alertdialog" aria-labelledby="delTitle">
+        <b id="delTitle">이 기기에 저장된 게임 데이터를 모두 지울까요?</b>
+        <p>저장된 진행 상황(이어하기)과 개인정보 설정이 이 브라우저에서 삭제돼요. 되돌릴 수 없어요. 서버에는 처음부터 아무것도 저장하지 않아요.</p>
+        <div class="row"><button class="big" id="delNo">취소</button><button class="big danger" id="delYes">모두 삭제</button></div>
+      </div>
     </div>
+  </div>
+  <div class="consent" id="consent" hidden role="dialog" aria-modal="false" aria-labelledby="consentTitle">
+    <b id="consentTitle">저장소와 글꼴 사용 안내</b>
+    <p><b>필수</b> · 게임 진행을 이 브라우저의 저장소(localStorage)에 저장해요. 기기 밖으로 보내지 않고, 쿠키는 쓰지 않아요.<br><b>선택</b> · 게임 글꼴을 Google Fonts에서 불러와요. 이때 IP 주소 등 접속 정보가 Google에 전송될 수 있어요. 거절해도 기본 글꼴로 똑같이 플레이할 수 있어요.</p>
+    <div class="row"><button class="big" id="consentEss">필수만 허용</button><button class="big" id="consentAll">글꼴까지 허용</button></div>
+    <a href="https://tanggulstudio.github.io/Camp-Survivor/cookies.html" target="_blank" rel="noopener">쿠키·저장소 정책 자세히 보기</a>
   </div>
 
   <div class="overlay" id="ovHelp" hidden>
@@ -333,7 +363,7 @@ button.slot:disabled{cursor:default}
 
   <div class="overlay" id="ovStory" hidden>
     <div class="panel story">
-      <div class="sart" id="storyArt"></div>
+      <div class="sart" id="storyArt" role="img" aria-label="이야기 장면 그림"></div>
       <div class="hhead"><span class="pg" id="storyPg">1 / 4</span><h2 id="storyTitle"></h2></div>
       <p class="stext" id="storyText"></p>
       <div class="row"><button class="big" id="storyPrev">이전</button><button class="big pri" id="storyNext">다음</button></div>
@@ -387,7 +417,7 @@ button.slot:disabled{cursor:default}
     <div class="panel wide">
       <button class="xbtn" id="mapX" aria-label="닫기"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button>
       <div class="hhead"><span class="pg">M키로 열고 닫기</span><h2>지도</h2></div>
-      <canvas id="bigmap" class="bigmap"></canvas>
+      <canvas id="bigmap" class="bigmap" role="img" aria-label="전체 지도"></canvas>
       <div class="legend">
         <span><i style="background:#ffffff"></i>나</span><span><i style="background:#ffa047"></i>화톳불</span><span><i style="background:#ff5a4a"></i>몬스터</span><span><i style="background:#ff4a3a;border-radius:50%;box-shadow:0 0 0 2px #ff4a3a inset"></i>보스 둥지</span>
         <span><i style="background:#ffd23a"></i>상자</span><span><i style="background:#ffe08a"></i>NPC·주민</span><span><i style="background:#ee9058"></i>구리</span><span><i style="background:#cd8c5a"></i>철</span><span><i style="background:#ffd23a"></i>금</span><span><i style="background:#5a8aff"></i>코발트</span><span><i style="background:#4fd08a"></i>에메랄드</span><span><i style="background:#9fe8ff"></i>다이아</span><span><i style="background:#c080ff"></i>흑요석</span><span><i style="background:#e8fbff"></i>미스릴</span><span><i style="background:#ffe8b0"></i>알 둥지</span><span><i style="background:#e65a28"></i>용암</span>
@@ -3548,6 +3578,13 @@ function save(){
     localStorage.setItem(SAVE_KEY,JSON.stringify(o));
   }catch(_){}
 }
+const CONSENT_KEY='cs-consent-v1';
+function readConsent(){try{const v=localStorage.getItem(CONSENT_KEY);return v?JSON.parse(v):null;}catch(_){return null;}}
+function loadFonts(){if(document.getElementById('gfont'))return;const l=document.createElement('link');l.id='gfont';l.rel='stylesheet';l.href='https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Gowun+Dodum&display=swap';document.head.appendChild(l);}
+function applyConsent(c){if(c&&c.fonts)loadFonts();else{const l=document.getElementById('gfont');if(l)l.remove();}}
+function setConsent(fonts){const c={v:1,fonts:!!fonts,at:new Date().toISOString().slice(0,10)};try{localStorage.setItem(CONSENT_KEY,JSON.stringify(c));}catch(_){}applyConsent(c);$('consent').hidden=true;}
+function openConsent(){$('consent').hidden=false;setTimeout(()=>$('consentEss').focus(),0);}
+function deleteMyData(){try{localStorage.removeItem(SAVE_KEY);localStorage.removeItem(CONSENT_KEY);}catch(_){}applyConsent(null);$('delBox').hidden=true;$('btnLoad').hidden=true;toast('이 기기에 저장된 게임 데이터를 모두 삭제했어요',3000);openConsent();}
 function readSave(){try{const s=localStorage.getItem(SAVE_KEY);return s?JSON.parse(s):null;}catch(_){return null;}}
 function loadGame(o){
   S=newState();
@@ -3655,6 +3692,13 @@ $('btnPause').addEventListener('click',togglePause);
 $('btnResume').addEventListener('click',togglePause);
 $('btnQuit').addEventListener('click',showStart);
 $('btnBag').addEventListener('click',openBag);
+$('consentEss').addEventListener('click',()=>setConsent(false));
+$('consentAll').addEventListener('click',()=>setConsent(true));
+$('btnConsentOpen').addEventListener('click',openConsent);
+$('btnDataDel').addEventListener('click',()=>{$('delBox').hidden=false;$('delNo').focus();});
+$('delNo').addEventListener('click',()=>{$('delBox').hidden=true;$('btnDataDel').focus();});
+$('delYes').addEventListener('click',deleteMyData);
+{const c=readConsent();if(c)applyConsent(c);else openConsent();}
 $('storyNext').addEventListener('click',storyNext);
 $('storyPrev').addEventListener('click',()=>{if(storyPg>0){storyPg--;renderStory();}});
 $('storySkip').addEventListener('click',closeStory);
