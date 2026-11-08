@@ -391,6 +391,11 @@ const B={
   torch:{n:'횃불',cost:{w:2},hp:20,solid:0,flow:1},
   field:{n:'밭',cost:{w:3},hp:40,solid:0,flow:1,farm:1},
   hut:{n:'오두막',cost:{w:20,s:10},hp:150,solid:1,flow:14},
+  drill1:{n:'구리 드릴',cost:{u:8,w:4},hp:120,solid:1,flow:10,drill:{every:6,ores:[2,11,3],col:'#d9824a'}},
+  drill2:{n:'황금 드릴',cost:{a:8,i:4},hp:160,solid:1,flow:10,forge:1,drill:{every:5,ores:[2,11,3,12,6,13],col:'#ffd23a'}},
+  drill3:{n:'다이아 드릴',cost:{d:4,e:6},hp:220,solid:1,flow:10,forge:1,drill:{every:4,ores:[2,11,3,12,6,13,9,10],col:'#9fe8ff'}},
+  collector:{n:'보관함',cost:{w:10,u:3},hp:100,solid:1,flow:10},
+  repairer:{n:'자동 수리기',cost:{u:6,i:6},hp:120,solid:1,flow:10,forge:1},
   fire:{n:'모닥불',cost:{w:6,s:2},hp:60,solid:1,flow:14},
   lumber:{n:'벌목소',cost:{w:10,s:4},hp:90,solid:1,flow:10,prod:{res:1,every:5,out:'w'}},
   quarry:{n:'채석장',cost:{w:10,s:6},hp:110,solid:1,flow:10,prod:{res:2,every:6,out:'s'}},
@@ -399,7 +404,8 @@ const B={
 };
 const RK={g:'gold',u:'copper',a:'goldore',o:'cobalt',w:'wood',s:'stone',i:'iron',c:'crystal',e:'emerald',d:'diamond'},RN={g:'금화',u:'구리',a:'금',o:'코발트',w:'나무',s:'돌',i:'철',c:'마력석',e:'에메랄드',d:'다이아몬드'},RC={g:'#ffd23a',u:'#f0a070',a:'#ffe070',o:'#8aa8ff',w:'#e0b07a',s:'#d4dade',i:'#e09a6a',c:'#c9a6ff',e:'#7fe8aa',d:'#bff2ff'};
 const RES_HP=[0,5,7,9,3,4,4,200,200,10,12,8,10,12];
-const TOOLS=['wall','swall','iwall','door','tower','ballista','magic','venom','prism','spike','torch','fire','lumber','quarry','mine','forge','field','hut','repair','upgrade','demolish'];
+const TOOLS=['wall','swall','iwall','door','tower','ballista','magic','venom','prism','spike','torch','fire','lumber','quarry','mine','drill1','drill2','drill3','collector','repairer','forge','field','hut','repair','upgrade','demolish'];
+const DRILL_PRI={2:1,11:2,3:3,12:4,6:5,13:6,9:7,10:8};
 const TOOL_NAME={repair:'수리',upgrade:'업그레이드',demolish:'철거'};
 const UPG=[null,{w:6,u:4},{i:4,a:3},{a:2,o:3},{e:3,d:3}];
 const LVC=['','','#e08a50','#ffd23a','#5a8aff','#9fe8ff'];
@@ -1680,6 +1686,11 @@ const ICON={
   door:'<svg viewBox="0 0 28 28"><rect x="5" y="3" width="18" height="23" fill="#4a2f1a"/><rect x="7" y="5" width="14" height="19" fill="#a06a3c"/><path d="M14 5v19" stroke="#7a4d2a" stroke-width="1.5"/><path d="M7 9h14M7 19h14" stroke="#3d454b" stroke-width="2"/><circle cx="18" cy="14" r="1.4" fill="#ffd27a"/></svg>',
   torch:'<svg viewBox="0 0 28 28"><rect x="12.5" y="11" width="3" height="15" fill="#6b4528"/><path d="M14 2c3 4 5 6 4 9-1 2-7 2-8 0-1-3 1-5 4-9z" fill="#ff8a35"/><circle cx="14" cy="9" r="2" fill="#ffe08a"/></svg>',
   field:'<svg viewBox="0 0 28 28"><rect x="3" y="5" width="22" height="20" fill="#5a3d24"/><path d="M3 11h22M3 17h22M3 23h22" stroke="#3e2816" stroke-width="1.5"/><g stroke="#c8a03a" stroke-width="1.6"><path d="M8 16V8M14 16V7M20 16V8"/></g><g fill="#f0d27a"><ellipse cx="8" cy="8" rx="2" ry="3"/><ellipse cx="14" cy="7" rx="2" ry="3"/><ellipse cx="20" cy="8" rx="2" ry="3"/></g></svg>',
+  drill1:'<svg viewBox="0 0 28 28"><rect x="4" y="5" width="20" height="19" rx="2" fill="#3d454b"/><rect x="7" y="8" width="14" height="3" fill="#d9824a"/><path d="M14 11l4 7-4 6-4-6z" fill="#d5dbde"/></svg>',
+  drill2:'<svg viewBox="0 0 28 28"><rect x="4" y="5" width="20" height="19" rx="2" fill="#3d454b"/><rect x="7" y="8" width="14" height="3" fill="#ffd23a"/><path d="M14 11l4 7-4 6-4-6z" fill="#d5dbde"/></svg>',
+  drill3:'<svg viewBox="0 0 28 28"><rect x="4" y="5" width="20" height="19" rx="2" fill="#3d454b"/><rect x="7" y="8" width="14" height="3" fill="#9fe8ff"/><path d="M14 11l4 7-4 6-4-6z" fill="#effcff"/></svg>',
+  collector:'<svg viewBox="0 0 28 28"><rect x="4" y="11" width="20" height="13" fill="#6b4528"/><rect x="3" y="7" width="22" height="6" fill="#a06a3c"/><circle cx="14" cy="17" r="3" fill="#7fe8aa"/><path d="M3 3l5 4M25 3l-5 4" stroke="#7fe8aa" stroke-width="2"/></svg>',
+  repairer:'<svg viewBox="0 0 28 28"><rect x="10" y="10" width="8" height="14" fill="#5e676b"/><path d="M6 8h14" stroke="#c9d0d3" stroke-width="3.5"/><circle cx="21" cy="8" r="3.5" fill="none" stroke="#c9d0d3" stroke-width="3"/><path d="M14 15v6M11 18h6" stroke="#7fe8aa" stroke-width="2.4"/></svg>',
   hut:'<svg viewBox="0 0 28 28"><rect x="5" y="12" width="18" height="13" fill="#b07a48"/><path d="M2 14L14 3l12 11z" fill="#7a3f2a"/><rect x="12" y="18" width="5" height="7" fill="#2a1c10"/><rect x="7" y="16" width="4" height="4" fill="#ffd27a"/></svg>',
   venom:'<svg viewBox="0 0 28 28"><rect x="8" y="13" width="12" height="12" fill="#5e676b"/><path d="M6 13h16l-2 -6H8z" fill="#3e4a44"/><circle cx="11" cy="7" r="3" fill="#7fd06a"/><circle cx="17" cy="5" r="2.5" fill="#a0e88a"/></svg>',
   prism:'<svg viewBox="0 0 28 28"><rect x="6" y="16" width="16" height="9" fill="#3d454b"/><path d="M14 2l6 8-6 8-6-8z" fill="#9fe8ff"/><path d="M14 2l2.5 8H14z" fill="#effcff"/></svg>',
@@ -1753,6 +1764,7 @@ function update(dt){
     for(const c of S.chests)if(Math.hypot(c.x-p.x,c.y-p.y)<T*.9){c.open=true;openChest(c);}
     S.chests=S.chests.filter(c=>!c.open);
     for(const k of S.picks){
+      if(k.got)continue;
       k.age=(k.age||0)+dt;
       if(k.vx){k.x+=k.vx*dt;k.y+=k.vy*dt;k.vx*=.88;k.vy*=.88;if(Math.abs(k.vx)+Math.abs(k.vy)<3)k.vx=k.vy=0;}
       const d=Math.hypot(k.x-p.x,k.y-p.y);
@@ -1852,6 +1864,7 @@ function update(dt){
 
   // villagers
   for(const v of S.vill)updVillager(v,dt);
+  S.picks=S.picks.filter(k=>!k.got);
   updAllies(dt);
 
   // buildings
@@ -1884,6 +1897,21 @@ function update(dt){
         b.idle=pr<0||!resNear(i,pr,3);
         if(!b.idle){S[RK[o]]+=1;float(x,y-22,'+1 '+RN[o],RC[o]);}
       }
+    }else if(D.drill){
+      b.pt=(b.pt||0)+dt*(1+((b.lv||1)-1)*.5);
+      if(b.pt>=D.drill.every){b.pt=0;let best=-1,bv=0;const x0=i%W,y0=(i/W)|0;
+        for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const xx=x0+dx,yy=y0+dy;if(xx<0||yy<0||xx>=W||yy>=H)continue;const j=idx(xx,yy),rv=S.res[j],pr=DRILL_PRI[rv]||0;if(pr>bv&&D.drill.ores.includes(rv)){bv=pr;best=j;}}
+        b.idle=best<0;
+        if(best>=0){const ty=S.res[best],key=['','w','s','i','','s','c','','','e','d','u','a','o'][ty];take(best,'d');float(x,y-22,'+1 '+RN[key],RC[key]);}
+      }
+    }else if(b.t==='collector'){
+      for(const k of S.picks){if(k.got||(k.age||0)<.4)continue;const d=Math.hypot(k.x-x,k.y-y);if(d>7*T)continue;
+        if(d<14){k.got=true;collectPick(k);}else{k.x+=(x-k.x)/d*340*dt;k.y+=(y-k.y)/d*340*dt;}}
+    }else if(b.t==='repairer'){
+      const x0=i%W,y0=(i/W)|0,rate=8*(1+((b.lv||1)-1)*.5)*dt;b.work=0;
+      for(let dy=-4;dy<=4;dy++)for(let dx=-4;dx<=4;dx++){const xx=x0+dx,yy=y0+dy;if(xx<0||yy<0||xx>=W||yy>=H)continue;const j=idx(xx,yy);
+        if(j===CI&&S.core.hp<S.core.max){S.core.hp=Math.min(S.core.max,S.core.hp+rate*.5);b.work=1;continue;}
+        const bb=S.bld[j];if(bb&&bb!==b&&bb.hp<bb.max){bb.hp=Math.min(bb.max,bb.hp+rate);b.work=1;}}
     }else if(D.farm){
       if(b.wet==null)b.wet=waterNear(i,3);
       if(b.seeded&&S.phase==='day'&&b.g<1)b.g=Math.min(1,(b.g||0)+dt/(b.wet?38:58));
@@ -2320,6 +2348,21 @@ function drawBld(b,i,now){
     ctx.fillStyle='rgba(159,232,255,.25)';ctx.beginPath();ctx.arc(x,cy2,12,0,Math.PI*2);ctx.fill();
     ctx.fillStyle='#9fe8ff';ctx.beginPath();ctx.moveTo(x,cy2-11);ctx.lineTo(x+8*Math.cos(sp2),cy2);ctx.lineTo(x,cy2+9);ctx.lineTo(x-8*Math.cos(sp2),cy2);ctx.closePath();ctx.fill();
     ctx.fillStyle='#effcff';ctx.fillRect(x-1,cy2-7,2,6);
+  }else if(B[b.t].drill){
+    ctx.fillStyle='rgba(0,0,0,.3)';ctx.beginPath();ctx.ellipse(x+3,y+12,13,5,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#3d454b';ctx.fillRect(px+3,py+4,T-6,T-6);ctx.fillStyle=B[b.t].drill.col;ctx.fillRect(px+6,py+7,T-12,4);ctx.fillRect(px+6,py+T-9,T-12,3);
+    ctx.save();ctx.translate(x,y+2);ctx.rotate(b.idle?0:now/70);ctx.fillStyle='#d5dbde';
+    for(let k=0;k<3;k++){ctx.rotate(Math.PI*2/3);ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(4,-9);ctx.lineTo(-4,-9);ctx.closePath();ctx.fill();}
+    ctx.fillStyle='#2a2e31';ctx.beginPath();ctx.arc(0,0,3,0,Math.PI*2);ctx.fill();ctx.restore();
+  }else if(b.t==='collector'){
+    const g2=(Math.sin(now/300)+1)/2;ctx.strokeStyle='rgba(127,232,170,'+(.15+g2*.25)+')';ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y,T*.9+g2*6,0,Math.PI*2);ctx.stroke();
+    ctx.fillStyle='#6b4528';ctx.fillRect(px+3,py+9,T-6,T-11);ctx.fillStyle='#a06a3c';ctx.fillRect(px+2,py+5,T-4,7);
+    ctx.fillStyle='#d9b45a';ctx.fillRect(px+7,py+5,3,T-7);ctx.fillRect(px+T-10,py+5,3,T-7);ctx.fillStyle='#7fe8aa';ctx.beginPath();ctx.arc(x,y+6,3.5,0,Math.PI*2);ctx.fill();
+  }else if(b.t==='repairer'){
+    ctx.fillStyle='rgba(0,0,0,.3)';ctx.beginPath();ctx.ellipse(x+3,y+12,11,4,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#5e676b';ctx.fillRect(px+9,py+8,T-18,T-8);ctx.fillStyle='#3d454b';ctx.fillRect(px+5,py+T-8,T-10,6);
+    ctx.save();ctx.translate(x,py+8);ctx.rotate(b.work?Math.sin(now/120)*.6:0);ctx.strokeStyle='#c9d0d3';ctx.lineWidth=3.5;ctx.beginPath();ctx.moveTo(-8,0);ctx.lineTo(8,0);ctx.stroke();ctx.beginPath();ctx.arc(9,0,3.5,0,Math.PI*2);ctx.stroke();ctx.restore();
+    ctx.fillStyle=b.work?'#7fe8aa':'#3a5a44';ctx.fillRect(x-1.5,py+16,3,8);ctx.fillRect(x-4,py+18.5,8,3);
   }else if(b.t==='lumber'){
     ctx.fillStyle='#a06a3c';ctx.fillRect(px+4,py+11,T-8,T-13);
     ctx.fillStyle='#6b4528';ctx.beginPath();ctx.moveTo(px+1,py+12);ctx.lineTo(x,py+1);ctx.lineTo(px+T-1,py+12);ctx.closePath();ctx.fill();
@@ -2389,7 +2432,7 @@ function drawBld(b,i,now){
   }
   ctx.restore();
   if(b.lv>1){ctx.fillStyle=LVC[b.lv];for(let k=0;k<b.lv-1;k++){const qx=px+6+k*7,qy=py+T-4;ctx.beginPath();ctx.moveTo(qx,qy-3.5);ctx.lineTo(qx+3,qy);ctx.lineTo(qx,qy+3.5);ctx.lineTo(qx-3,qy);ctx.closePath();ctx.fill();}}
-  if(b.idle&&B[b.t].prod&&S.phase==='day'){ctx.font='bold 12px "Gowun Dodum",sans-serif';ctx.textAlign='center';ctx.fillStyle='rgba(0,0,0,.6)';ctx.beginPath();ctx.arc(x+11,py+1,7,0,Math.PI*2);ctx.fill();ctx.fillStyle='#f0eedf';ctx.fillText('?',x+11,py+5);}
+  if(b.idle&&((B[b.t].prod&&S.phase==='day')||B[b.t].drill)){ctx.font='bold 12px "Gowun Dodum",sans-serif';ctx.textAlign='center';ctx.fillStyle='rgba(0,0,0,.6)';ctx.beginPath();ctx.arc(x+11,py+1,7,0,Math.PI*2);ctx.fill();ctx.fillStyle='#f0eedf';ctx.fillText('?',x+11,py+5);}
   const tall=b.t==='tower'||b.t==='magic'||b.t==='forge'||b.t==='hut';
   if(b.hp<b.max)hpBar(x,py-(tall?24:7),24,b.hp/b.max,b.t==='swall'||b.t==='iwall'?'#c9d0d3':'#e0b07a');
 }
@@ -2780,7 +2823,7 @@ const HELP=[
   {t:'희귀 장비',items:[['세트 장비','숲지기·철갑 수호자·대마법사. 2개, 4개 모으면 세트 효과'],['고유 장비','화염검, 폭풍 활, 서리 지팡이 등. 무기 스킬은 R키, 소환사의 지팡이는 정령 늑대 소환'],['드랍','몬스터가 낮은 확률로 떨어뜨리고, 보스는 반드시 줘요']]},
   {t:'마을',items:[['길','몬스터는 동서남북 네 갈래 길로만 와요. 길을 막으면 막은 건물을 부숴요'],['성벽','마을을 두른 성벽. 수리와 업그레이드가 돼요'],['상점','잡화점과 보석상에 다가가면 금화로 사고팔 수 있어요'],['대장장이','장착한 장비를 +10까지 강화해요. 높을수록 실패가 잦아요'],['여관','휴식, 화톳불 수리, 일꾼 고용'],['금화','몬스터를 잡으면 바로 들어와요']]},
   {t:'채집과 도구',items:[['채집','나무·바위·덤불 옆에 멈춰 서면 자동으로 캐요'],['도구','가방의 제작 탭에서 도끼·곡괭이·삽·낚싯대를 만들고 단계를 올려요'],['광석','나무 → 구리 → 철 → 금 → 코발트 → 에메랄드 → 다이아. 곡괭이를 한 단계씩 올려야 다음 광석을 캘 수 있어요'],['흙더미','X 표시는 삽으로 파면 보물이 나와요']]},
-  {t:'건설과 방어',items:[['짓기','아래 건설 바에서 고르고 땅을 탭 (숫자키 1~0, Q/E로 넘기기)'],['방어','벽, 문, 탑, 가시 함정으로 화톳불을 지켜요. 화톳불이 꺼지면 끝'],['생산','벌목소·채석장·광산은 근처 자원에서 자동으로 모아요'],['업그레이드','업그레이드 도구로 건물을 누르면 Lv5까지 강해져요 (구리→금→코발트→에메랄드·다이아)']]},
+  {t:'건설과 방어',items:[['짓기','아래 건설 바에서 고르고 땅을 탭 (숫자키 1~0, Q/E로 넘기기)'],['방어','벽, 문, 탑, 가시 함정으로 화톳불을 지켜요. 화톳불이 꺼지면 끝'],['생산','벌목소·채석장·광산은 근처 자원에서 자동으로 모아요'],['자동화','드릴은 바로 옆 광석을 계속 캐요(구리→황금→다이아 드릴). 보관함은 주변에 떨어진 아이템을 모으고, 자동 수리기는 주변 건물을 고쳐요'],['업그레이드','업그레이드 도구로 건물을 누르면 Lv5까지 강해져요 (구리→금→코발트→에메랄드·다이아)']]},
   {t:'마을과 생활',items:[['주민','숲 속 길 잃은 주민을 구하거나 오두막을 지으면 대신 일해요'],['농사','밭 위를 지나가면 씨앗을 심고, 다 자라면 거둬요'],['낚시','낚싯대를 들고 물가에 서서, 찌가 물리면 F키·스페이스 또는 낚아채기'],['요리','불 근처에서 가방의 요리 탭을 열어요. 음식마다 효과가 달라요']]},
   {t:'매일의 사건',items:[['축복','아침마다 카드 한 장을 골라요. 빨간 카드는 양날의 검'],['사건','상인, 유성우, 풍년, 보물 지도, 도적 떼, 핏빛 달'],['보물상자','숲 곳곳에서 반짝여요. 가끔은 미믹이에요'],['장비','적과 상자에서 장비가 나와요. 가방의 장비 탭에서 장착']]},
   {t:'지역과 보스',items:[['고요한 숲','처음 시작하는 곳. 5일째마다 고블린 족장이 쳐들어와요'],['독안개 늪','족장을 쓰러뜨리면 열려요. 둥지의 독늪 히드라를 찾아가세요'],['수정 협곡','히드라를 쓰러뜨리면 열려요. 수정 골렘이 지키고 있어요'],['숨겨진 보스','지도 조각 세 개를 모으면 길이 보여요'],['능력','보스를 쓰러뜨릴 때마다 Z·X·C·V 능력이 하나씩 생겨요']]},
