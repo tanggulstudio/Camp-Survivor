@@ -1376,25 +1376,32 @@ function shapeDg(s,d){if(d.shaped)return;const id=d.id+1,PAD=5,X0=Math.max(1,d.x
 let DGCUR=-2;function dgRoof(j){return S.dng&&S.dng[j]>0&&!S.res[j]&&S.dng[j]-1!==DGCUR}
 function roofedAt(x,y){const cx=Math.floor(x/T),cy=Math.floor(y/T);if(cx<0||cy<0||cx>=W||cy>=H)return false;return dgRoof(idx(cx,cy))}
 function dgRk(j){return j>=0&&j<W*H&&(S.res[j]===18||S.res[j]===19||dgRoof(j))}
-function drawDWall(i){
-  const cx=i%W,cy=Math.floor(i/W),x=cx*T,y=cy*T,h=hash(i),h2=hash(i+77),P=cavePal(i),rg=S.reg?S.reg[i]:0;
-  const N=cy>0&&dgRk(i-W),Sb=cy<H-1&&dgRk(i+W),E=cx<W-1&&dgRk(i+1),Wl=cx>0&&dgRk(i-1);
-  const fl=j=>j>=0&&j<W*H&&S.dng&&S.dng[j]>0&&!S.res[j],inS=fl(i+W),inN=fl(i-W),inE=fl(i+1),inW=fl(i-1),inner=inS||inN||inE||inW;
+function drawDWall(i){drawRockMass(i,dgRk,cavePal(i),true)}
+const RIDGE_PAL=[{rock:'#5c5048',rockL:'#7e7064',rockD:'#2e2722'},{rock:'#4c4c3c',rockL:'#6a6a52',rockD:'#26261a'},{rock:'#7a5442',rockL:'#9c735a',rockD:'#40281e'},{rock:'#3a3236',rockL:'#5a5056',rockD:'#18141a'},{rock:'#9cb4c2',rockL:'#dcecf4',rockD:'#5a7484'}];
+function rdgRk(j){if(j<0||j>=W*H)return false;const v=S.res[j];return (v===5||v===6||v===10)&&!arenaCell(j%W,(j/W)|0)}
+function drawRidge(i,now){const cx=i%W,cy=(i/W)|0;if(arenaCell(cx,cy))return drawCave(i,now);const rv=S.res[i],x=cx*T,y=cy*T,rg=regionOfCell(i);drawRockMass(i,rdgRk,RIDGE_PAL[rg]||RIDGE_PAL[0],false);
+  if(rv===6){const g=(Math.sin(now/300+i)+1)/2;ctx.fillStyle='rgba(180,140,240,'+(.12+g*.18)+')';ctx.beginPath();ctx.arc(x+16,y+16,12,0,7);ctx.fill();ctx.fillStyle='#b48cf0';for(const [ox,oy,r] of [[10,14,5],[21,18,4],[15,23,3]]){ctx.beginPath();ctx.moveTo(x+ox,y+oy-r*1.4);ctx.lineTo(x+ox+r*.7,y+oy);ctx.lineTo(x+ox,y+oy+r*.6);ctx.lineTo(x+ox-r*.7,y+oy);ctx.closePath();ctx.fill();}ctx.fillStyle='#efe4ff';ctx.fillRect(x+9,y+9,1.6,3);}
+  if(rv===10){const g=(Math.sin(now/260+i)+1)/2;ctx.fillStyle='rgba(159,232,255,'+(.12+g*.2)+')';ctx.beginPath();ctx.arc(x+16,y+16,12,0,7);ctx.fill();ctx.fillStyle='#9fe8ff';for(const [ox,oy,r] of [[9,15,5],[20,12,4],[17,22,4.5]]){ctx.beginPath();ctx.moveTo(x+ox,y+oy-r);ctx.lineTo(x+ox+r*.8,y+oy);ctx.lineTo(x+ox,y+oy+r);ctx.lineTo(x+ox-r*.8,y+oy);ctx.closePath();ctx.fill();}ctx.fillStyle='#effcff';ctx.fillRect(x+8,y+11,2,3);}
+  const mx=RES_HP[rv];if(S.rhp[i]<mx)hpBar(x+T/2,y-4,20,S.rhp[i]/mx,rv===6?'#c9a6ff':rv===10?'#9fe8ff':'#a99482');}
+function drawRockMass(i,rk,P,dg){
+  const cx=i%W,cy=Math.floor(i/W),x=cx*T,y=cy*T,h=hash(i),h2=hash(i+77),rg=S.reg?S.reg[i]:regionOfCell(i);
+  const N=cy>0&&rk(i-W),Sb=cy<H-1&&rk(i+W),E=cx<W-1&&rk(i+1),Wl=cx>0&&rk(i-1);
+  const fl=j=>j>=0&&j<W*H&&S.dng&&S.dng[j]>0&&!S.res[j],inS=fl(i+W),inN=fl(i-W),inE=fl(i+1),inW=fl(i-1),inner=dg&&(inS||inN||inE||inW);
   const r=10,rTL=(!N&&!Wl)?r:0,rTR=(!N&&!E)?r:0,rBL=(!Sb&&!Wl)?r:0,rBR=(!Sb&&!E)?r:0;
   if(inner&&(rTL||rTR||rBL||rBR)){ctx.fillStyle=P.floor;ctx.fillRect(x,y,T,T);}
   const rr=(x0,y0,w,h0,a,b,c,e)=>{ctx.beginPath();ctx.moveTo(x0+a,y0);ctx.lineTo(x0+w-b,y0);ctx.quadraticCurveTo(x0+w,y0,x0+w,y0+b);ctx.lineTo(x0+w,y0+h0-c);ctx.quadraticCurveTo(x0+w,y0+h0,x0+w-c,y0+h0);ctx.lineTo(x0+e,y0+h0);ctx.quadraticCurveTo(x0,y0+h0,x0,y0+h0-e);ctx.lineTo(x0,y0+a);ctx.quadraticCurveTo(x0,y0,x0+a,y0);ctx.closePath();};
   // top surface
   const v=vnoise(cx/4.2+3,cy/4.2+9);ctx.fillStyle=P.rock;rr(x-.5,y-.5,T+1,T+1,rTL,rTR,Sb?0:rBR,Sb?0:rBL);ctx.fill();
-  if(DGCUR>=0){ctx.globalAlpha=.5;ctx.fillStyle=P.rockL;ctx.fill();ctx.globalAlpha=1;}
-  if(v>.45){ctx.globalAlpha=Math.min(.5,(v-.45)*1.3);ctx.fillStyle=P.rockL;ctx.fill();ctx.globalAlpha=1;}
-  else if(v<.35){ctx.globalAlpha=Math.min(.45,(.35-v)*1.4);ctx.fillStyle=P.rockD;ctx.fill();ctx.globalAlpha=1;}
+  if(dg&&DGCUR>=0){ctx.globalAlpha=.5;ctx.fillStyle=P.rockL;ctx.fill();ctx.globalAlpha=1;}
+  if(v>.5){ctx.globalAlpha=Math.min(.12,(v-.5)*.4);ctx.fillStyle=P.rockL;ctx.fill();ctx.globalAlpha=1;}
+  else if(v<.3){ctx.globalAlpha=Math.min(.12,(.3-v)*.4);ctx.fillStyle=P.rockD;ctx.fill();ctx.globalAlpha=1;}
   // texture: pebbles and hairline cracks (no tile-shaped boulders)
   ctx.fillStyle='rgba(255,255,255,.06)';ctx.beginPath();ctx.ellipse(x+6+h*18,y+6+h2*16,2.4+h2*2,1.4+h*1.2,h*3,0,7);ctx.fill();
   ctx.fillStyle='rgba(0,0,0,.16)';ctx.beginPath();ctx.ellipse(x+20-h2*14,y+18-h*10,2+h*2,1.2,h2*3,0,7);ctx.fill();
   if(h<.32){ctx.strokeStyle='rgba(0,0,0,.22)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x+4+h*40,y+6+h2*8);ctx.lineTo(x+10+h*30,y+14);ctx.lineTo(x+8+h2*16,y+22+h*6);ctx.stroke();}
   if(!inner){// hill vegetation / snow / embers on top
     if((rg===0||rg===1)&&h2<.5){ctx.fillStyle=rg===0?'rgba(96,140,70,.42)':'rgba(110,140,60,.4)';ctx.beginPath();ctx.ellipse(x+8+h*16,y+8+h2*14,5+h2*5,3+h*3,h*2,0,7);ctx.fill();}
-    if(rg===4&&h<.7){ctx.fillStyle='rgba(236,248,255,.7)';ctx.beginPath();ctx.ellipse(x+10+h2*12,y+8+h*10,7+h*5,4+h2*3,0,0,7);ctx.fill();}
+    if(rg===4&&h<.08){ctx.fillStyle='rgba(236,248,255,.7)';ctx.beginPath();ctx.ellipse(x+10+h2*12,y+8+h*10,7+h*5,4+h2*3,0,0,7);ctx.fill();}
     if(rg===3&&h<.18){ctx.strokeStyle='rgba(255,110,40,.55)';ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(x+5,y+12+h*30);ctx.lineTo(x+15,y+16);ctx.lineTo(x+26,y+11+h2*8);ctx.stroke();}
     if(rg===2&&h<.12){ctx.fillStyle='rgba(200,170,255,.7)';ctx.beginPath();ctx.moveTo(x+12,y+20);ctx.lineTo(x+15,y+10);ctx.lineTo(x+18,y+20);ctx.fill();}}
   // outline where the rock meets open ground
@@ -1416,7 +1423,7 @@ function drawDWall(i){
     ctx.fillStyle=P.rockD;ctx.beginPath();ctx.moveTo(x+(Wl?0:rBL*.5),fy+fh-1);for(let k=0;k<=6;k++){const px=x+k*T/6;if(px<x+(Wl?0:rBL*.5)||px>x+T-(E?0:rBR*.5))continue;ctx.lineTo(px,fy+fh-1+hash(i*9+k)*3.5);}ctx.lineTo(x+T-(E?0:rBR*.5),fy+fh-1);ctx.fill();
     ctx.strokeStyle='rgba(255,255,255,.08)';ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(x+(Wl?0:rBL*.4),fy+.7);ctx.lineTo(x+T-(E?0:rBR*.4),fy+.7);ctx.stroke();
     ctx.strokeStyle='rgba(0,0,0,.3)';ctx.lineWidth=1.1;ctx.beginPath();for(let k=0;k<3;k++){const sx=x+5+k*10+hash(i+k*5)*5;if(sx<x+(Wl?0:rBL*.6)||sx>x+T-(E?0:rBR*.6))continue;ctx.moveTo(sx,fy+4+hash(i+k)*4);ctx.lineTo(sx+(hash(i+k*2)-.5)*4,fy+fh-3);}ctx.stroke();
-    if(inS){ctx.fillStyle=P.rockD;for(let k=0;k<2;k++){if(hash(i+k*3+1)<.4)continue;const sx=x+8+k*14+h*4,sl=3+hash(i+k*3)*6;ctx.beginPath();ctx.moveTo(sx-2,fy+fh);ctx.lineTo(sx,fy+fh+sl);ctx.lineTo(sx+2,fy+fh);ctx.fill();}
+    if(dg&&inS){ctx.fillStyle=P.rockD;for(let k=0;k<2;k++){if(hash(i+k*3+1)<.4)continue;const sx=x+8+k*14+h*4,sl=3+hash(i+k*3)*6;ctx.beginPath();ctx.moveTo(sx-2,fy+fh);ctx.lineTo(sx,fy+fh+sl);ctx.lineTo(sx+2,fy+fh);ctx.fill();}
       if(rg===4){ctx.fillStyle='rgba(220,245,255,.7)';const sx=x+12+h2*8;ctx.beginPath();ctx.moveTo(sx-1.5,fy+fh);ctx.lineTo(sx,fy+fh+5+h*4);ctx.lineTo(sx+1.5,fy+fh);ctx.fill();}}
     else if(rg===0||rg===1){ctx.strokeStyle='rgba(110,160,72,.9)';ctx.lineWidth=1.4;ctx.beginPath();for(let k=0;k<3;k++){if(hash(i+k*7)<.35)continue;const gx=x+6+k*9+h2*4;ctx.moveTo(gx-2,fy+fh+2);ctx.lineTo(gx-3,fy+fh-4);ctx.moveTo(gx,fy+fh+2);ctx.lineTo(gx+1,fy+fh-5);ctx.moveTo(gx+2,fy+fh+2);ctx.lineTo(gx+4,fy+fh-3);}ctx.stroke();}
     else if(rg===4){ctx.fillStyle='rgba(236,248,255,.8)';ctx.beginPath();ctx.ellipse(x+T/2,fy+fh+1,T*.45,2.4,0,0,7);ctx.fill();}
@@ -1513,7 +1520,7 @@ function lmAct(m){
   sfx('achieve');
 }
 function readNote(q){if(q.got)return;q.got=1;S.notesF=S.notesF||[];const nid=q.id%NOTES.length;if(!S.notesF.includes(nid))S.notesF.push(nid);sfx('level');
-  const t=_L(NOTES[nid][0],NOTES[nid][1]);toast('📜 '+t,6500);if(S.notesF.length===NOTES.length)toast(_L('모든 기록을 모았어요!','You collected every record!'),3000);}
+  const t=_L(NOTES[nid][0],NOTES[nid][1]);toast('📜 '+t,6500);if(S.notesF.length===NOTES.length)toast(_L('모든 기록을 모았어요!','You collected every record!'),3000);if(S.notesF.length>=5&&STORY.records&&!(S.story||[]).includes('records'))storyLater('records');}
 /* region reveal card */
 function gainLife(src){S.lives=Math.min(5,(S.lives==null?3:S.lives)+1);sfx('achieve');toast(_L('불씨 결정을 얻었어요 ('+src+_T(')! 목숨 +1 · 지금 ')+S.lives+_T('개'),'You got an Ember Crystal ('+src+')! +1 life · now '+S.lives),3200);}
 function regionReveal(rg){const R0=REGION[rg];if(!R0)return;const el=$('regCard');if(!el)return;
@@ -1730,14 +1737,16 @@ function bakeChunk(chx,chy){
   const g=cv.getContext('2d');g.scale(k,k);g.translate(-chx*GCH*T,-chy*GCH*T);const rnd=chunkRng((chx*7919+chy*104729+WSEED*31)|0);
   const X0=chx*GCH,Y0=chy*GCH,X1=Math.min(W,X0+GCH),Y1=Math.min(H,Y0+GCH),inC=(x,y)=>x>=X0*T&&y>=Y0*T&&x<X1*T&&y<Y1*T,area=(X1-X0)*(Y1-Y0)/(150*150);
   const TONES=[['#3a3230','#3e3532','#362e2c','#43393a'],['#365c36','#3a6239','#335733','#3d653b'],['#2e4532','#324a35','#2a402e','#364e38'],['#6a5340','#705842','#644e3c','#77604a'],['#c8d8e0','#cddde4','#c2d2da','#d4e2e8']];
+  {const M=2,tw=X1-X0+2*M,th=Y1-Y0+2*M,tc=document.createElement('canvas');tc.width=tw;tc.height=th;const tg=tc.getContext('2d'),im=tg.createImageData(tw,th),RGBT=TONES.map(a=>a.map(c=>[parseInt(c.slice(1,3),16),parseInt(c.slice(3,5),16),parseInt(c.slice(5,7),16)])),ROADT=[[122,100,72],[128,106,76],[116,94,68],[125,102,72]];
+    for(let yy=0;yy<th;yy++)for(let xx=0;xx<tw;xx++){const x=Math.min(W-1,Math.max(0,X0-M+xx)),y=Math.min(H-1,Math.max(0,Y0-M+yy)),i=idx(x,y),tn=S&&S.road&&S.road[i]&&!(S.town&&S.town[i])?ROADT:RGBT[[1,2,3,0,4][regionOfCell(i)]],n=vnoise(x/4.5+11,y/4.5+5)*.75+hash(i+7)*.25,c=tn[Math.min(3,Math.floor(n*4))],o=(yy*tw+xx)*4;im.data[o]=c[0];im.data[o+1]=c[1];im.data[o+2]=c[2];im.data[o+3]=255;}
+    tg.putImageData(im,0,0);g.save();g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';g.drawImage(tc,(X0-M+.5)*T-T/2,(Y0-M+.5)*T-T/2,tw*T,th*T);g.restore();}
   for(let y=Y0;y<Y1;y++)for(let x=X0;x<X1;x++){
     const i=idx(x,y),h=hash(i+7);
     if(arenaCell(x,y)){g.fillStyle=['#3a3048','#3e344c','#362c44','#42384f'][Math.floor(h*4)];g.fillRect(x*T,y*T,T,T);g.strokeStyle='rgba(20,14,30,.5)';g.lineWidth=2;g.strokeRect(x*T+1,y*T+1,T-2,T-2);if(h<.15){g.fillStyle='rgba(180,140,240,.25)';g.fillRect(x*T+12,y*T+12,8,8);}continue;}
     if(S&&S.town&&S.town[i]){g.fillStyle=['#6f6656','#746a5a','#6a6252','#787060'][Math.floor(h*4)];g.fillRect(x*T,y*T,T,T);g.strokeStyle='rgba(40,34,26,.35)';g.lineWidth=2;g.strokeRect(x*T+1,y*T+1,T-2,T-2);continue;}
     if(vplotCell(x,y)&&!(S&&S.road&&S.road[i])){g.fillStyle=['#4f7a3e','#537f41','#4b763b','#578444'][Math.floor(h*4)];g.fillRect(x*T,y*T,T,T);if(h<.3){g.fillStyle='rgba(240,230,160,.5)';g.beginPath();g.arc(x*T+6+h*60,y*T+10+h*30,2,0,7);g.fill();}
       g.fillStyle='#8a6a44';const ex=(x===VP.x0||x===VP.x1),ey=(y===VP.y0||y===VP.y1);if(ey){g.fillRect(x*T,y*T+(y===VP.y0?2:T-6),T,4);g.fillRect(x*T+2,y*T+(y===VP.y0?-2:T-10),4,12);}if(ex){g.fillRect(x*T+(x===VP.x0?2:T-6),y*T,4,T);g.fillRect(x*T+(x===VP.x0?-2:T-10),y*T+2,12,4);}continue;}
-    if(S&&S.road&&S.road[i]){g.fillStyle=['#7a6448','#806a4c','#745e44','#7d6648'][Math.floor(h*4)];g.fillRect(x*T,y*T,T,T);g.fillStyle='rgba(60,48,34,.45)';g.fillRect(x*T+h*20,y*T+6+h*12,6,4);continue;}
-    g.fillStyle=TONES[[1,2,3,0,4][regionOfCell(i)]][Math.floor(h*4)];g.fillRect(x*T,y*T,T,T);
+    if(S&&S.road&&S.road[i]){g.fillStyle='rgba(60,48,34,.35)';g.fillRect(x*T+h*20,y*T+6+h*12,6,4);continue;}
   }
   for(let n=0;n<9000*area;n++){
     const x=(X0+rnd()*(X1-X0))*T,y=(Y0+rnd()*(Y1-Y0))*T,rg=regionAtPos(x,y),ci2=cellAt(x,y);if(ci2>=0&&(S.town[ci2]||S.road[ci2]))continue;
@@ -1746,9 +1755,9 @@ function bakeChunk(chx,chy){
   }
   for(let n=0;n<3000*area;n++){const fx=X0+rnd()*(X1-X0),fy=Y0+rnd()*(Y1-Y0);if(regionAtPos(fx*T,fy*T)!==4)continue;g.fillStyle=rnd()<.5?'rgba(255,255,255,.55)':'rgba(120,160,190,.25)';g.fillRect(fx*T,fy*T,3,3);}
   if(S&&S.haz)for(let y=Y0;y<Y1;y++)for(let x=X0;x<X1;x++){const hz=S.haz[idx(x,y)];if(!hz)continue;const hh=hash(idx(x,y)+3);
-    if(hz===1){g.fillStyle='#4a1e14';g.fillRect(x*T,y*T,T,T);g.strokeStyle='rgba(255,110,40,.85)';g.lineWidth=2;g.beginPath();g.moveTo(x*T+4,y*T+6+hh*8);g.lineTo(x*T+16,y*T+16);g.lineTo(x*T+12,y*T+T-4);g.moveTo(x*T+16,y*T+16);g.lineTo(x*T+T-4,y*T+10+hh*8);g.stroke();}
-    else if(hz===2){g.fillStyle='#4a5a2a';g.fillRect(x*T,y*T,T,T);g.fillStyle='rgba(154,208,106,.6)';g.beginPath();g.arc(x*T+8+hh*14,y*T+10,3,0,Math.PI*2);g.arc(x*T+20,y*T+20+hh*6,2.5,0,Math.PI*2);g.fill();}
-    else{g.fillStyle='#f2f8fb';g.fillRect(x*T,y*T,T,T);g.fillStyle='rgba(180,210,225,.6)';g.fillRect(x*T+4,y*T+18,T-8,3);}}
+    if(hz===1){g.fillStyle='#4a1e14';g.beginPath(),g.ellipse(x*T+T/2,y*T+T/2,T*.68,T*.62,hh*3,0,Math.PI*2),g.fill();g.strokeStyle='rgba(255,110,40,.85)';g.lineWidth=2;g.beginPath();g.moveTo(x*T+4,y*T+6+hh*8);g.lineTo(x*T+16,y*T+16);g.lineTo(x*T+12,y*T+T-4);g.moveTo(x*T+16,y*T+16);g.lineTo(x*T+T-4,y*T+10+hh*8);g.stroke();}
+    else if(hz===2){g.fillStyle='#4a5a2a';g.beginPath(),g.ellipse(x*T+T/2,y*T+T/2,T*.68,T*.62,hh*3,0,Math.PI*2),g.fill();g.fillStyle='rgba(154,208,106,.6)';g.beginPath();g.arc(x*T+8+hh*14,y*T+10,3,0,Math.PI*2);g.arc(x*T+20,y*T+20+hh*6,2.5,0,Math.PI*2);g.fill();}
+    else{g.fillStyle='#f2f8fb';g.beginPath(),g.ellipse(x*T+T/2,y*T+T/2,T*.68,T*.62,hh*3,0,Math.PI*2),g.fill();g.fillStyle='rgba(180,210,225,.6)';g.fillRect(x*T+4,y*T+18,T-8,3);}}
   for(let n=0;n<2200*area;n++){const fx=X0+rnd()*(X1-X0),fy=Y0+rnd()*(Y1-Y0);if(regionAtPos(fx*T,fy*T)!==3)continue;g.fillStyle=rnd()<.5?'rgba(255,120,40,.35)':'rgba(20,10,10,.35)';g.fillRect(fx*T,fy*T,3,3);}
   for(let n=0;n<1100*area;n++){const fx=X0+rnd()*(X1-X0),fy=Y0+rnd()*(Y1-Y0);if(regionAtPos(fx*T,fy*T)!==1)continue;g.fillStyle='rgba(50,40,24,.35)';g.beginPath();g.ellipse(fx*T,fy*T,20+rnd()*30,10+rnd()*16,rnd()*3,0,Math.PI*2);g.fill();}
   for(let n=0;n<1400*area;n++){const fx=X0+rnd()*(X1-X0),fy=Y0+rnd()*(Y1-Y0),fi=idx(Math.floor(fx),Math.floor(fy));if(regionOfCell(fi)!==0||S.town[fi]||S.road[fi])continue;g.fillStyle=['#e9d98a','#d9a3c7','#f0f0e0'][n%3];g.beginPath();g.arc(fx*T,fy*T,2.4,0,Math.PI*2);g.fill();}
@@ -2021,7 +2030,7 @@ function renderBag(){
     h+='</div></div>';
     }else{
     h+=_T('<p>괴물들이 깨어난 이유를 쫓는 기록이에요. 보스를 쓰러뜨릴 때마다 새 장이 열려요.</p><div class="sec"><h3>생존 일지</h3><div class="trades">');
-    for(const id of STORY_ORDER){const st=STORY[id],got=(S.story||[]).includes(id);h+=row(got?'story:'+id:'',!got,got?st.t:_T('??? · 아직 알 수 없는 이야기'),got?st.pages[0].slice(0,44)+'…':'',got?_T('다시 보기'):'',got?'<svg viewBox="0 0 24 24"><path d="M5 4h11l3 3v13H5z" fill="#c9b08a"/><path d="M8 9h8M8 12h8M8 15h5" stroke="#5a4028" stroke-width="1.5"/></svg>':'');}
+    for(const id of STORY_ORDER){const st=STORY[id],got=(S.story||[]).includes(id);h+=row(got?'story:'+id:'',!got,got?st.t:_T('??? · 아직 알 수 없는 이야기'),got?storyName(st.pages[0]).slice(0,44)+'…':'',got?_T('다시 보기'):'',got?'<svg viewBox="0 0 24 24"><path d="M5 4h11l3 3v13H5z" fill="#c9b08a"/><path d="M8 9h8M8 12h8M8 15h5" stroke="#5a4028" stroke-width="1.5"/></svg>':'');}
     h+='</div></div>';
     }
   }else if(bagTab==='pet'){
@@ -2405,7 +2414,7 @@ function dawn(){
   let extra='';if(huts&&S.vill.length<Math.min(14,4+huts*2)){addVillager();extra=_T(' 오두막에 새 주민이 들어왔다.');}
   beginDay(_L('휴, 살아남았어! '+S.day+_T('일째 아침.'),'Phew, we survived! Day '+S.day+' morning.')+extra);
 }
-function beginDay(msg){setupDay();save();if(!NC())try{localStorage.setItem(SAVE_KEY+'-am',localStorage.getItem(SAVE_KEY)||'');}catch(_){}if(S.day===3&&!(S.story||[]).includes('day3'))storyLater('day3');toast(S.day===1?_T('일단 가방(I) → 제작에서 나무 도끼랑 곡괭이부터 만들어 보자. 밤이 오기 전에 건설(B)로 벽도 세워 두고!'):(msg||'')+(S.event?_T(' 오늘의 사건 · ')+S.event.n+': '+S.event.d:_T(' 오늘은 조용한 하루가 될 것 같아')),4000);}
+function beginDay(msg){setupDay();save();if(!NC())try{localStorage.setItem(SAVE_KEY+'-am',localStorage.getItem(SAVE_KEY)||'');}catch(_){}if(S.day===2&&!(S.story||[]).includes('dawn2'))storyLater('dawn2');if(S.day===3&&!(S.story||[]).includes('day3'))storyLater('day3');if(S.day===12&&!(S.story||[]).includes('dream'))storyLater('dream');toast(S.day===1?_T('일단 가방(I) → 제작에서 나무 도끼랑 곡괭이부터 만들어 보자. 밤이 오기 전에 건설(B)로 벽도 세워 두고!'):(msg||'')+(S.event?_T(' 오늘의 사건 · ')+S.event.n+': '+S.event.d:_T(' 오늘은 조용한 하루가 될 것 같아')),4000);}
 
 /* ---------- combat ---------- */
 const RELIC_N={spin:_T('족장의 회오리 부적'),mist:_T('히드라의 독샘'),guard:_T('골렘의 수정핵'),blink:_T('심연의 그림자'),erupt:_T('군주의 불씨'),frostnova:_T('여왕의 서리꽃')};
@@ -2786,12 +2795,14 @@ function hatchDawn(){for(const k in S.incub){const v=S.incub[k];if(!S.bld[k]||S.
 function hatchPet(t){sfx('hatch');if(!hasPet(t)){S.pets.push({t,lv:1,xp:0});if(S.petOn<0)S.petOn=S.pets.length-1;setTimeout(()=>toast(_T('톡톡… 알이 깨어났어! ')+PETS[t].n+_T('가 태어났어! 가방(I) → 펫 탭에서 만나 봐'),4000),2200);}
   else{const pt=S.pets.find(x=>x.t===t),o=S.petOn;S.petOn=S.pets.indexOf(pt);petXp(400+200*EGG_REG[t]);S.petOn=o;setTimeout(()=>toast(_T('알에서 ')+PETS[t].n+_T('가 또 태어났다! 기존 ')+PETS[t].n+_T('가 경험치를 얻었다'),3600),2200);}}
 function sceneSvg(k){
-  const sky={fire:['#2a0f0a','#7a2a12'],camp:['#0f1a24','#24384a'],chief:['#1a1410','#3a2a1a'],hydra:['#122014','#2a4a2a'],golem:['#1a1424','#3a2e4a'],flame:['#200a06','#6a1e0a'],frost:['#1a2a3a','#6a8aa0'],abyss:['#0a0610','#2a1a3a'],cold:['#24364a','#9fb8c8']}[k]||['#111','#333'];
+  const sky={forge:['#1a100a','#4a2412'],dream:['#0a0a22','#3a2a5c'],fire:['#2a0f0a','#7a2a12'],camp:['#0f1a24','#24384a'],chief:['#1a1410','#3a2a1a'],hydra:['#122014','#2a4a2a'],golem:['#1a1424','#3a2e4a'],flame:['#200a06','#6a1e0a'],frost:['#1a2a3a','#6a8aa0'],abyss:['#0a0610','#2a1a3a'],cold:['#24364a','#9fb8c8']}[k]||['#111','#333'];
   let g='<defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+sky[0]+'"/><stop offset="1" stop-color="'+sky[1]+'"/></linearGradient></defs><rect width="320" height="140" fill="url(#sg)"/>';
   const tree=(x,s,c)=>'<path d="M'+x+' '+(118-36*s)+'l'+(14*s)+' '+(30*s)+'h'+(-28*s)+'z" fill="'+(c||'#14261a')+'"/><rect x="'+(x-2*s)+'" y="'+(118-6*s)+'" width="'+(4*s)+'" height="'+(6*s)+'" fill="#2a1c10"/>';
   const ground=c=>'<rect y="116" width="320" height="24" fill="'+c+'"/>';
   const eyes=(x,y)=>'<circle cx="'+x+'" cy="'+y+'" r="2" fill="#ff4a3a"/><circle cx="'+(x+7)+'" cy="'+y+'" r="2" fill="#ff4a3a"/>';
-  if(k==='fire'){g+=ground('#1a0e08');for(const [x,h] of [[60,30],[120,40],[200,34],[260,28]])g+='<rect x="'+(x-16)+'" y="'+(116-h)+'" width="32" height="'+h+'" fill="#1a0e08"/><path d="M'+(x-20)+' '+(116-h)+'l20-16 20 16z" fill="#120806"/><path d="M'+(x-8)+' '+(116-h-10)+'q8-24 16 0q-4-10-8-4q-4-6-8 4z" fill="#ff8a3a" opacity=".9"/>';for(let i=0;i<6;i++)g+=eyes(30+i*48,128-((i*13)%8));}
+  if(k==='forge'){g+=ground('#24160e');g+='<rect x="40" y="40" width="240" height="78" fill="#2a1a10" opacity=".55"/><rect x="128" y="96" width="64" height="12" rx="3" fill="#3a3a40"/><rect x="146" y="106" width="28" height="12" fill="#2e2e34"/><path d="M118 96h84l-10-8h-64z" fill="#4a4a52"/><rect x="150" y="84" width="34" height="5" rx="2" fill="#ff9a3a"/><rect x="150" y="84" width="34" height="5" rx="2" fill="#ffe08a" opacity=".5"/><ellipse cx="166" cy="84" rx="40" ry="18" fill="#ff8a3a" opacity=".18"/>';for(let i=0;i<12;i++)g+='<circle cx="'+(150+((i*37)%60))+'" cy="'+(50+((i*23)%36))+'" r="'+(1+(i%3)*.6)+'" fill="#ffd27a"/>';g+='<path d="M206 60l-14 26" stroke="#6a4a2a" stroke-width="4" stroke-linecap="round"/><rect x="198" y="50" width="20" height="12" rx="2" fill="#5a5a62" transform="rotate(25 208 56)"/><rect x="56" y="70" width="34" height="48" fill="#3a2414"/><ellipse cx="73" cy="78" rx="12" ry="6" fill="#ff6a2a" opacity=".7"/>';}
+  else if(k==='dream'){g+=ground('#140c24');for(let i=0;i<40;i++)g+='<circle cx="'+((i*61)%320)+'" cy="'+((i*29)%100)+'" r="'+(.6+(i%3)*.5)+'" fill="#fff" opacity="'+(.3+(i%4)*.15)+'"/>';g+='<ellipse cx="236" cy="104" rx="46" ry="10" fill="#05030a"/><path d="M222 104q-4-30 14-38q18 8 14 38z" fill="#0c0814"/><circle cx="236" cy="62" r="7" fill="#0c0814"/><circle cx="233" cy="62" r="1.2" fill="#b48cf0"/><circle cx="239" cy="62" r="1.2" fill="#b48cf0"/>';for(let i=0;i<7;i++)g+='<path d="M'+(200+i*12)+' '+(30+(i%3)*14)+'q4 6 0 12q-4-6 0-12z" fill="#1a1024" stroke="#5a4a7a" stroke-width=".6" transform="rotate('+(i*25)+' '+(200+i*12)+' '+(36+(i%3)*14)+')"/>';g+='<path d="M60 118q0-16 16-18q14 0 16 18z" fill="#3a3050"/><circle cx="76" cy="94" r="8" fill="#f2cfae"/><path d="M68 92q8-10 16 0q-2-6-8-7q-6 1-8 7z" fill="#5a3420"/><path d="M73 95h2M78 95h2" stroke="#2a1a14" stroke-width="1"/><ellipse cx="110" cy="70" rx="34" ry="16" fill="#b48cf0" opacity=".08"/>';}
+  else if(k==='fire'){g+=ground('#1a0e08');for(const [x,h] of [[60,30],[120,40],[200,34],[260,28]])g+='<rect x="'+(x-16)+'" y="'+(116-h)+'" width="32" height="'+h+'" fill="#1a0e08"/><path d="M'+(x-20)+' '+(116-h)+'l20-16 20 16z" fill="#120806"/><path d="M'+(x-8)+' '+(116-h-10)+'q8-24 16 0q-4-10-8-4q-4-6-8 4z" fill="#ff8a3a" opacity=".9"/>';for(let i=0;i<6;i++)g+=eyes(30+i*48,128-((i*13)%8));}
   else if(k==='camp'){g+=ground('#18261a');for(const x of [20,50,270,300])g+=tree(x,1.2);g+='<ellipse cx="160" cy="118" rx="26" ry="6" fill="#4a4a4a"/><path d="M150 116q10-34 20 0q-4-14-10-8q-6-8-10 8z" fill="#ffa047"/><circle cx="160" cy="110" r="40" fill="#ffa047" opacity=".12"/><circle cx="120" cy="110" r="6" fill="#2f5a72"/><circle cx="200" cy="110" r="6" fill="#2f5a72"/><circle cx="185" cy="112" r="5" fill="#5a3a72"/>';}
   else if(k==='chief'){g+=ground('#2a1c10');for(const x of [30,290])g+=tree(x,1.3);g+='<circle cx="160" cy="92" r="24" fill="#5a7a3a"/><path d="M148 72l-6-14 12 10zM172 72l6-14-12 10z" fill="#3a5a2a"/>'+eyes(152,90)+'<path d="M160 116l-8 6h16z" fill="#111"/><circle cx="160" cy="122" r="5" fill="#1a1a1a" stroke="#b48cf0"/>';}
   else if(k==='hydra'){g+=ground('#1e3020');g+='<ellipse cx="160" cy="124" rx="90" ry="10" fill="#2a4a3a"/><rect x="150" y="60" width="20" height="58" fill="#6a6a62"/><path d="M152 70l8 10-4 10 6 12" stroke="#1a1a1a" stroke-width="2" fill="none"/>';for(const x of [60,100,220,260])g+='<path d="M'+x+' 118q-8-30 6-46" stroke="#4a8a4a" stroke-width="8" fill="none"/>';}
@@ -2802,51 +2813,100 @@ function sceneSvg(k){
   return '<svg viewBox="0 0 320 140" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">'+g+'</svg>';
 }
 const STORY={
-  prologue:{t:_L('프롤로그 · 불타는 밤','Prologue · The Burning Night'),sc:['fire','fire','camp','camp','camp'],pages:[
-    _L('숲속 작은 마을 솔빛. 해솔 할머니는 늘 말했다. "다섯 봉인이 지키는 한, 이 숲의 밤은 조용할 게다." 아무도 그 옛이야기를 믿지 않았다.','Solbit, a small village in the forest. Grandma Haesol always said, "As long as the five seals hold, the forest nights will stay quiet." No one believed the old tale.'),
-    _L('그날 자정, 숲 사방에서 붉은 눈들이 몰려왔다. 고블린, 늑대, 처음 보는 괴물들까지. 지붕이 무너지고 종탑이 쓰러졌다. 솔빛은 하룻밤 새 잿더미가 되었다.','That midnight, red eyes poured in from every side of the forest. Goblins, wolves, and monsters no one had seen. Roofs fell and the bell tower collapsed. Solbit was ash by morning.'),
-    _L('살아남은 건 몇 사람뿐. 해솔 할머니, 대장장이 무진, 그리고 꼬마 별이. 정신없이 달아나던 우리는 숲 한가운데에서 오래된 돌 화톳불 터를 발견했다.','Only a few survived: Grandma Haesol, Mujin the blacksmith, and little Byeoli. Running blindly, we found an old stone bonfire circle in the heart of the forest.'),
-    _L('할머니가 젖은 손으로 돌을 쓰다듬었다. "옛 봉인 지기들이 쉬어 가던 자리야. 불이 꺼지지 않는 한, 놈들은 이 안으로 쉽게 못 들어온다."','Grandma ran her trembling hand over the stones. "This is where the old seal keepers rested. As long as the fire burns, they can\'t easily get in."'),
-    _L('여기서 버텨야 한다. 낮에는 모으고 짓고, 밤에는 불을 지킨다. 그리고 알아내야 한다. 잠들어 있던 괴물들이 왜 지금 깨어났는지.','We must hold out here. Gather and build by day, guard the fire by night. And find out why the sleeping monsters woke now.')]},
-  day3:{t:_L('막간 · 할머니의 옛이야기','Interlude · Grandma\'s Old Tale'),sc:['camp','fire','camp'],pages:[
-    _L('사흘째 밤을 넘긴 아침, 해솔 할머니가 모두를 불 앞에 불러 앉혔다. "이제는 말해 줘야겠구나. 이 숲 아래에 무엇이 잠들어 있는지."','On the morning after the third night, Grandma Haesol gathered everyone by the fire. "It\'s time I told you what sleeps beneath this forest."'),
-    _L('"아주 먼 옛날, 땅 밑 심연에서 군주가 올라왔단다. 다섯 수호자가 숲, 늪, 협곡, 화산, 설원에 봉인을 세워 놈을 가뒀지. 봉인이 하나 깨질 때마다 괴물들이 깨어난다."','"Long ago, a lord rose from the abyss below. Five guardians raised seals in the forest, swamp, canyon, volcano and tundra to imprison it. Each broken seal wakes more monsters."'),
-    _L('"누군가 일부러 봉인을 깨뜨리고 있어. 숲 곳곳에 흩어진 기록들을 찾아보렴. 먼저 간 사람들이 남긴 단서가 있을 게다."','"Someone is breaking the seals on purpose. Look for the records scattered across the land. Those who came before must have left clues."')]},
-  chief:{t:_L('1장 · 검은 깃털의 부적','Chapter 1 · The Black Feather Charm'),sc:['chief','chief','camp'],pages:[
-    _L('쓰러진 고블린 족장의 목에 검은 부적이 걸려 있었다. 까마귀 깃털을 엮어 만든 부적. 손에 쥐자 얼음처럼 차가운 기운이 팔을 타고 올라온다.','A black charm hung from the fallen Goblin Chieftain\'s neck, woven from raven feathers. Holding it, an icy chill crawls up your arm.'),
-    _L('할머니의 얼굴이 하얗게 질렸다. "심연을 섬기는 자들의 표식이야. 놈들이 괴물들에게 이걸 걸어 부리고 있는 거다."','Grandma went pale. "That\'s the mark of those who serve the abyss. They\'re binding the monsters with these."'),
-    _L('족장이 쓰러지자 숲을 두르던 가시 장벽이 시들었다. 독안개 늪으로 가는 길이 열리고, 마을의 무너진 탑 터에는 다시 탑이 솟았다. 첫 번째 봉인은 아직 숨 쉬고 있다.','With the chieftain gone, the thorn barrier withered. The way to Mistbog Swamp opened, and a tower rose again on the village ruins. The first seal still breathes.')]},
-  dungeon:{t:_L('막간 · 동굴 벽화','Interlude · The Cave Mural'),sc:['camp','abyss'],pages:[
-    _L('던전 가장 깊은 방, 횃불을 비추자 벽 가득 그림이 드러났다. 다섯 사람이 손을 맞잡고 검은 소용돌이를 둘러싸고 있다.','In the deepest room of the dungeon, the torchlight revealed a wall covered in paintings. Five figures holding hands around a black vortex.'),
-    _L('그림 맨 아래 작은 글씨. "불을 지키는 자가 마지막 봉인 지기가 되리라." 무진이 중얼거렸다. "…그거, 우리 얘기 같은데."','Small writing at the bottom: "The one who keeps the fire shall become the last seal keeper." Mujin muttered, "...that sounds like us."')]},
-  hydra:{t:_L('2장 · 금이 간 봉인석','Chapter 2 · The Cracked Seal Stone'),sc:['hydra','hydra','camp'],pages:[
-    _L('히드라의 둥지 한가운데 금이 간 돌기둥이 서 있었다. 오래된 글씨가 새겨진 봉인석. 그 틈새에 검은 깃털이 꽂혀 있었다.','In the middle of the hydra\'s nest stood a cracked stone pillar — a seal stone carved with ancient words. A black feather was wedged into the crack.'),
-    _L('누군가 직접 이곳까지 와서 봉인을 깨뜨린 것이다. 깃털을 뽑아내자 늪물이 조금씩 맑아지기 시작했다.','Someone came here in person to break the seal. When you pull out the feather, the swamp water slowly begins to clear.'),
-    _L('늪 너머 고대 봉인이 풀리며 수정 협곡이 드러났다. 별이가 반짝이는 협곡을 가리키며 물었다. "저기에도 깃털이 있을까요?"','Beyond the swamp, the ancient seal gave way and the Crystal Canyon appeared. Byeoli pointed at the glittering canyon. "Is there a feather there too?"')]},
-  golem:{t:_L('3장 · 검게 물든 수호자','Chapter 3 · The Darkened Guardian'),sc:['golem','golem','camp'],pages:[
-    _L('수정 골렘은 원래 협곡의 봉인을 지키던 수호자였다. 하지만 쓰러진 그 심장은 먹물처럼 검게 물들어 있었다.','The Crystal Golem was once the guardian of the canyon seal. But its fallen heart was stained black as ink.'),
-    _L('봉인을 지키던 자들마저 심연에 잠식당하고 있다. 골렘의 마지막 빛이 남쪽을 가리켰다. 화산, 그리고 그 너머.','Even the seal guardians are being consumed by the abyss. The golem\'s last light pointed south — to the volcano, and beyond.'),
-    _L('협곡 끝 용암 장벽이 식었다. 화산 깊은 곳에서 무언가 거대한 것이 숨 쉬는 소리가 들린다.','The lava barrier at the canyon\'s end cooled. Deep in the volcano, something enormous can be heard breathing.')]},
-  flame:{t:_L('4장 · 따뜻한 심장','Chapter 4 · A Warm Heart'),sc:['flame','cold','camp'],pages:[
-    _L('화염 군주는 쓰러지며 불씨 하나를 남겼다. 아직도 따뜻하게 뛰는 심장. 손에 쥐자 온몸에 열기가 번진다.','The Flame Lord left an ember as it fell — a heart still beating warmly. Holding it, warmth spreads through your whole body.'),
-    _L('해솔 할머니가 눈을 감았다. "화염의 수호자는 원래 착한 녀석이었단다. 심연이 그 불을 빼앗았을 뿐이지. 그 심장이 있으면 설원의 추위도 견딜 수 있을 게다."','Grandma Haesol closed her eyes. "The flame guardian was kind once. The abyss only stole its fire. With that heart, you can bear the tundra\'s cold."'),
-    _L('얼음 너머에서 누군가 부르는 목소리가 들린다. 마지막 봉인 지기가 아직 혼자 버티고 있다.','A voice calls from beyond the ice. The last seal keeper is still holding out alone.')]},
-  frost:{t:_L('5장 · 마지막 봉인 지기','Chapter 5 · The Last Seal Keeper'),sc:['frost','frost','abyss'],pages:[
-    _L('서리 여왕은 적이 아니었다. 그녀는 혼자 남아 마지막 봉인을 지키다, 결국 심연에 마음을 빼앗긴 봉인 지기였다.','The Frost Queen was no enemy. She was the last seal keeper, guarding the final seal alone until the abyss finally took her heart.'),
-    _L('숨이 끊어지기 전, 여왕이 당신의 손을 잡았다. "불을 지키는 아이야… 심연의 문이 열렸다. 고대 열쇠를 모아 보물고로 가거라."','Before her last breath, the queen took your hand. "Child of the fire... the gate of the abyss is open. Gather the ancient keys and go to the vault."'),
-    _L('"봉인을 다시 잇는 힘이 그곳에 잠들어 있다. 그리고 깃털을 꽂은 자… 심연의 군주가 기다리고 있을 게다."','"The power to restore the seals sleeps there. And the one who planted the feathers... the Lord of the Abyss will be waiting."')]},
-  abyss:{t:_L('종장 · 심연의 군주','Epilogue · Lord of the Abyss'),sc:['abyss','abyss','camp','fire'],pages:[
-    _L('심연의 군주. 검은 깃털 망토를 두른 그는 한때 다섯 수호자 중 하나였다. 혼자서 영원히 봉인을 지키는 일에 지쳐, 스스로 심연이 되어 버린 자.','The Lord of the Abyss. Cloaked in black feathers, he was once one of the five guardians — one who grew tired of guarding the seal forever, and became the abyss himself.'),
-    _L('그가 쓰러지자 숲을 덮던 붉은 기운이 걷히기 시작했다. 깨진 봉인들이 하나둘 희미한 빛을 되찾는다.','As he fell, the red haze over the forest began to lift. The broken seals one by one regained a faint glow.'),
-    _L('해솔 할머니가 웃었다. "봉인은 혼자 지키는 게 아니란다. 그래서 그 녀석은 무너졌고, 우리는 버텼지."','Grandma Haesol smiled. "A seal isn\'t meant to be kept alone. That\'s why he fell — and why we held on."'),
-    _L('밤은 여전히 찾아온다. 하지만 이제 화톳불 곁에는 함께하는 사람들이 있다. 우리의 이야기는 계속된다.','Night still comes. But now there are people beside the bonfire. Our story goes on.')]},
+  prologue:{t:_L("프롤로그 · 불타는 밤","Prologue · The Burning Night"),sc:["fire", "fire", "fire", "fire", "camp", "camp", "camp"],pages:[
+    _L("숲속 작은 마을 솔빛. 장날이면 꿀 냄새와 대장간 망치 소리가 골목을 가득 채우던 곳. 떠돌이였던 {name}은 그 따뜻함이 좋아 여관 다락방에 짐을 풀었다.","Solbit, a little village in the forest. On market days the lanes filled with the smell of honey and the ring of the smithy. {name}, a wanderer, loved that warmth and took the attic room at the inn."),
+    _L("해솔 할머니는 아이들을 모아 놓고 늘 같은 이야기를 했다. \"다섯 봉인이 지키는 한, 이 숲의 밤은 조용할 게다.\" 아이들은 하품을 했고, 어른들은 웃어넘겼다.","Grandma Haesol always gathered the children and told the same tale. \"As long as the five seals hold, the forest nights will stay quiet.\" The children yawned. The grown-ups laughed it off."),
+    _L("그날 밤, 까마귀 떼가 달을 가렸다. 자정을 알리는 종이 울리기도 전에 숲 사방에서 붉은 눈들이 몰려왔다. 고블린, 늑대, 이름조차 모르는 괴물들까지.","That night, a flock of ravens covered the moon. Before the midnight bell could ring, red eyes poured in from every side of the forest. Goblins, wolves, and creatures no one had a name for."),
+    _L("지붕이 무너지고 종탑이 쓰러졌다. {name}은 연기 속에서 울고 있던 꼬마 별이를 안아 들고 뛰었다. 뒤에서는 대장장이 무진이 망치를 휘두르며 길을 열었다.","Roofs caved in and the bell tower fell. {name} scooped up little Byeoli, crying in the smoke, and ran. Behind them, Mujin the blacksmith swung his hammer to clear the way."),
+    _L("날이 밝았을 때 남은 건 네 사람뿐이었다. 해솔 할머니, 무진, 별이, 그리고 {name}. 정신없이 달아나던 우리는 숲 한가운데에서 이끼 낀 돌 화톳불 터를 발견했다.","By dawn only four were left: Grandma Haesol, Mujin, Byeoli, and {name}. Running blindly, we found a moss-covered stone bonfire circle in the heart of the forest."),
+    _L("할머니가 떨리는 손으로 돌을 쓰다듬었다. \"옛 봉인 지기들이 쉬어 가던 자리야. 이 불이 꺼지지 않는 한, 놈들은 쉽게 들어오지 못한다.\" 무진이 마지막 부싯돌을 그었다.","Grandma ran a trembling hand over the stones. \"The old seal keepers rested here. As long as this fire burns, they can't easily get in.\" Mujin struck his last flint."),
+    _L("작은 불꽃이 피어올랐다. 낮에는 모으고 짓고, 밤에는 이 불을 지킨다. 그리고 반드시 알아내야 한다. 잠들어 있던 괴물들이 왜 하필 지금 깨어났는지.","A small flame rose. Gather and build by day, guard this fire by night. And we have to find out why the sleeping monsters woke now, of all times.")]},
+  dawn2:{t:_L("막간 · 첫 새벽","Interlude · The First Dawn"),sc:["camp", "forge", "forge", "camp", "camp"],pages:[
+    _L("첫 밤을 넘긴 새벽, 다들 잿빛 얼굴로 화톳불 곁에 주저앉았다. 별이는 {name}의 소매를 꼭 쥔 채 잠들어 있었다.","At dawn after the first night, everyone slumped by the fire, faces grey with ash. Byeoli had fallen asleep clutching {name}'s sleeve."),
+    _L("무진이 그을린 망치를 내려다보며 중얼거렸다. \"솔빛 대장간은 다 타 버렸지만… 모루 하나만 있으면 다시 시작할 수 있어. 대장간부터 세워 주게.\"","Mujin looked down at his scorched hammer. \"The Solbit smithy burned to the ground... but give me an anvil and I can start again. Build me a forge first.\""),
+    _L("\"튼튼한 도구가 있어야 나무도 베고 돌도 캐지. 그래야 벽도 세우고.\" 무진이 투박하게 웃었다. 그가 웃는 걸 본 건 처음이었다.","\"You need good tools to cut wood and mine stone. Then you can raise walls.\" Mujin gave a rough smile. It was the first time anyone had seen him smile."),
+    _L("할머니는 마른 약초를 불에 던져 넣었다. 향긋한 연기가 퍼지자 숲이 조금 덜 무서워 보였다. \"오늘 밤은 어제보다 길 게다. 해가 있을 때 부지런히 움직이자.\"","Grandma tossed dried herbs into the fire. As the fragrant smoke spread, the forest seemed a little less frightening. \"Tonight will be longer than last night. Let's keep busy while the sun is up.\""),
+    _L("별이가 눈을 비비며 일어났다. \"{name}, 오늘은 나도 도울래요. 나무 열매 줍는 건 내가 제일 잘해요.\"","Byeoli rubbed her eyes and sat up. \"{name}, I want to help today. I'm the best at picking berries.\"")]},
+  day3:{t:_L("막간 · 할머니의 옛이야기","Interlude · Grandma's Old Tale"),sc:["camp", "abyss", "abyss", "camp", "fire", "camp"],pages:[
+    _L("사흘째 밤을 넘긴 아침, 해솔 할머니가 모두를 불 앞에 불러 앉혔다. 할머니는 한참 동안 불꽃만 바라보다가 입을 열었다. \"이제는 말해 줘야겠구나.\"","On the morning after the third night, Grandma Haesol gathered everyone by the fire. She stared into the flames for a long while, then spoke. \"It's time I told you.\""),
+    _L("\"아주 먼 옛날, 땅 밑 심연에서 군주가 올라왔단다. 놈이 지나간 자리엔 풀 한 포기 자라지 않았지. 그때 다섯 수호자가 나섰다.\"","\"Long, long ago, a lord rose from the abyss beneath the earth. Not a blade of grass grew where it passed. That was when the five guardians stepped forward.\""),
+    _L("\"숲, 늪, 협곡, 화산, 설원. 수호자들은 다섯 땅에 봉인을 하나씩 세우고 평생 그 곁을 지켰단다. 봉인이 하나 깨질 때마다 땅 밑의 괴물들이 눈을 뜬다.\"","\"Forest, swamp, canyon, volcano and tundra. The guardians raised a seal in each land and kept watch beside it all their lives. Each time a seal breaks, the monsters below open their eyes.\""),
+    _L("무진이 팔짱을 꼈다. \"그럼 이번 일은 봉인이 깨졌다는 거요? 수백 년을 버틴 봉인이, 하필 지금?\" 할머니는 천천히 고개를 저었다. \"저절로 깨진 게 아니야.\"","Mujin folded his arms. \"So a seal broke? Seals that held for centuries, and they break now?\" Grandma slowly shook her head. \"They didn't break on their own.\""),
+    _L("\"누군가 일부러 봉인을 깨뜨리고 있어. 그날 밤 하늘을 덮은 까마귀 떼를 봤니? 옛날에도 꼭 그랬단다.\" 할머니의 목소리가 아주 잠깐 떨렸다.","\"Someone is breaking the seals on purpose. Did you see the ravens that covered the sky that night? It was just the same long ago.\" For a moment, her voice trembled."),
+    _L("\"숲 곳곳에 먼저 간 사람들이 남긴 기록이 흩어져 있을 게다. 하나씩 모아 보렴. 그리고… 숲 깊은 곳의 고블린 족장을 조심하거라. 놈의 눈빛이 예전 같지 않아.\"","\"Those who came before left records scattered across the land. Gather them one by one. And... be careful of the Goblin Chieftain deep in the forest. His eyes aren't what they used to be.\"")]},
+  chief:{t:_L("1장 · 검은 깃털의 부적","Chapter 1 · The Black Feather Charm"),sc:["chief", "chief", "forge", "camp", "camp", "camp"],pages:[
+    _L("쓰러진 고블린 족장의 목에 검은 부적이 걸려 있었다. 까마귀 깃털을 엮어 붉은 실로 묶은 부적. 손에 쥐자 얼음처럼 차가운 기운이 팔을 타고 올라온다.","A black charm hung from the fallen Goblin Chieftain's neck: raven feathers bound with red thread. When you hold it, an icy chill crawls up your arm."),
+    _L("부적을 본 할머니의 얼굴이 하얗게 질렸다. \"심연을 섬기는 자들의 표식이야. 이걸로 괴물들의 마음을 묶어 부린단다. 족장도 원래는 그렇게 사납지 않았어.\"","Grandma went pale at the sight of it. \"The mark of those who serve the abyss. They bind the monsters' hearts with these. The chieftain was never that vicious before.\""),
+    _L("무진이 부적을 모루 위에 올려놓고 망치로 내리쳤다. 깃털은 부서지지 않았다. 대신 검은 연기가 피어올라 까마귀 울음소리를 내며 흩어졌다.","Mujin laid the charm on his anvil and brought down his hammer. The feathers didn't break. Instead, black smoke rose up and scattered with a raven's cry."),
+    _L("그 순간 숲을 두르던 가시 장벽이 바스러지듯 시들었다. 독안개가 자욱한 늪으로 가는 길이 열렸다.","At that moment the thorn barrier around the forest withered and crumbled. The way to the fog-choked swamp lay open."),
+    _L("마을의 무너진 탑 터에서는 땅이 울리더니 오래된 탑이 다시 솟아올랐다. 별이가 손뼉을 쳤다. \"봉인이 우리 편을 들어주는 거예요!\"","At the village's ruined tower site the ground rumbled, and the old tower rose again. Byeoli clapped. \"The seal is on our side!\""),
+    _L("할머니는 늪 쪽을 오래 바라보았다. \"숲의 봉인은 아직 숨 쉬고 있어. 하지만 늪의 봉인은… 서둘러야 할 게다.\"","Grandma gazed toward the swamp for a long time. \"The forest seal is still breathing. But the swamp seal... we must hurry.\"")]},
+  records:{t:_L("막간 · 기록 속의 이름","Interlude · A Name in the Records"),sc:["camp", "abyss", "abyss", "camp", "fire"],pages:[
+    _L("다섯 번째 기록을 펼쳤을 때, {name}은 같은 이름이 자꾸 나온다는 걸 알아차렸다. 숲의 수호자, 가람.","When {name} opened the fifth record, one name kept appearing. Garam, guardian of the forest."),
+    _L("기록 속 가람은 다정한 사람이었다. 다친 사슴을 돌보고, 길 잃은 아이를 마을까지 데려다주던 수호자. 그런데 마지막 기록의 글씨는 떨리고 있었다.","In the records Garam was kind. A guardian who tended wounded deer and walked lost children home. But the handwriting in the last record was shaking."),
+    _L("\"가람이 더는 웃지 않는다. 혼자 지키는 밤이 너무 길다고 했다. 까마귀들이 그의 어깨에 앉기 시작했다.\"","\"Garam no longer smiles. He says the nights are too long to keep alone. The ravens have begun to perch on his shoulders.\""),
+    _L("기록을 읽어 주자 해솔 할머니가 찻잔을 떨어뜨렸다. 할머니는 한참 아무 말도 하지 않다가, 젖은 눈으로 웃었다. \"…그 이름을 다시 듣게 될 줄은 몰랐구나.\"","When it was read aloud, Grandma Haesol dropped her teacup. She said nothing for a long while, then smiled with wet eyes. \"...I never thought I'd hear that name again.\""),
+    _L("\"가람은 내 오라비였단다. 언젠가 다 말해 주마. 지금은… 조금만 기다려 주렴.\" 그날 밤 할머니는 늦게까지 화톳불 곁을 떠나지 않았다.","\"Garam was my older brother. I'll tell you everything someday. For now... please give me a little time.\" That night she stayed by the fire until very late.")]},
+  dungeon:{t:_L("막간 · 동굴 벽화","Interlude · The Cave Mural"),sc:["abyss", "abyss", "camp", "camp", "fire"],pages:[
+    _L("던전 가장 깊은 방, 횃불을 비추자 벽 가득 그림이 드러났다. 다섯 사람이 손을 맞잡고 검은 소용돌이를 둘러싸고 있다.","In the deepest room of the dungeon, torchlight revealed a wall covered in paintings. Five figures held hands around a black vortex."),
+    _L("자세히 보니 여섯 번째 사람이 있었다. 다섯 수호자 뒤에서 작은 화톳불을 지키는 사람. 그림 속 불꽃만은 아직도 붉은 물감이 선명했다.","Looking closer, there was a sixth figure: someone tending a small bonfire behind the five guardians. Only the painted flame was still bright red."),
+    _L("그림 맨 아래에 작은 글씨가 새겨져 있었다. \"봉인은 다섯이 세우나, 불을 지키는 자가 그들을 잇는다.\"","Small words were carved at the bottom. \"Five raise the seals, but the one who keeps the fire binds them together.\""),
+    _L("무진이 횃불을 들어 올리며 중얼거렸다. \"…불을 지키는 자라. 그거, 우리 얘기 같은데.\" 별이는 그림 속 불꽃을 손가락으로 조심스레 따라 그렸다.","Mujin raised his torch and muttered, \"...the one who keeps the fire. Sounds like us.\" Byeoli carefully traced the painted flame with her finger."),
+    _L("동굴을 나서는데 바위 틈에서 까마귀 한 마리가 날아올랐다. 놈은 {name}을 한 번 돌아보더니 늪 쪽으로 사라졌다.","As they left the cave, a raven burst from a crack in the rock. It looked back at {name} once, then vanished toward the swamp.")]},
+  hydra:{t:_L("2장 · 금이 간 봉인석","Chapter 2 · The Cracked Seal Stone"),sc:["hydra", "hydra", "hydra", "camp", "camp", "golem"],pages:[
+    _L("히드라가 쓰러지자 늪을 덮던 독안개가 조금씩 걷혔다. 둥지 한가운데에 금이 간 돌기둥이 서 있었다. 오래된 글씨가 빽빽이 새겨진 봉인석.","As the hydra fell, the poison fog over the swamp slowly lifted. In the middle of its nest stood a cracked stone pillar, a seal stone covered in ancient writing."),
+    _L("그 틈새에 검은 깃털이 깊숙이 꽂혀 있었다. 바람에 날려 온 게 아니었다. 누군가 직접 이곳까지 와서 손으로 밀어 넣은 것이다.","A black feather was wedged deep in the crack. The wind hadn't carried it there. Someone had come all this way and pushed it in by hand."),
+    _L("{name}이 깃털을 뽑아내자 봉인석이 희미하게 빛났다. 탁하던 늪물이 가장자리부터 맑아지고, 개구리들이 다시 울기 시작했다.","When {name} pulled the feather out, the seal stone glowed faintly. The murky water cleared from the edges inward, and the frogs began to sing again."),
+    _L("봉인석에는 늪의 수호자 이슬의 이름이 새겨져 있었다. 그 아래 누군가 칼끝으로 긁어 놓은 글씨가 있었다. \"아무도 오지 않았다.\"","The stone bore the name of Iseul, guardian of the swamp. Beneath it, someone had scratched words with a knife. \"No one came.\""),
+    _L("그 문장을 전해 듣고 할머니는 눈을 감았다. \"다섯 수호자는 서로 너무 멀리 있었어. 다들 혼자서 버텼지. 그게 잘못이었단다.\"","Hearing those words, Grandma closed her eyes. \"The five guardians were too far apart. Each of them held on alone. That was the mistake.\""),
+    _L("늪 너머 고대 봉인이 풀리며 수정 협곡이 모습을 드러냈다. 별이가 반짝이는 협곡을 가리켰다. \"저기에도 깃털이 있을까요? 거기 수호자도 혼자였을까요?\"","Beyond the swamp the ancient seal gave way, and the Crystal Canyon appeared. Byeoli pointed at its glitter. \"Is there a feather there too? Was that guardian alone as well?\"")]},
+  dream:{t:_L("막간 · 별이의 꿈","Interlude · Byeoli's Dream"),sc:["dream", "dream", "dream", "camp", "fire"],pages:[
+    _L("열이틀째 새벽, 별이가 비명을 지르며 깨어났다. {name}이 다가가자 별이는 이불을 뒤집어쓴 채 덜덜 떨고 있었다.","Before dawn on the twelfth day, Byeoli woke up screaming. When {name} came over, she was trembling under her blanket."),
+    _L("\"꿈에서… 검은 깃털 망토를 입은 사람을 봤어요. 아주 깊은 구멍 바닥에 혼자 앉아 있었어요. 너무 추워 보였어요.\"","\"In my dream... I saw a man in a cloak of black feathers. He was sitting all alone at the bottom of a very deep hole. He looked so cold.\""),
+    _L("\"그 사람이 나를 봤어요. 그리고 물었어요. '너희 불은 왜 아직도 꺼지지 않느냐'고요.\" 별이는 울먹이며 {name}의 손을 잡았다.","\"He saw me. And he asked, 'Why hasn't your fire gone out yet?'\" Byeoli sniffled and took {name}'s hand."),
+    _L("할머니는 별이를 품에 안고 오래도록 등을 쓸어 주었다. \"별아, 너는 봉인 지기의 꿈을 꾸는구나. 옛날 수호자들도 그런 꿈을 꾸었단다.\"","Grandma held Byeoli and stroked her back for a long time. \"Byeoli, you're dreaming a seal keeper's dream. The guardians of old dreamed like that too.\""),
+    _L("무진은 아무 말 없이 화톳불에 장작을 더 얹었다. 불꽃이 높이 솟았다. \"그럼 대답해 주지. 우리 불은 혼자 지키는 불이 아니라서 안 꺼진다고.\"","Mujin silently added more wood to the fire. The flames leapt high. \"Then we'll answer him. Our fire doesn't go out because no one keeps it alone.\"")]},
+  golem:{t:_L("3장 · 검게 물든 수호자","Chapter 3 · The Darkened Guardian"),sc:["golem", "golem", "golem", "forge", "camp", "flame"],pages:[
+    _L("수정 골렘이 무너져 내렸다. 골렘은 원래 협곡의 봉인을 지키던 수호자였다. 하지만 갈라진 가슴 속 심장은 먹물처럼 검게 물들어 있었다.","The Crystal Golem crumbled. It had once been the guardian of the canyon seal. But the heart inside its split chest was stained black as ink."),
+    _L("심장에서 검은 깃털 세 개가 떨어져 나왔다. 깃털이 빠지자 수정 심장은 잠깐, 아주 잠깐 맑은 보랏빛으로 돌아왔다.","Three black feathers fell from the heart. Once they were gone, the crystal heart returned, just for a moment, to a clear violet."),
+    _L("골렘이 마지막 힘을 짜내어 화산 쪽을 가리켰다. 쩍쩍 갈라진 목소리가 울렸다. \"…화산의 형제를… 부탁한다. 그는 아직… 따뜻하다.\"","With the last of its strength the golem pointed toward the volcano. Its cracked voice rang out. \"...Please... help my brother of the volcano. He is still... warm.\""),
+    _L("무진이 골렘의 조각 하나를 주워 들었다. \"아버지가 그러셨지. 수호자들의 열쇠를 벼린 게 우리 집안이라고. 그냥 술주정인 줄 알았는데.\"","Mujin picked up a shard of the golem. \"My father used to say our family forged the guardians' keys. I thought it was just drunk talk.\""),
+    _L("\"열쇠요?\" {name}이 묻자 무진이 머리를 긁적였다. \"봉인을 다시 잇는 보물고의 열쇠 말이야. 다섯 개라고 들었는데… 어디 있는지는 나도 몰라.\"","\"Keys?\" {name} asked. Mujin scratched his head. \"Keys to the vault that can bind the seals again. Five of them, I heard... but I don't know where they are.\""),
+    _L("협곡 끝을 막고 있던 용암 장벽이 서서히 식었다. 화산 깊은 곳에서 무언가 거대한 것이 숨 쉬는 소리가 들려왔다. 그 숨결은 이상하게도 슬프게 들렸다.","The lava barrier at the canyon's end slowly cooled. From deep in the volcano came the sound of something enormous breathing. Strangely, it sounded sad.")]},
+  flame:{t:_L("4장 · 따뜻한 심장","Chapter 4 · A Warm Heart"),sc:["flame", "flame", "camp", "cold", "camp", "cold"],pages:[
+    _L("화염 군주가 무릎을 꿇었다. 온몸을 뒤덮었던 검은 불길이 꺼지자, 그 안에서 작고 따뜻한 불씨 하나가 굴러 나왔다. 아직도 두근두근 뛰는 심장.","The Flame Lord fell to its knees. As the black fire covering it died away, a small warm ember rolled out. A heart, still beating."),
+    _L("심장을 손에 쥐자 온몸에 열기가 번졌다. 뜨겁지 않았다. 추운 날 화톳불 곁에 앉았을 때처럼, 그저 따뜻했다.","Holding the heart, warmth spread through your whole body. It didn't burn. It was simply warm, like sitting by the bonfire on a cold day."),
+    _L("해솔 할머니가 눈을 감았다. \"화염의 수호자는 원래 아이들을 좋아하던 녀석이었단다. 겨울마다 마을에 내려와 불을 나눠 주곤 했지. 심연이 그 불을 빼앗았을 뿐이야.\"","Grandma Haesol closed her eyes. \"The flame guardian loved children. Every winter he came down to the village to share his fire. The abyss only stole it from him.\""),
+    _L("\"그 심장이 있으면 설원의 추위도 견딜 수 있을 게다. 마지막 봉인은 설원에 있어. 서리의 수호자… 그 아이가 아직 버티고 있다면 말이야.\"","\"With that heart you can bear the cold of the tundra. The last seal is there. The frost guardian... if she's still holding on.\""),
+    _L("별이가 불씨를 들여다보며 속삭였다. \"고마워요. 이제 안 아프죠?\" 불씨가 대답이라도 하듯 한 번 반짝였다.","Byeoli peered at the ember and whispered, \"Thank you. It doesn't hurt anymore, right?\" The ember twinkled once, as if in answer."),
+    _L("그날 밤, 얼음 너머에서 누군가 부르는 목소리가 바람에 실려 왔다. 아주 가늘고, 아주 지친 목소리였다.","That night, a voice drifted on the wind from beyond the ice. It was very thin, and very tired.")]},
+  frost:{t:_L("5장 · 마지막 봉인 지기","Chapter 5 · The Last Seal Keeper"),sc:["frost", "frost", "frost", "frost", "abyss", "frost", "abyss"],pages:[
+    _L("서리 여왕은 적이 아니었다. 그녀는 혼자 남아 마지막 봉인을 지키다, 끝내 심연에 마음을 빼앗긴 봉인 지기였다.","The Frost Queen was no enemy. She was a seal keeper who guarded the last seal alone until the abyss finally took her heart."),
+    _L("얼음 왕관이 깨지자 여왕의 눈빛이 맑아졌다. 그녀는 {name}의 손에 들린 따뜻한 심장을 보고 희미하게 웃었다. \"…아, 그 녀석. 아직 따뜻하구나.\"","When the ice crown shattered, the queen's eyes cleared. Seeing the warm heart in {name}'s hand, she smiled faintly. \"...Ah, him. He's still warm.\""),
+    _L("\"나는 백 년 동안 여기 있었어. 가람이 떠난 뒤로 아무도 오지 않았지. 추워서, 너무 추워서… 그 목소리가 따뜻하게 들렸어.\"","\"I've been here a hundred years. After Garam left, no one came. It was cold, so cold... that his voice sounded warm.\""),
+    _L("\"가람이 말했어. 봉인 같은 건 그만 지키라고. 같이 심연으로 내려가면 다시는 외롭지 않을 거라고.\" 여왕의 손이 점점 차가워졌다.","\"Garam told me to stop guarding the seal. That if I came down into the abyss with him, I'd never be lonely again.\" The queen's hand grew colder."),
+    _L("\"불을 지키는 아이야… 심연의 문이 열렸다. 다섯 수호자의 고대 열쇠를 모아 보물고로 가거라. 봉인을 다시 잇는 힘이 그곳에 잠들어 있다.\"","\"Child of the fire... the gate of the abyss is open. Gather the five guardians' ancient keys and go to the vault. The power to bind the seals again sleeps there.\""),
+    _L("\"그리고 가람을 만나거든 전해 주렴. 우리 모두 그를 미워한 적은 없었다고.\" 여왕은 눈송이처럼 부서져 바람에 흩어졌다.","\"And if you meet Garam, tell him this: none of us ever hated him.\" The queen broke apart like snowflakes and scattered on the wind."),
+    _L("설원의 하늘이 갈라지며 검은 빛기둥이 솟았다. 땅 밑 깊은 곳에서 무언가가 천천히 눈을 떴다.","The tundra sky split, and a pillar of black light rose. Deep beneath the earth, something slowly opened its eyes.")]},
+  abyss:{t:_L("종장 · 심연의 군주","Epilogue · Lord of the Abyss"),sc:["abyss", "abyss", "abyss", "abyss", "camp", "fire", "camp", "camp", "fire"],pages:[
+    _L("심연의 바닥. 검은 깃털 망토를 두른 남자가 무너진 왕좌에 홀로 앉아 있었다. 숲의 수호자 가람. 별이가 꿈에서 본 바로 그 사람이었다.","The bottom of the abyss. A man in a cloak of black feathers sat alone on a ruined throne. Garam, guardian of the forest. The very man Byeoli saw in her dream."),
+    _L("\"왜 너희 불은 꺼지지 않지?\" 가람이 물었다. \"나는 백 년을 혼자 지켰다. 아무도 오지 않았어. 그래서 깨달았지. 지킬 가치 같은 건 없다는 걸.\"","\"Why won't your fire go out?\" Garam asked. \"I kept watch alone for a hundred years. No one came. So I realized there was nothing worth guarding.\""),
+    _L("싸움이 끝나자 가람의 망토에서 깃털이 하나둘 떨어져 내렸다. 그 아래에는 지친 얼굴의 사람이 있었다. 괴물이 아니라, 그저 너무 오래 혼자였던 사람.","When the fight ended, feathers fell from Garam's cloak one by one. Beneath them was a weary face. Not a monster, just someone who had been alone far too long."),
+    _L("{name}은 서리 여왕의 마지막 말을 전했다. 가람은 한참을 웃다가, 울었다. \"…바보 같은 녀석들. 끝까지.\"","{name} passed on the Frost Queen's last words. Garam laughed for a long time, and then he wept. \"...Those fools. To the very end.\""),
+    _L("그때 동굴 입구에서 익숙한 지팡이 소리가 들렸다. 해솔 할머니였다. 할머니는 가람 앞에 무릎을 꿇고, 오래전 어린 동생이 그랬던 것처럼 오라비의 손을 잡았다.","Then the familiar tap of a walking stick echoed from the entrance. It was Grandma Haesol. She knelt before Garam and took her brother's hand, just as she had when she was small."),
+    _L("\"오라비, 이제 집에 가요. 이번엔 혼자 두지 않을게요.\" 가람의 몸이 따뜻한 빛으로 흩어지며, 다섯 봉인이 하나둘 다시 빛을 되찾았다.","\"Brother, let's go home. This time I won't leave you alone.\" Garam dissolved into warm light, and one by one the five seals began to glow again."),
+    _L("숲을 덮던 붉은 기운이 걷혔다. 까마귀들은 평범한 새가 되어 아침 하늘로 날아갔다.","The red haze over the forest lifted. The ravens became ordinary birds and flew off into the morning sky."),
+    _L("해솔 할머니가 웃었다. \"봉인은 혼자 지키는 게 아니란다. 그래서 그 애는 무너졌고, 우리는 버텼지.\"","Grandma Haesol smiled. \"A seal isn't meant to be kept alone. That's why he fell, and why we held on.\""),
+    _L("밤은 여전히 찾아온다. 하지만 이제 화톳불 곁에는 함께하는 사람들이 있다. 무진의 망치 소리, 별이의 웃음소리, 그리고 {name}. 솔빛의 이야기는 계속된다.","Night still comes. But now there are people beside the bonfire. The ring of Mujin's hammer, Byeoli's laughter, and {name}. Solbit's story goes on.")]},
 };
-const STORY_ORDER=['prologue','day3','chief','dungeon','hydra','golem','flame','frost','abyss'];
+const STORY_ORDER=["prologue", "dawn2", "day3", "chief", "records", "dungeon", "hydra", "dream", "golem", "flame", "frost", "abyss"];
 let storyId=null,storyPg=0,storyAfter=null;
 function showStory(id,after){const st=STORY[id];if(!st){if(after)after();return;}if(!S.story)S.story=[];if(!S.story.includes(id))S.story.push(id);
   storyId=id;storyPg=0;storyAfter=after||null;S.menu=true;renderStory();$('ovStory').hidden=false;}
-function renderStory(){const st=STORY[storyId];$('storyTitle').textContent=st.t;$('storyArt').innerHTML=sceneSvg(st.sc[storyPg]||st.sc[0]);$('storyText').textContent=st.pages[storyPg];
+function renderStory(){const st=STORY[storyId];$('storyTitle').textContent=st.t;$('storyArt').innerHTML=sceneSvg(st.sc[storyPg]||st.sc[0]);$('storyText').textContent=storyName(st.pages[storyPg]);
   $('storyPg').textContent=(storyPg+1)+' / '+st.pages.length;$('storyNext').textContent=storyPg<st.pages.length-1?_T('다음'):_T('계속하기');$('storyPrev').hidden=storyPg===0;}
+function storyName(t){const n=(S&&S.pname)||_T('캠퍼'),c=n.charCodeAt(n.length-1),bat=c>=0xAC00&&c<=0xD7A3&&(c-0xAC00)%28!==0;
+  return t.split('{name}은').join(n+(bat?'은':'는')).split('{name}이').join(n+(bat?'이':'가')).split('{name}을').join(n+(bat?'을':'를')).split('{name}').join(n);}
 function storyNext(){const st=STORY[storyId];if(storyPg<st.pages.length-1){storyPg++;renderStory();return;}closeStory();}
 function closeStory(){$('ovStory').hidden=true;S.menu=false;const a=storyAfter;storyAfter=null;if(a)a();}
 function storyLater(id){setTimeout(()=>{if(running&&S)showStory(id);},2400);}
@@ -4108,27 +4168,35 @@ function draw(now){
   ctx.setTransform(dpr,0,0,dpr,0,0);
   ctx.fillStyle='#0e1912';ctx.fillRect(0,0,vw,vh);
   const viewW=vw/scale,viewH=vh/scale;
-  camX=W*T>viewW?Math.max(-T,Math.min(W*T-viewW+T,p.x-viewW/2)):(W*T-viewW)/2;
-  camY=H*T>viewH?Math.max(-T*2,Math.min(H*T-viewH+T*3,p.y-viewH/2)):(H*T-viewH)/2;
+  const tcx=W*T>viewW?Math.max(-T,Math.min(W*T-viewW+T,p.x-viewW/2)):(W*T-viewW)/2,tcy=H*T>viewH?Math.max(-T*2,Math.min(H*T-viewH+T*3,p.y-viewH/2)):(H*T-viewH)/2;
+  const fdt=Math.min(.05,Math.max(0,(now-(draw.lt||now))/1000));draw.lt=now;
+  if(draw.cx==null||Math.hypot(tcx-draw.cx,tcy-draw.cy)>T*10){draw.cx=tcx;draw.cy=tcy;}else{const kk=1-Math.exp(-fdt*9);draw.cx+=(tcx-draw.cx)*kk;draw.cy+=(tcy-draw.cy)*kk;}
+  camX=draw.cx;camY=draw.cy;
   if(S.shake>0){camX+=(Math.random()-.5)*S.shake;camY+=(Math.random()-.5)*S.shake;}
   ctx.setTransform(dpr*scale,0,0,dpr*scale,-camX*dpr*scale,-camY*dpr*scale);
 
   const x0=Math.max(0,Math.floor(camX/T)-1),x1=Math.min(W-1,Math.ceil((camX+viewW)/T)+1);
   const y0=Math.max(0,Math.floor(camY/T)-1),y1=Math.min(H-1,Math.ceil((camY+viewH)/T)+1);
-  ctx.imageSmoothingEnabled=false;drawGround(x0,y0,x1,y1);ctx.imageSmoothingEnabled=true;
+  drawGround(x0,y0,x1,y1);
 
   // range ring
   if(tool&&!p.dead){ctx.strokeStyle='rgba(255,224,170,.18)';ctx.setLineDash([6,6]);ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(p.x,p.y,7*T,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);}
 
-  for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){
-    const i=idx(x,y);if(!S.water[i])continue;const px=x*T,py=y*T;
-    if(S.water[i]===2){const g2=(Math.sin(now/500+i*.7)+1)/2;ctx.fillStyle='#8a2a10';ctx.fillRect(px,py,T,T);ctx.fillStyle='rgba(255,140,40,'+(.35+g2*.35)+')';ctx.fillRect(px+3,py+3,T-6,T-6);ctx.fillStyle='rgba(255,220,120,.6)';ctx.fillRect(px+6+hash(i)*14,py+8+g2*10,5,3);continue;}
-    ctx.fillStyle='#2a5a6c';ctx.fillRect(px,py,T,T);
-    ctx.fillStyle='rgba(215,200,150,.5)';
-    if(y>0&&!S.water[i-W])ctx.fillRect(px,py,T,3);if(y<H-1&&!S.water[i+W])ctx.fillRect(px,py+T-3,T,3);
-    if(x>0&&!S.water[i-1])ctx.fillRect(px,py,3,T);if(x<W-1&&!S.water[i+1])ctx.fillRect(px+T-3,py,3,T);
-    const o=(now/60+hash(i)*T)%(T-8)+4;ctx.strokeStyle='rgba(190,230,240,.28)';ctx.lineWidth=1.5;
-    ctx.beginPath();ctx.moveTo(px+5+hash(i+3)*8,py+o);ctx.lineTo(px+14+hash(i+3)*8,py+o);ctx.stroke();
+  for(let pass=0;pass<2;pass++)for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){
+    const i=idx(x,y),wv=S.water[i];if(!wv)continue;const px=x*T,py=y*T,lava=wv===2;
+    const wN=y>0&&S.water[i-W],wS=y<H-1&&S.water[i+W],wE=x<W-1&&S.water[i+1],wW=x>0&&S.water[i-1],r=11;
+    const a=!wN&&!wW?r:0,b=!wN&&!wE?r:0,c=!wS&&!wE?r:0,d=!wS&&!wW?r:0;
+    const rr=(x0,y0,w,h,a,b,c,d)=>{ctx.beginPath();ctx.moveTo(x0+a,y0);ctx.lineTo(x0+w-b,y0);ctx.quadraticCurveTo(x0+w,y0,x0+w,y0+b);ctx.lineTo(x0+w,y0+h-c);ctx.quadraticCurveTo(x0+w,y0+h,x0+w-c,y0+h);ctx.lineTo(x0+d,y0+h);ctx.quadraticCurveTo(x0,y0+h,x0,y0+h-d);ctx.lineTo(x0,y0+a);ctx.quadraticCurveTo(x0,y0,x0+a,y0);ctx.closePath();};
+    const e=3.5,ex0=px-(wW?0:e),ey0=py-(wN?0:e),ew=T+(wW?0:e)+(wE?0:e),eh=T+(wN?0:e)+(wS?0:e);
+    if(pass===0){ctx.fillStyle=lava?'#3a1a10':'rgba(214,196,146,.85)';rr(ex0,ey0,ew,eh,a&&a+2,b&&b+2,c&&c+2,d&&d+2);ctx.fill();continue;}
+    const g2=(Math.sin(now/500+i*.7)+1)/2;
+    ctx.fillStyle=lava?'#a8380e':'#2f6478';rr(px-.5,py-.5,T+1,T+1,a,b,c,d);ctx.fill();
+    if(lava){ctx.fillStyle='rgba(255,170,60,'+(.18+g2*.2)+')';ctx.beginPath();ctx.ellipse(px+T/2+(hash(i)-.5)*10,py+T/2+(hash(i+1)-.5)*10,9+hash(i+2)*6,6+hash(i+3)*4,hash(i)*3,0,7);ctx.fill();}
+    ctx.strokeStyle=lava?'rgba(255,220,120,.55)':'rgba(225,245,250,'+(.35+g2*.2)+')';ctx.lineWidth=1.6;ctx.beginPath();const fo=1.8+Math.sin(now/600+i)*.6;
+    if(!wN){ctx.moveTo(px+a,py+fo);ctx.lineTo(px+T-b,py+fo);}if(!wS){ctx.moveTo(px+d,py+T-fo);ctx.lineTo(px+T-c,py+T-fo);}if(!wW){ctx.moveTo(px+fo,py+a);ctx.lineTo(px+fo,py+T-d);}if(!wE){ctx.moveTo(px+T-fo,py+b);ctx.lineTo(px+T-fo,py+T-c);}ctx.stroke();
+    if(lava){ctx.fillStyle='rgba(255,230,140,.7)';ctx.beginPath();ctx.ellipse(px+6+hash(i)*16,py+8+g2*12,3,2,0,0,7);ctx.fill();continue;}
+    const o=(now/70+hash(i)*T)%(T-10)+5,sx=px+6+hash(i+3)*10;ctx.strokeStyle='rgba(190,230,240,.3)';ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(sx,py+o);ctx.quadraticCurveTo(sx+5,py+o-2.5,sx+10,py+o);ctx.stroke();
+    if(hash(i+Math.floor(now/700))<.05){const tw2=(now%700)/700;ctx.fillStyle='rgba(255,255,255,'+(1-tw2)*.9+')';const kx=px+8+hash(i+9)*16,ky=py+8+hash(i+5)*16,ks=1.5+tw2*2;ctx.beginPath();ctx.moveTo(kx,ky-ks);ctx.lineTo(kx+ks*.4,ky);ctx.lineTo(kx,ky+ks);ctx.lineTo(kx-ks*.4,ky);ctx.fill();}
   }
   for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){const b=S.bld[idx(x,y)];if(b&&(b.t==='spike'||b.t==='field'))drawBld(b,idx(x,y),now);}
   for(let y=y0;y<=y1;y++){
@@ -4142,7 +4210,7 @@ function draw(now){
       else if(rv===7||rv===8||rv===14||rv===16)drawBarrier(i,now);
       else if(rv===18||rv===19||(!rv&&S.dng&&S.dng[i]&&dgRoof(i)))drawDWall(i);
       if(S.npcAt[i]>=0){if(NPCS[S.npcAt[i]].id==='tower'&&!towerUp())drawTowerSite(i,now);else drawNpc(S.npcAt[i],i,now);}
-      else if(rv===5||rv===6||rv===10)drawCave(i,now);
+      else if(rv===5||rv===6||rv===10)drawRidge(i,now);
     }
   }
   // actors
@@ -4192,10 +4260,11 @@ function draw(now){
       else{ctx.globalAlpha=a;ctx.strokeStyle=f.col;ctx.lineWidth=4;ctx.beginPath();ctx.arc(f.x,f.y,f.r*(.4+.6*f.t/f.life),0,Math.PI*2);ctx.stroke();}}
     else if(f.k==='thrust'){ctx.globalAlpha=a;ctx.strokeStyle='rgba(255,240,200,.9)';ctx.lineWidth=5;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(f.x,f.y);ctx.lineTo(f.x+Math.cos(f.a)*f.len,f.y+Math.sin(f.a)*f.len);ctx.stroke();ctx.lineCap='butt';}
     else if(f.k==='l'){ctx.globalAlpha=a;ctx.strokeStyle=f.big?'#eef7ff':'#e2d2ff';ctx.lineWidth=f.big?4.5:2.5;if(f.big){ctx.shadowColor='#6fb8ff';ctx.shadowBlur=16;}ctx.beginPath();f.pts.forEach((q,k)=>{const j=k?(Math.random()-.5)*7:0;k?ctx.lineTo(q[0]+j,q[1]-j):ctx.moveTo(q[0],q[1]);});ctx.stroke();ctx.shadowBlur=0;}
-    else{ctx.globalAlpha=Math.min(1,a*1.5);const sc2=f.t<.12?1.6-f.t*5:1;ctx.font='bold '+Math.round(12*sc2)+'px "Gowun Dodum",sans-serif';ctx.textAlign='center';ctx.fillStyle='rgba(0,0,0,.55)';ctx.fillText(f.txt,f.x+1,f.y+1);ctx.fillStyle=f.col;ctx.fillText(f.txt,f.x,f.y);}
+    else{ctx.globalAlpha=Math.min(1,a*1.5);const q=Math.min(1,f.t/.18),sc2=q<1?.6+Math.sin(q*Math.PI*.75)*.75:1;ctx.font='bold '+Math.round(12*sc2)+'px "Gowun Dodum",sans-serif';ctx.textAlign='center';ctx.fillStyle='rgba(0,0,0,.55)';ctx.fillText(f.txt,f.x+1,f.y+1);ctx.fillStyle=f.col;ctx.fillText(f.txt,f.x,f.y);}
   }
   ctx.globalAlpha=1;
 
+  lifeUpd(fdt,now,viewW,viewH);lifeDraw(now);
   // ghost
   if(tool&&MANAGE.includes(tool)&&running){if(S.mSel&&S.mSel.t===tool)drawManage(S.mSel.i,tool);else if(hover){const [wx,wy]=toWorld(hover.x,hover.y);drawManage(cellAt(wx,wy),tool);}}
   if(tool&&hover&&running){
@@ -4211,6 +4280,7 @@ function draw(now){
   if(S.phase==='night')dark=.78;
   else if(S.phase==='day'){const dl=dayLen(),s=dl-14;if(S.t>s)dark=Math.min(.78,(S.t-s)/14*.78);}
   if(inDg)dark=Math.max(dark,.8);
+  {const kk=1-Math.exp(-fdt*(Math.abs(dark-(draw.dk||0))>.5?2.2:4));draw.dk=(draw.dk==null?dark:draw.dk+(dark-draw.dk)*kk);dark=draw.dk;}
   if(dark>.01){
     lctx.setTransform(1,0,0,1,0,0);lctx.globalCompositeOperation='source-over';
     lctx.clearRect(0,0,lightCv.width,lightCv.height);
@@ -4273,15 +4343,50 @@ function edgeArrow(wx,wy,col,now,sz){sz=sz||1;
   ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(14,0);ctx.lineTo(-8,-10);ctx.lineTo(-3,0);ctx.lineTo(-8,10);ctx.closePath();ctx.fill();ctx.restore();ctx.globalAlpha=1;
 }
 function hpBar(x,y,w,f,col){ctx.fillStyle='rgba(0,0,0,.55)';ctx.fillRect(x-w/2-1,y-1,w+2,5);ctx.fillStyle=col;ctx.fillRect(x-w/2,y,w*Math.max(0,f),3);}
+const LIFE=[];let lifeStep=0;
+function lifeUpd(dt,now,viewW,viewH){const p=S.p,night=S.phase==='night'||(draw.dk||0)>.45,inDg=DGCUR>=0,rg=regionAtPos(p.x,p.y);
+  for(const a of LIFE){a.t+=dt;a.x+=a.vx*dt;a.y+=a.vy*dt;
+    if(a.k==='bfly'){a.vx+=Math.sin(now/300+a.s*9)*20*dt;a.vy+=Math.cos(now/410+a.s*7)*20*dt;a.vx*=.98;a.vy*=.98;}
+    else if(a.k==='ffly'){a.vx+=Math.sin(now/700+a.s*9)*10*dt;a.vy+=Math.cos(now/900+a.s*5)*10*dt;a.vx*=.97;a.vy*=.97;}
+    else if(a.k==='leaf'){a.vx=14+Math.sin(now/500+a.s*6)*18;}}
+  for(let k=LIFE.length-1;k>=0;k--){const a=LIFE[k];if(a.t>a.life||a.x<camX-80||a.x>camX+viewW+80||a.y<camY-80||a.y>camY+viewH+80)LIFE.splice(k,1);}
+  const want=inDg?8:night||rg>=2?0:rg===0?9:6,cnt=LIFE.filter(a=>a.k!=='puff').length;
+  if(cnt<want&&Math.random()<.35){const x=camX+Math.random()*viewW,y=camY+Math.random()*viewH,s=Math.random();
+    if(inDg)LIFE.push({k:'mote',x,y,vx:(s-.5)*6,vy:-3-s*4,t:0,life:5+s*4,s});
+    else if(rg===4)LIFE.push({k:'snow',x,y:camY-10,vx:-8+s*10,vy:24+s*20,t:0,life:14,s});
+    else if(rg===3)LIFE.push({k:'ember',x,y,vx:(s-.5)*10,vy:-14-s*16,t:0,life:3+s*3,s});
+    else if(night)LIFE.push({k:'ffly',x,y,vx:0,vy:0,t:0,life:6+s*6,s});
+    else if(rg===0&&s<.35)LIFE.push({k:'leaf',x,y:camY-10,vx:14,vy:18+s*10,t:0,life:12,s});
+    else if(rg<=1)LIFE.push({k:'bfly',x,y,vx:(s-.5)*30,vy:(s-.5)*20,t:0,life:8+s*6,s,c:['#ffd27a','#ff9ac0','#bfe0ff','#fff3c8'][Math.floor(s*4)]});}
+  if(p.moving&&!p.dead){lifeStep+=dt;if(lifeStep>.22){lifeStep=0;if(LIFE.length<70)LIFE.push({k:'puff',x:p.x+(Math.random()-.5)*6,y:p.y+11,vx:(Math.random()-.5)*10,vy:-6,t:0,life:.45,s:Math.random(),c:rg===4?'235,245,250':rg===2||rg===3?'150,110,80':'190,170,130'});}}}
+function lifeDraw(now){for(const a of LIFE){const f=Math.min(1,a.t*2,(a.life-a.t)*1.5);if(f<=0)continue;ctx.globalAlpha=f;
+  if(a.k==='bfly'){const fl=Math.abs(Math.sin(now/70+a.s*20));ctx.fillStyle=a.c;for(const sd of [-1,1]){ctx.beginPath();ctx.ellipse(a.x+sd*2.4*fl,a.y,2.6*fl+.4,3.2,sd*.5,0,7);ctx.fill();}ctx.fillStyle='#3a2a20';ctx.fillRect(a.x-.5,a.y-2,1,4);}
+  else if(a.k==='ffly'){const gl=.5+.5*Math.sin(now/260+a.s*30);ctx.fillStyle='rgba(220,255,140,'+(.25*gl)+')';ctx.beginPath();ctx.arc(a.x,a.y,6,0,7);ctx.fill();ctx.fillStyle='rgba(240,255,190,'+(.6+.4*gl)+')';ctx.beginPath();ctx.arc(a.x,a.y,1.6,0,7);ctx.fill();}
+  else if(a.k==='leaf'){ctx.save();ctx.translate(a.x,a.y);ctx.rotate(now/400+a.s*9);ctx.fillStyle=a.s<.5?'#7aa84a':'#d8a040';ctx.beginPath();ctx.ellipse(0,0,3.2,1.6,0,0,7);ctx.fill();ctx.restore();}
+  else if(a.k==='snow'){ctx.fillStyle='rgba(255,255,255,.9)';ctx.beginPath();ctx.arc(a.x,a.y,1.3+a.s*1.4,0,7);ctx.fill();}
+  else if(a.k==='ember'){ctx.fillStyle='rgba(255,'+(120+a.s*100|0)+',60,.9)';ctx.beginPath();ctx.arc(a.x,a.y,1.2+a.s,0,7);ctx.fill();}
+  else if(a.k==='mote'){ctx.fillStyle='rgba(230,220,200,.5)';ctx.beginPath();ctx.arc(a.x,a.y,1+a.s,0,7);ctx.fill();}
+  else if(a.k==='puff'){const q=a.t/a.life;ctx.globalAlpha=(1-q)*.5;ctx.fillStyle='rgb('+a.c+')';ctx.beginPath();ctx.arc(a.x,a.y,2+q*4,0,7);ctx.fill();}}
+  ctx.globalAlpha=1;}
+const TREE_SPR=[];
+function bakeTree(sw,h){const r=11+h*4,SC=3,w=Math.ceil(r*2.6+6),hh=Math.ceil(r*2.4+6),c=document.createElement('canvas');c.width=w*SC;c.height=hh*SC;const g=c.getContext('2d');g.scale(SC,SC);const cx=w/2,y=r*1.7+2;
+  const dk=sw?(h<.5?'#2f3a2a':'#343f2c'):h<.5?'#24472a':'#1f4026',md=sw?(h<.5?'#3d4a34':'#44523a'):h<.5?'#2f5c33':'#2b5631',lt=sw?'#55644a':h<.5?'#3d7442':'#386c3d';
+  const puffs=[[0,-4,r],[-r*.62,-1,r*.62],[r*.62,-1,r*.62],[-r*.35,-r*.7,r*.6],[r*.38,-r*.62,r*.58]];
+  g.fillStyle='rgba(10,20,12,.35)';for(const [px,py,pr] of puffs){g.beginPath();g.arc(cx+px,y+py+1.5,pr+1.2,0,7);g.fill();}
+  g.fillStyle=dk;for(const [px,py,pr] of puffs){g.beginPath();g.arc(cx+px,y+py,pr,0,7);g.fill();}
+  g.fillStyle=md;for(const [px,py,pr] of puffs){g.beginPath();g.arc(cx+px-1.5,y+py-2,pr*.72,0,7);g.fill();}
+  g.fillStyle=lt;g.beginPath();g.arc(cx-r*.35-2,y-r*.7-3,r*.32,0,7);g.fill();g.beginPath();g.arc(cx-3,y-6,r*.28,0,7);g.fill();
+  g.fillStyle='rgba(220,255,190,.18)';g.beginPath();g.arc(cx-r*.4-3,y-r*.78-4,r*.15,0,7);g.fill();
+  if(!sw&&h>.82){g.fillStyle=h>.91?'#e8504a':'#ffb0c8';for(let k=0;k<3;k++){g.beginPath();g.arc(cx-r*.5+k*r*.5,y-2-(k%2)*r*.5,1.8,0,7);g.fill();}}
+  c.w=w;c.h=hh;c.ox=cx;c.oy=y;return c;}
 function drawTree(i,now){
   const [x,y]=cCenter(i),h=hash(i),sw=regionOfCell(i)===1;
   const shake=S.p.gI===i&&S.p.gT>0?Math.sin(now/30)*1.5:0;
   ctx.fillStyle='rgba(0,0,0,.25)';ctx.beginPath();ctx.ellipse(x+3,y+11,13,5,0,0,Math.PI*2);ctx.fill();
   ctx.fillStyle='#5e3c22';ctx.fillRect(x-3,y+2,6,10);
-  const r=12+h*4,cx=x+shake;
-  ctx.fillStyle=sw?(h<.5?'#2f3a2a':'#343f2c'):h<.5?'#24472a':'#1f4026';ctx.beginPath();ctx.arc(cx,y-4,r,0,Math.PI*2);ctx.fill();
-  ctx.fillStyle=sw?(h<.5?'#3d4a34':'#44523a'):h<.5?'#2f5c33':'#2b5631';ctx.beginPath();ctx.arc(cx-3,y-7,r*.72,0,Math.PI*2);ctx.fill();
-  ctx.fillStyle='rgba(150,200,110,.18)';ctx.beginPath();ctx.arc(cx-5,y-10,r*.38,0,Math.PI*2);ctx.fill();
+  const hb=Math.min(7,Math.floor(h*8)),key=(sw?1:0)*8+hb,r=11+((hb+.5)/8)*4,sway=Math.sin(now/1400+h*9)*1.2,cx=x+shake+sway;
+  let spr=TREE_SPR[key];if(!spr)spr=TREE_SPR[key]=bakeTree(sw,(hb+.5)/8);
+  ctx.drawImage(spr,cx-spr.ox,y-spr.oy,spr.w,spr.h);
   if(sw){ctx.strokeStyle='rgba(120,140,90,.6)';ctx.lineWidth=1.5;for(let k=0;k<3;k++){const mx=cx-r*.6+k*r*.6;ctx.beginPath();ctx.moveTo(mx,y-4+r*.5);ctx.lineTo(mx+Math.sin(now/500+k)*1.5,y+4+r*.5);ctx.stroke();}}
   if(S.rhp[i]<5)hpBar(x,y-r-8,20,S.rhp[i]/5,'#8fbf72');
 }
@@ -4761,7 +4866,7 @@ function drawEnemy(e,now){
   const E=ET[e.t],r=E.r,f=e.face;mvUpd(e);
   ctx.fillStyle='rgba(0,0,0,.3)';ctx.beginPath();ctx.ellipse(e.x,e.y+r*.8,r,r*.4,0,0,Math.PI*2);ctx.fill();
   ctx.save();ctx.translate(e.x,e.y);if(e.sz){ctx.fillStyle='rgba(180,140,240,.22)';ctx.beginPath();ctx.arc(0,0,r*1.7,0,Math.PI*2);ctx.fill();ctx.scale(e.sz,e.sz);}
-  const hurt=e.hurt>0;
+  const hurt=e.hurt>0;{const sq=e.moving?Math.sin(e.walk*.9)*.045:Math.sin(now/420+(e.id||e.x))*.02,hs=hurt?.12:0;ctx.scale(1+sq+hs,1-sq-hs*.8);}
   if(DRAW2[e.t]&&!e.burrow){DRAW2[e.t](e,r,now,hurt);}
   else if(e.t==='burrower'){
     if(e.burrow){ctx.restore();ctx.fillStyle='#6b4a2c';ctx.beginPath();ctx.ellipse(e.x,e.y,12,7,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#8a6440';ctx.beginPath();ctx.arc(e.x-4,e.y-2,3,0,Math.PI*2);ctx.arc(e.x+4,e.y+1,2.5,0,Math.PI*2);ctx.fill();return;}
@@ -5057,7 +5162,7 @@ function loadGame(o){
   for(let i=0;i<W*H;i++)if(S.res[i]===16){S.res[i]=0;S.rhp[i]=0;}
   if(!o.lanes){openLanes(S);}
   if(!o.vplot)clearPlot(S);
-  S.warm=o.warm||(S.prog>=4?1:0);S.story=o.story||(v2?STORY_ORDER.filter((id,k)=>k===0||(id==='abyss'?S.hiddenDone:S.prog>=k)):[]);
+  S.warm=o.warm||(S.prog>=4?1:0);S.story=o.story||(v2?['prologue','day3','chief','dungeon','hydra','golem','flame','frost','abyss'].filter((id,k)=>k===0||(id==='abyss'?S.hiddenDone:S.prog>=k)):[]);
   if(!S.lairs.some(l=>l.id==='frost'))addFrostLair(S);if(!S.vault)addVault(S);if(!S.haz)addHazards(S);
   if(!S.nests)addNests(S);
   for(let i=0;i<W*H;i++)if(S.haz[i]&&(S.trail[i]||S.bld[i]||S.res[i]||S.water[i]||S.town[i]||S.road[i]))S.haz[i]=0;
