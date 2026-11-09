@@ -1,0 +1,29 @@
+{
+  "name": "camp-survivor",
+  "productName": "Camp Survivor",
+  "version": "1.0.0",
+  "description": "Camp Survivor - gather and build by day, guard the bonfire by night",
+  "author": "tanggulstudio",
+  "main": "main.js",
+  "private": true,
+  "scripts": {
+    "prepare-app": "node prepare.js",
+    "start": "electron .",
+    "dist": "electron-builder --win --x64"
+  },
+  "devDependencies": {
+    "electron": "33.2.1",
+    "electron-builder": "25.1.8",
+    "peerjs": "1.5.4"
+  },
+  "build": {
+    "appId": "com.tanggulstudio.campsurvivor",
+    "productName": "Camp Survivor",
+    "executableName": "CampSurvivor",
+    "copyright": "© tanggulstudio",
+    "directories": { "output": "dist" },
+    "files": ["main.js", "preload.js", "app/**/*"],
+    "win": { "target": ["dir", "portable"], "icon": "icon.png" },
+    "portable": { "artifactName": "CampSurvivor-portable.exe" }
+  }
+}
