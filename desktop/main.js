@@ -31,6 +31,19 @@ function createWindow() {
   });
 }
 
+// Steam achievements: active only once the Steam App ID exists (steam_appid.txt next to the exe)
+// and the steamworks.js package is installed. Until then this quietly does nothing.
+let steam = null;
+try {
+  const fs = require('fs');
+  const idFile = [path.join(process.cwd(), 'steam_appid.txt'), path.join(path.dirname(process.execPath), 'steam_appid.txt')].find(f => fs.existsSync(f));
+  const appId = Number(process.env.STEAM_APP_ID || (idFile ? fs.readFileSync(idFile, 'utf8').trim() : 0));
+  if (appId) steam = require('steamworks.js').init(appId);
+} catch (e) { steam = null; }
+ipcMain.on('cs-ach', (e, id) => {
+  try { if (steam && /^[a-z0-9_]{1,32}$/i.test(id)) steam.achievement.activate('ACH_' + id.toUpperCase()); } catch (_) {}
+});
+
 ipcMain.on('cs-quit', () => app.quit());
 ipcMain.on('cs-fullscreen', () => { if (win) win.setFullScreen(!win.isFullScreen()); });
 
