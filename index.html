@@ -344,6 +344,10 @@ body.gpad.ingame.bopen .gphint{bottom:calc(150px + env(safe-area-inset-bottom,0p
 .mutbox p{font-size:12.5px}
 .mutbox .chip small{display:block;font-size:11px;color:inherit;opacity:.8}
 .mutbox .chip{text-align:left;border-radius:10px}
+.shopmsg{position:sticky;top:-8px;z-index:3;box-shadow:0 6px 16px rgba(0,0,0,.45);margin:0;padding:10px 12px;border-radius:10px;background:#21402a;border:1px solid rgba(127,208,106,.6);color:#dff5d2!important;font-size:14px!important;line-height:1.5}
+.shopmsg.pop{animation:smpop .35s ease-out}
+@keyframes smpop{from{transform:scale(.96);background:#3f7a44}to{transform:scale(1)}}
+@media (prefers-reduced-motion:reduce){.shopmsg.pop{animation:none}}
 .trade .lvd{display:flex;gap:3px;margin-top:4px}.trade .lvd i{width:14px;height:5px;border-radius:3px;background:rgba(255,255,255,.15)}.trade .lvd i.on{background:#ff9a4a}
 .trade .cw{width:22px;height:22px;border-radius:50%;flex:0 0 22px;border:2px solid rgba(255,255,255,.35)}
 .trade.cur{border-color:var(--ember)}
@@ -543,6 +547,7 @@ body.gpad.ingame.bopen .gphint{bottom:calc(150px + env(safe-area-inset-bottom,0p
       <button class="xbtn" id="shopX" aria-label="닫기"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button>
       <div class="hhead"><span class="pg" id="shopGold"></span><h2 id="shopTitle"></h2></div>
       <p id="shopLine"></p>
+      <p id="shopMsg" class="shopmsg" role="status" aria-live="polite" hidden></p>
       <div id="shopBody" class="shopbody"></div>
       <div class="row"><button class="big" id="shopClose">떠나기</button></div>
     </div>
@@ -2195,7 +2200,7 @@ function float(x,y,txt,col){if(!SET.dmg&&/^-?\d/.test(String(txt)))return;S.fx.p
 function burst(x,y,col,n){for(let k=0;k<n;k++){const a=Math.random()*Math.PI*2,v=30+Math.random()*90;S.fx.push({k:'p',x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,col,t:0,life:.4+Math.random()*.4});}}
 
 let toastTimer=0;
-function toast(msg,ms){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('on');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('on'),ms||2400);}
+function toast(msg,ms){const el=document.getElementById('toast');try{const so=document.getElementById('ovShop'),sm=document.getElementById('shopMsg');if(so&&sm&&!so.hidden){sm.textContent='✓ '+msg;sm.hidden=false;sm.classList.remove('pop');void sm.offsetWidth;sm.classList.add('pop');}}catch(_){}el.textContent=msg;el.classList.add('on');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('on'),ms||2400);}
 
 function freeCellNear(i0){
   const x0=i0%W,y0=(i0/W)|0;
@@ -2484,7 +2489,7 @@ function talkTargets(){const a=NPCS.map((n,k)=>({k,x:(CX+n.dx+.5)*T,y:(CY+n.dy+.
   for(const q of (S.noteSpots||[]))if(!q.got&&Math.abs(q.x-S.p.x)<4*T&&Math.abs(q.y-S.p.y)<4*T)a.push({k:'note',q,x:q.x,y:q.y,n:_L('기록 읽기','Read the note')});return a}
 function nearTalk(r,wx,wy){const p=S.p;let best=null,bd=r;for(const t of talkTargets()){const d=Math.hypot(t.x-(wx==null?p.x:wx),t.y-(wy==null?p.y:wy))-(wx==null?(t.r||0):0);if(d<bd){bd=d;best=t;}}return best}
 function talkTo(t){if(!t||S.trading||S.menu)return;if(t.k==='lm'){lmAct(t.m);return;}if(t.k==='note'){readNote(t.q);return;}if(t.k==='v'){enterVault();return;}if(t.k==='n'){takeNest(t.q);return;}if(t.k==='L'){offerSummon(t.L);return;}if(t.k==='i'){incubSel=t.i;openShop('incub');return;}if(t.k==='s'){stashSel=t.i;stashCleanup();openShop('stash');return;}if(t.k==='m')openTrade();else openShop(NPCS[t.k].id);}
-function openShop(id){if(S)S.tutShop=1;shopId=id;S.trading=true;renderShop();$('ovShop').hidden=false;}
+function openShop(id){if(S)S.tutShop=1;shopId=id;S.trading=true;{const sm=$('shopMsg');if(sm){sm.hidden=true;sm.textContent='';}}renderShop();$('ovShop').hidden=false;}
 function closeShop(){$('ovShop').hidden=true;S.trading=false;}
 function renderShop(){
   const sh=SHOPS[shopId];$('shopTitle').textContent=sh.t;$('shopLine').textContent=sh.line;$('shopGold').textContent=_T('보유 금화 ')+S.gold+'G';
@@ -2545,7 +2550,14 @@ function renderShop(){
         if(v.w)h+=shopRow('vback:'+i+':w',false,_T('무기 돌려받기'),itemName(v.w),_T('가방으로'),'');if(v.a)h+=shopRow('vback:'+i+':a',false,_T('갑옷 돌려받기'),itemName(v.a),_T('가방으로'),'');
         if(!pool.length)h+=_T('<p>가방에 줄 수 있는 무기나 갑옷이 없어요.</p>');for(const q of pool)h+=shopRow('vgive:'+i+':'+q.k,false,'['+SLOT_KIND[ITEMS[q.id].slot]+'] '+itemName(q.id),ITEMS[q.id].d,_T('주기'),itemIcon(q.id));}});
     h+=_T('</div></div><div class="sec"><h3>서비스</h3><div class="trades">');
-    INN.forEach((o,i)=>{const own=false,g=innCost(i);h+=shopRow('svc:'+i,S.gold<g||(i===2&&S.vill.length>=14)||own,o.n,i===2?o.d+_T(' · 고용할수록 몸값이 올라요'):o.d,g+'G',i===3?itemIcon('d_potion'):i===4?SV(PETS.wolf.ic):'');});
+    INN.forEach((o,i)=>{const g=innCost(i),hpN=Math.ceil(S.p.hp),hpM=pMax(),eggs=S.items.egg_wolf||0,incV=Object.values(S.incub||{}).filter(Boolean),hatching=incV.filter(q=>q.t==='wolf');let nInc=0;if(i===4)for(const bq of S.bld)if(bq&&bq.t==='incub')nInc++;const freeSl=Math.max(0,nInc-incV.length);
+      const own=(i===0&&hpN>=hpM)||(i===1&&S.core.hp>=S.core.max);
+      const st=i===0?(hpN>=hpM?_L('체력이 이미 가득해요 ('+hpN+' / '+hpM+')','HP is already full ('+hpN+' / '+hpM+')'):_L('지금 체력 '+hpN+' / '+hpM,'HP now '+hpN+' / '+hpM))
+        :i===1?(S.core.hp>=S.core.max?_L('화톳불이 이미 멀쩡해요 ('+Math.ceil(S.core.hp)+' / '+S.core.max+')','The bonfire is already at full health ('+Math.ceil(S.core.hp)+' / '+S.core.max+')'):_L('지금 화톳불 '+Math.ceil(S.core.hp)+' / '+S.core.max,'Bonfire now '+Math.ceil(S.core.hp)+' / '+S.core.max))
+        :i===2?_L('지금 주민 '+S.vill.length+' / 14명','Villagers now '+S.vill.length+' / 14')
+        :i===3?_L('가방에 '+(S.items.d_potion||0)+'개 있어요','You have '+(S.items.d_potion||0))
+        :_L('가방에 알 '+eggs+'개'+(hatching.length?' · 부화 중 '+hatching.map(q=>Math.max(0,q.day-S.day)+'일 남음').join(', '):'')+(nInc?' · 빈 부화기 '+freeSl+'개':' · 부화기가 아직 없어요 (건설에서 지어요)'),'Eggs in bag: '+eggs+(hatching.length?' · hatching: '+hatching.map(q=>Math.max(0,q.day-S.day)+'d left').join(', '):'')+(nInc?' · free incubators: '+freeSl:' · no incubator yet (build one)'));
+      h+=shopRow('svc:'+i,S.gold<g||(i===2&&S.vill.length>=14)||own,o.n,(i===2?o.d+_T(' · 고용할수록 몸값이 올라요'):o.d)+' · '+st,g+'G',i===3?itemIcon('d_potion'):i===4?SV(PETS.wolf.ic):'');});
     if(!NET.role){const lv=S.lives==null?3:S.lives,wait=7-(S.day-(S.emberDay==null?-99:S.emberDay)),ok=wait<=0&&lv<5;h+=shopRow('ember:0',!ok||S.gold<INN_EMBER.g,INN_EMBER.n+' · ♥'+lv,INN_EMBER.d+(lv>=5?_L(' · 이미 가득이에요',' · already full'):wait>0?_L(' · '+wait+_T('일 뒤 입고'),' · back in '+wait+' days'):''),INN_EMBER.g+'G','<svg viewBox="0 0 24 24"><path d="M12 2l6 9-6 11-6-11z" fill="#ff8a3a"/><path d="M12 6l3 5-3 6-3-6z" fill="#ffe08a"/></svg>');}
     h+='</div></div>';
   }
@@ -2575,9 +2587,13 @@ function shopAct(act,arg){
     else toast(_T('아쉽다… 강화는 실패하고 재료만 날아갔어'),2200);}
   else if(act==='ember'){const lv=S.lives==null?3:S.lives;if(S.gold<INN_EMBER.g||lv>=5||S.day-(S.emberDay==null?-99:S.emberDay)<7)return;S.gold-=INN_EMBER.g;S.emberDay=S.day;gainLife(_L('여관','inn'));renderShop();return;}
   else if(act==='svc'){const o=INN[+arg];if(!o||S.gold<innCost(+arg))return;const og=o.g;o.g=innCost(+arg);
-    if(+arg===0){p.hp=pMax();}else if(+arg===1){S.core.hp=Math.min(S.core.max,S.core.hp+150);}
-    else if(+arg===2){if(S.vill.length>=14){o.g=og;return;}addVillager();S.hired=(S.hired||0)+1;}else if(+arg===4){S.items.egg_wolf=(S.items.egg_wolf||0)+1;}else S.items.d_potion=(S.items.d_potion||0)+1;
-    S.gold-=o.g;toast(o.n+_T(' 완료'),1600);}
+    let msg='';const paid=o.g;
+    if(+arg===0){const b0=Math.ceil(p.hp);if(b0>=pMax()){o.g=og;toast(_L('체력이 이미 가득해요. 금화는 쓰지 않았어요','HP is already full. No gold was spent'),2200);renderShop();return;}p.hp=pMax();msg=_L('푹 쉬었어요. 체력 '+b0+' → '+pMax()+' (가득)','You rested well. HP '+b0+' → '+pMax()+' (full)');}
+    else if(+arg===1){const b0=Math.ceil(S.core.hp);if(b0>=S.core.max){o.g=og;toast(_L('화톳불이 이미 멀쩡해요. 금화는 쓰지 않았어요','The bonfire is already at full health. No gold was spent'),2200);renderShop();return;}S.core.hp=Math.min(S.core.max,S.core.hp+150);msg=_L('화톳불을 고쳤어요. '+b0+' → '+Math.ceil(S.core.hp)+' / '+S.core.max,'Bonfire repaired. '+b0+' → '+Math.ceil(S.core.hp)+' / '+S.core.max);}
+    else if(+arg===2){if(S.vill.length>=14){o.g=og;return;}const n0=S.vill.length;addVillager();S.hired=(S.hired||0)+1;const nv=S.vill[S.vill.length-1];msg=S.vill.length>n0?_L('새 주민 '+(nv&&nv.name||'')+' 님이 캠프에 들어왔어요. 지금 주민 '+S.vill.length+'명','New villager '+(nv&&nv.name||'')+' joined the camp. Villagers now: '+S.vill.length):_L('일꾼을 고용했어요','Worker hired');}
+    else if(+arg===4){S.items.egg_wolf=(S.items.egg_wolf||0)+1;msg=_L('늑대 알을 가방에 넣었어요 (지금 '+S.items.egg_wolf+'개). 부화기(건설에서 지어요)에 넣으면 '+HATCH_DAYS+'일 뒤 아침에 늑대가 태어나요','Wolf egg added to your bag (now '+S.items.egg_wolf+'). Put it in an incubator (build one) and a wolf hatches '+HATCH_DAYS+' mornings later');}
+    else{S.items.d_potion=(S.items.d_potion||0)+1;msg=_L('체력 물약을 가방에 넣었어요 (지금 '+S.items.d_potion+'개)','Health potion added to your bag (now '+S.items.d_potion+')');}
+    S.gold-=paid;sfx('upgrade');toast(msg+_L(' · 금화 -'+paid+' (남은 금화 '+S.gold+'G)',' · -'+paid+' gold ('+S.gold+'G left)'),3200);o.g=og;}
   renderShop();
 }
 function closeTopOverlay(){
@@ -3616,7 +3632,7 @@ function netCredit(e){const id=e.lastBy;if(!id||!NET.conns[id])return false;cons
 function netHostTick(dt){
   NET.snapT-=dt;NET.dT-=dt;
   if(NET.snapT<=0){NET.snapT=.1;
-    const en=[];for(const e of S.enemies){if(e.dead)continue;if(!e.id)e.id=++NET.eid;en.push([e.id,e.t,Math.round(e.x),Math.round(e.y),Math.round(e.hp),Math.round(e.max),+(e.face||0).toFixed(2),e.burrow?1:0,e.lair?1:0,e.sz||0,e.hurt>0?1:0,e.slam>0?1:0]);}
+    const en=[];for(const e of S.enemies){if(e.dead)continue;if(!e.id)e.id=++NET.eid;en.push([e.id,e.t,Math.round(e.x),Math.round(e.y),Math.round(e.hp),Math.round(e.max),+(e.face||0).toFixed(2),e.dig?1:0,e.lair?1:0,e.sz||0,e.hurt>0?1:0,e.slam>0?1:0]);}
     const pl=[['h',Math.round(S.p.x),Math.round(S.p.y),+S.p.face.toFixed(2),S.p.dead?1:0,S.eq.weapon,S.eq.body,S.eq.head,S.eq.feet,S.p.moving?1:0,NET.name]];
     for(const g of Object.values(NET.ghosts))pl.push([g.id,Math.round(g.x),Math.round(g.y),g.face,g.dead?1:0,g.eqw,g.eqb,g.eqh,g.eqf,g.moving?1:0,g.name]);
     const rs={};for(const k in RK)if(k!=='g')rs[k]=S[RK[k]];
@@ -3635,7 +3651,7 @@ function netClientMsg(m){
   if(m.snap){const s=m.snap;S.t=s.t;if(S.phase!==s.ph){if(s.ph==='night')sfx('night');else if(s.ph==='day'&&S.phase==='night')sfx('dawn');}S.phase=s.ph==='dawn'?'day':s.ph;S.day=s.day;S.nightT=s.nt;S.core.hp=s.core[0];S.core.max=s.core[1];S.coreLv=s.core[2];S.prog=s.prog;S.warm=s.warm;if(S.tower&&s.tw){S.tower.floor=s.tw[0];S.tower.state=s.tw[1]==='clear'?'clear':'fight';S.tower.left=s.tw[2];}
     for(const k in s.rs)S[RK[k]]=s.rs[k];
     const old={};for(const e of S.enemies)old[e.id]=e;const ne=[];
-    for(const a of s.en){let e=old[a[0]];if(!e){e={id:a[0],t:a[1],x:a[2],y:a[3],m:1,cd:0,spd:ET[a[1]].spd,face:a[6],hurt:0};}e.tx=a[2];e.ty=a[3];e.hp=a[4];e.max=a[5];e.face=a[6];e.burrow=!!a[7];e.lair=a[8]?(e.lair||{}):null;e.sz=a[9]||0;if(a[10])e.hurt=.12;e.slam=a[11]?.3:0;ne.push(e);}
+    for(const a of s.en){let e=old[a[0]];if(!e){e={id:a[0],t:a[1],x:a[2],y:a[3],m:1,cd:0,spd:ET[a[1]].spd,face:a[6],hurt:0};}e.tx=a[2];e.ty=a[3];e.hp=a[4];e.max=a[5];e.face=a[6];e.dig=!!a[7];e.burrow=false;e.lair=a[8]?(e.lair||{}):null;e.sz=a[9]||0;if(a[10])e.hurt=.12;e.slam=a[11]?.3:0;ne.push(e);}
     for(const id in old)if(!ne.includes(old[id])&&old[id].hp>0)smoke(old[id].x,old[id].y,4);
     S.enemies=ne;S.picks=s.pk.map(a=>({x:a[0],y:a[1],kind:a[2],n:1,age:1}));
     s.ld.forEach((st,k)=>{if(S.lairs[k])S.lairs[k].state=st;});
@@ -4409,10 +4425,10 @@ function updEnemy(e,dt){
   if(e.t==='bat'){const [kx,ky]=cCenter(CI),tp=dP<5*T,tx=tp?p.x:kx,ty=tp?p.y:ky,d=Math.hypot(tx-e.x,ty-e.y);e.face=Math.atan2(ty-e.y,tx-e.x);e.moving=true;e.dir=Math.cos(e.face)<0?-1:1;
     if(d<(tp?r+14:T*.9)){if(e.cd<=0){if(tp)hurtPlayer(E.dmg*e.m);else hurtCore(E.bdmg*e.m);e.cd=E.cd;}}else{const sp=e.spd*slowF*dt;e.x+=(tx-e.x)/d*sp;e.y+=(ty-e.y)/d*sp;}return;}
   if(e.t==='burrower'){
-    if(e.ti==null||(e.ti!==CI&&!S.bld[e.ti])){e.ti=burrowTarget(e);e.burrow=true;}
+    if(e.ti==null||(e.ti!==CI&&!S.bld[e.ti])){e.ti=burrowTarget(e);e.dig=true;e.burrow=false;}
     const [bx,by]=cCenter(e.ti),d=Math.hypot(bx-e.x,by-e.y);
-    if(e.burrow){
-      if(d<T*.95){e.burrow=false;burst(e.x,e.y,'#8a6440',14);}
+    if(e.dig){
+      if(d<T*.95){e.dig=false;burst(e.x,e.y,'#8a6440',14);}
       else{const sp=e.spd*slowF*dt;e.x+=(bx-e.x)/d*sp;e.y+=(by-e.y)/d*sp;e.face=Math.atan2(by-e.y,bx-e.x);
         if(Math.random()<dt*18)S.fx.push({k:'p',x:e.x,y:e.y,vx:(Math.random()-.5)*40,vy:(Math.random()-.5)*40,col:'#6b4a2c',t:0,life:.5});}
       return;
@@ -5348,9 +5364,9 @@ function drawEnemy(e,now){
   ctx.fillStyle='rgba(0,0,0,.3)';ctx.beginPath();ctx.ellipse(e.x,e.y+r*.8,r,r*.4,0,0,Math.PI*2);ctx.fill();
   ctx.save();ctx.translate(e.x,e.y);if(e.sz){ctx.fillStyle='rgba(180,140,240,.22)';ctx.beginPath();ctx.arc(0,0,r*1.7,0,Math.PI*2);ctx.fill();ctx.scale(e.sz,e.sz);}
   const hurt=e.hurt>0;{const sq=e.moving?Math.sin(e.walk*.9)*.045:Math.sin(now/420+(e.id||e.x))*.02,hs=hurt?.12:0;ctx.scale(1+sq+hs,1-sq-hs*.8);}
-  if(DRAW2[e.t]&&!e.burrow){DRAW2[e.t](e,r,now,hurt);}
+  if(DRAW2[e.t]&&!e.dig){DRAW2[e.t](e,r,now,hurt);}
   else if(e.t==='burrower'){
-    if(e.burrow){ctx.restore();ctx.fillStyle='#6b4a2c';ctx.beginPath();ctx.ellipse(e.x,e.y,12,7,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#8a6440';ctx.beginPath();ctx.arc(e.x-4,e.y-2,3,0,Math.PI*2);ctx.arc(e.x+4,e.y+1,2.5,0,Math.PI*2);ctx.fill();return;}
+    if(e.dig){ctx.restore();ctx.fillStyle='rgba(0,0,0,.2)';ctx.beginPath();ctx.ellipse(e.x+1,e.y+3,15,7,0,0,7);ctx.fill();ctx.fillStyle='#6b4a2c';ctx.beginPath();ctx.ellipse(e.x,e.y,14,8,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#8a6440';ctx.beginPath();ctx.arc(e.x-7,e.y-1,3,0,Math.PI*2);ctx.arc(e.x+8,e.y+2,2.5,0,Math.PI*2);ctx.fill();const wb=Math.sin(now/110)*1.5;ctx.fillStyle=hurt?'#fff':'#b0786a';ctx.beginPath();ctx.ellipse(e.x,e.y-3+wb,7,5.5,0,Math.PI,0);ctx.fill();ctx.fillStyle=hurt?'#fff':'#9a6a5a';ctx.beginPath();ctx.ellipse(e.x-6,e.y-1+wb*.6,4,3.2,0,Math.PI,0);ctx.fill();ctx.fillStyle='#3a0d10';ctx.beginPath();ctx.arc(e.x+3,e.y-5+wb,1.6,0,7);ctx.fill();return;}
     ctx.rotate(f);
     for(let k=3;k>=0;k--){ctx.fillStyle=hurt?'#fff':(k%2?'#9a6a5a':'#b0786a');ctx.beginPath();ctx.arc(-k*7,Math.sin(now/120+k)*2,r-k*1.5,0,Math.PI*2);ctx.fill();}
     ctx.fillStyle='#3a0d10';ctx.beginPath();ctx.arc(r*.6,0,4,0,Math.PI*2);ctx.fill();
