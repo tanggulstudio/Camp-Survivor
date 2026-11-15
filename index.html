@@ -5314,6 +5314,12 @@ function drawBld(b,i,now){
     ctx.moveTo(px+4,py+5);ctx.quadraticCurveTo(px+7,py+4,px+10,py+5);ctx.moveTo(px+T-7,py+9);ctx.lineTo(px+T-5,py+13);ctx.stroke();
     ctx.fillStyle='rgba(53,43,31,.13)';for(let k=0;k<3;k++){const dx=px+5+hash(i*17+k)*22,dy=py+7+hash(i*23+k)*19;ctx.beginPath();ctx.ellipse(dx,dy,1.1+hh*.5,.65,hh*2,0,7);ctx.fill();}
   }
+  // A restrained rim light and small worn marks give built pieces a painted edge.
+  if(b.t!=='torch'&&b.t!=='fire'&&b.t!=='field'&&b.t!=='incub'){
+    const hh=hash(i*13+7);ctx.strokeStyle='rgba(255,239,205,.22)';ctx.lineWidth=.8;ctx.lineCap='round';ctx.beginPath();
+    ctx.moveTo(px+4,py+5);ctx.quadraticCurveTo(px+7,py+4,px+10,py+5);ctx.moveTo(px+T-7,py+9);ctx.lineTo(px+T-5,py+13);ctx.stroke();
+    ctx.fillStyle='rgba(53,43,31,.13)';for(let k=0;k<3;k++){const dx=px+5+hash(i*17+k)*22,dy=py+7+hash(i*23+k)*19;ctx.beginPath();ctx.ellipse(dx,dy,1.1+hh*.5,.65,hh*2,0,7);ctx.fill();}
+  }
   ctx.restore();
   if(b.lv>1){ctx.fillStyle=LVC[b.lv];for(let k=0;k<b.lv-1;k++){const qx=px+6+k*7,qy=py+T-4;ctx.beginPath();ctx.moveTo(qx,qy-3.5);ctx.lineTo(qx+3,qy);ctx.lineTo(qx,qy+3.5);ctx.lineTo(qx-3,qy);ctx.closePath();ctx.fill();}}
   if(b.idle&&((B[b.t].prod&&S.phase==='day')||B[b.t].drill)){ctx.font='bold 12px "Gowun Dodum",sans-serif';ctx.textAlign='center';ctx.fillStyle='rgba(0,0,0,.6)';ctx.beginPath();ctx.arc(x+11,py+1,7,0,Math.PI*2);ctx.fill();ctx.fillStyle='#f0eedf';ctx.fillText('?',x+11,py+5);}
@@ -5486,6 +5492,9 @@ function drawChest(c,now){
   ctx.fillStyle=gold?'#f0c64a':(cursed?'#93603a':'#a06a3c');ctx.fillRect(x-12,y-11+bob,24,7);
   ctx.fillStyle=gold?'#fff0b0':'#d9b45a';ctx.fillRect(x-8,y-11+bob,3,20);ctx.fillRect(x+5,y-11+bob,3,20);
   ctx.fillStyle='#2a2018';ctx.fillRect(x-2,y-3+bob,4,5);
+  // Fine wood grain and a softly lit metal clasp add a hand-crafted chest finish.
+  ctx.strokeStyle='rgba(255,229,183,.32)';ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(x-8,y-2+bob);ctx.quadraticCurveTo(x-2,y-4+bob,x+7,y-2+bob);ctx.moveTo(x-8,y+5+bob);ctx.lineTo(x+7,y+5+bob);ctx.stroke();
+  ctx.fillStyle='rgba(255,248,220,.55)';ctx.beginPath();ctx.arc(x,y-8+bob,1.2,0,7);ctx.fill();
   const tw=(Math.sin(now/260+c.x*.1)+1)/2;
   if(!cursed||tw>.7){ctx.fillStyle='rgba(255,240,180,'+tw+')';const sx=x+9,sy=y-15+bob,r=2+tw*3;ctx.beginPath();ctx.moveTo(sx,sy-r);ctx.lineTo(sx+1,sy-1);ctx.lineTo(sx+r,sy);ctx.lineTo(sx+1,sy+1);ctx.lineTo(sx,sy+r);ctx.lineTo(sx-1,sy+1);ctx.lineTo(sx-r,sy);ctx.lineTo(sx-1,sy-1);ctx.closePath();ctx.fill();}
 }
@@ -5520,7 +5529,13 @@ function drawNpc(k,i,now){
     ctx.fillStyle='#ffd27a';ctx.fillRect(px+4,py+15,6,6);ctx.fillStyle='#2a1c10';ctx.fillRect(x+3,py+T-11,7,11);
   }
   const by=Math.sin(now/400+k)*1.5;
+  // Soft trim, warm window glow and a tiny highlight make each landmark less blocky.
+  ctx.strokeStyle='rgba(255,238,205,.38)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(px+3,py+11);ctx.lineTo(px+3,py+T-3);ctx.moveTo(px+T-4,py+12);ctx.lineTo(px+T-4,py+T-4);ctx.stroke();
+  ctx.fillStyle='rgba(255,245,218,.22)';ctx.beginPath();ctx.ellipse(x-5,py+14,3,1.2,-.3,0,7);ctx.fill();
   ctx.fillStyle='#668477';ctx.beginPath();ctx.arc(x,y+18+by,7,0,Math.PI*2);ctx.fill();ctx.fillStyle='#f0d2ad';ctx.beginPath();ctx.arc(x,y+16+by,4.5,0,Math.PI*2);ctx.fill();
+  // A soft cheek tint and collar seam tie the little keeper sprites to the player style.
+  ctx.fillStyle='rgba(176,104,82,.2)';ctx.beginPath();ctx.ellipse(x-2.8,y+16+by,1.6,.8,0,0,7);ctx.ellipse(x+2.8,y+16+by,1.6,.8,0,0,7);ctx.fill();
+  ctx.strokeStyle='rgba(244,225,190,.42)';ctx.lineWidth=.8;ctx.beginPath();ctx.arc(x,y+18+by,5.8,.25,Math.PI-.25);ctx.stroke();
   ctx.font='bold 12px "Gowun Dodum",sans-serif';ctx.textAlign='center';ctx.fillStyle='rgba(0,0,0,.65)';ctx.fillText(n.n,x+1,py-9);ctx.fillStyle='#f0d39a';ctx.fillText(n.n,x,py-10);
 }
 function drawLair(L,now){
