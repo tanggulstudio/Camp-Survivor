@@ -5008,6 +5008,9 @@ function bakeTree(sw,h,pal){const r=11+h*4,SC=3,w=Math.ceil(r*2.6+6),hh=Math.cei
   g.fillStyle=md;for(const [px,py,pr] of puffs){g.beginPath();g.arc(cx+px-1.5,y+py-2,pr*.72,0,7);g.fill();}
   g.fillStyle=lt;g.beginPath();g.arc(cx-r*.35-2,y-r*.7-3,r*.32,0,7);g.fill();g.beginPath();g.arc(cx-3,y-6,r*.28,0,7);g.fill();
   g.fillStyle='rgba(220,255,190,.18)';g.beginPath();g.arc(cx-r*.4-3,y-r*.78-4,r*.15,0,7);g.fill();
+  // soft, hand-painted leaf flecks: deterministic so cached trees remain visually stable
+  for(let k=0;k<9;k++){const a=(k*2.399+h*8),d=r*(.2+((k*7)%9)/14),px=cx+Math.cos(a)*d,py=y-5+Math.sin(a)*d*.72;g.fillStyle=k%3===0?'rgba(244,232,181,.34)':'rgba(34,63,39,.12)';g.beginPath();g.ellipse(px,py,1.15+(k%2)*.45,.65, a*.2,0,7);g.fill();}
+  g.strokeStyle='rgba(238,239,190,.24)';g.lineWidth=.65;g.lineCap='round';for(let k=0;k<4;k++){const px=cx-r*.42+k*r*.27,py=y-r*.45+(k%2)*r*.22;g.beginPath();g.moveTo(px,py);g.quadraticCurveTo(px+2,py-2,px+3.5,py-3);g.stroke();}
   if(!sw&&h>.82){g.fillStyle=h>.91?'#e8504a':'#ffb0c8';for(let k=0;k<3;k++){g.beginPath();g.arc(cx-r*.5+k*r*.5,y-2-(k%2)*r*.5,1.8,0,7);g.fill();}}
   if(pal&&pal[3]){g.fillStyle=pal[3];for(let k=0;k<7;k++){const a=k*2.4+h*5,d=r*(.3+(k%3)*.25);g.beginPath();g.arc(cx+Math.cos(a)*d,y-3+Math.sin(a)*d*.8,1.5,0,7);g.fill();}}
   c.w=w;c.h=hh;c.ox=cx;c.oy=y;return c;}
@@ -5045,8 +5048,8 @@ function treeKind(i){const b=bioOf(i);return b===2?8:b===3?9:b===4?10:b===1?1:b=
 function drawTree(i,now){
   const [x,y]=cCenter(i),h=hash(i),tk=treeKind(i),sw=tk===1;
   const shake=S.p.gI===i&&S.p.gT>0?Math.sin(now/30)*1.5:0;
-  ctx.fillStyle='rgba(0,0,0,.25)';ctx.beginPath();ctx.ellipse(x+3,y+11,tk>=4&&tk!==10?10:13,tk>=4&&tk!==10?4:5,0,0,Math.PI*2);ctx.fill();
-  if(tk<4||tk===10){ctx.fillStyle=tk===3?'#4e3220':tk===10?'#4e3a2c':'#5e3c22';ctx.fillRect(x-3,y+2,6,10);}
+  ctx.fillStyle='rgba(42,48,32,.18)';ctx.beginPath();ctx.ellipse(x+2,y+11,tk>=4&&tk!==10?10:13,tk>=4&&tk!==10?4:5,0,0,Math.PI*2);ctx.fill();
+  if(tk<4||tk===10){const bark=tk===3?'#4e3220':tk===10?'#4e3a2c':'#5e3c22';ctx.fillStyle=bark;ctx.beginPath();ctx.moveTo(x-2.8,y+1);ctx.quadraticCurveTo(x-3.8,y+6,x-2.5,y+12);ctx.lineTo(x+2.8,y+12);ctx.quadraticCurveTo(x+3.8,y+6,x+2.2,y+1);ctx.closePath();ctx.fill();ctx.strokeStyle='rgba(225,193,137,.24)';ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(x-.8,y+4);ctx.quadraticCurveTo(x-1.5,y+7,x-.7,y+10);ctx.stroke();}
   const hb=Math.min(7,Math.floor(h*8)),key=tk*8+hb,r=11+((hb+.5)/8)*4,sway=tk===5?0:Math.sin(now/1400+h*9)*(tk===6?.4:1.2),cx=x+shake+sway;
   if(tk===4&&(draw.dk||0)>.25){const gc=['150,90,220','60,200,190','230,90,90','240,170,60'][Math.floor(((hb+.5)/8)*4*.999)],a=Math.min(1,(draw.dk-.25)*2)*(.35+.15*Math.sin(now/600+h*20));const gr=ctx.createRadialGradient(cx,y-12,2,cx,y-12,30);gr.addColorStop(0,'rgba('+gc+','+a+')');gr.addColorStop(1,'rgba('+gc+',0)');ctx.fillStyle=gr;ctx.beginPath();ctx.arc(cx,y-12,30,0,7);ctx.fill();}
   let spr=TREE_SPR[key];if(!spr)spr=TREE_SPR[key]=bakeTreeK(tk,(hb+.5)/8);
