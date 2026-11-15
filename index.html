@@ -5153,6 +5153,10 @@ function drawBush(i,now){
   ctx.fillStyle='#d8404c';for(let k=0;k<S.rhp[i]*2;k++){ctx.beginPath();ctx.arc(x-8+hash(i*9+k)*16+sh,y-8+hash(i*11+k)*13,2,0,Math.PI*2);ctx.fill();}
   ctx.strokeStyle='rgba(235,239,190,.3)';ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(x-7+sh,y-7);ctx.quadraticCurveTo(x-3+sh,y-12,x+1+sh,y-9);ctx.stroke();
   for(let k=0;k<4;k++){const fx=x-8+hash(i*31+k)*16+sh,fy=y-7+hash(i*37+k)*10;ctx.fillStyle='rgba(255,239,205,.22)';ctx.beginPath();ctx.ellipse(fx,fy,1.3,.7,hash(i+k),0,7);ctx.fill();}
+  // A few low leaves, tiny blossoms and occasional mushrooms vary the gatherable silhouette.
+  ctx.strokeStyle='rgba(188,211,137,.58)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x-8+sh,y+5);ctx.quadraticCurveTo(x-12+sh,y+1,x-13+sh,y-2);ctx.moveTo(x+5+sh,y+5);ctx.quadraticCurveTo(x+10+sh,y+1,x+12+sh,y-3);ctx.stroke();
+  if(hash(i*17+29)>.58){const mx=x+(hash(i*19+7)-.5)*12+sh,my=y+5;ctx.fillStyle='#e7d8b7';ctx.beginPath();ctx.ellipse(mx,my+2,3.2,2.1,0,0,7);ctx.fill();ctx.fillStyle=hash(i*23+3)>.5?'#b96c61':'#c99b72';ctx.beginPath();ctx.ellipse(mx,my,3.4,2.1,0,Math.PI,Math.PI*2);ctx.fill();ctx.fillStyle='rgba(255,245,220,.55)';ctx.beginPath();ctx.ellipse(mx-1,my-.8,1.2,.55,-.2,0,7);ctx.fill();}
+  if(hash(i*31+11)>.72){ctx.fillStyle='#f2d9a4';for(let k=0;k<3;k++){const fx=x-5+k*5+sh,fy=y-9+(k%2)*2;ctx.beginPath();ctx.arc(fx,fy,1.2,0,7);ctx.fill();}}
 }
 function drawRock(i){
   const [x,y]=cCenter(i),h=hash(i),rv=S.res[i],ore=rv===3||rv===9||rv>=11,ob=rv===15,em=rv===9,OC={3:'#d08a4a',9:'#4fd08a',11:'#ee9058',12:'#ffd23a',13:'#6a9aff',15:'#c080ff',17:'#e8fbff'}[rv],mi=rv===17,cny=regionOfCell(i)===2;
