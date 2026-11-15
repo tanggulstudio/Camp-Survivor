@@ -5160,7 +5160,12 @@ function drawRock(i){
   ctx.fillStyle=mi?'#5a8aa0':ob?'#1e1626':em?'#3e4a44':rv===13?'#363a4e':rv===12?'#55504a':ore?'#4d4644':cny?'#8a6e5e':'#7d868a';ctx.beginPath();
   for(let k=0;k<7;k++){const a=k/7*Math.PI*2,r=10+hash(i*7+k)*5;const px=x+Math.cos(a)*r,py=y+Math.sin(a)*r*.8;k?ctx.lineTo(px,py):ctx.moveTo(px,py);}
   ctx.closePath();ctx.fill();
-  if(ore){ctx.fillStyle=OC;for(let k=0;k<5;k++){ctx.beginPath();ctx.arc(x-7+hash(i*3+k)*14,y-6+hash(i*5+k)*11,1.8,0,Math.PI*2);ctx.fill();}ctx.fillStyle='#6a615d';ctx.beginPath();ctx.ellipse(x-3-h*2,y-4,5,3,-.4,0,Math.PI*2);ctx.fill();}
+  if(ore){ctx.fillStyle=OC;for(let k=0;k<5;k++){ctx.beginPath();ctx.arc(x-7+hash(i*3+k)*14,y-6+hash(i*5+k)*11,1.8,0,Math.PI*2);ctx.fill();}ctx.fillStyle='#6a615d';ctx.beginPath();ctx.ellipse(x-3-h*2,y-4,5,3,-.4,0,Math.PI*2);ctx.fill();
+    // Three tiny, deterministic facets make each ore type readable at a glance.
+    const crystal=(cx,cy,w,hh,col,hi)=>{ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(cx-w*.5,cy+hh*.45);ctx.lineTo(cx-w*.22,cy-hh*.48);ctx.lineTo(cx+w*.12,cy-hh*.62);ctx.lineTo(cx+w*.5,cy+hh*.45);ctx.closePath();ctx.fill();ctx.fillStyle=hi;ctx.beginPath();ctx.moveTo(cx-w*.22,cy-hh*.48);ctx.lineTo(cx+w*.12,cy-hh*.62);ctx.lineTo(cx+w*.08,cy+hh*.35);ctx.closePath();ctx.fill();};
+    const facets=rv===3?['#c77b43','#f0bd78']:rv===9?['#398d65','#a8efb2']:rv===11?['#9b6250','#efb08a']:rv===12?['#b58a28','#ffe69a']:rv===13?['#526da8','#c4dcff']:rv===15?['#79549b','#d5a9f5']:['#548ca8','#d5f5ff'];
+    crystal(x-5,y+1,5,9,facets[0],facets[1]);crystal(x+1,y-3,6,12,facets[0],facets[1]);crystal(x+7,y+2,4,7,facets[0],facets[1]);
+  }
   else{ctx.fillStyle='#a3abae';ctx.beginPath();ctx.ellipse(x-3-h*2,y-4,6,4,-.4,0,Math.PI*2);ctx.fill();}
   ctx.strokeStyle='rgba(255,244,218,.28)';ctx.lineWidth=.9;ctx.beginPath();ctx.moveTo(x-6-h*2,y-5);ctx.quadraticCurveTo(x-2-h*2,y-10,x+1-h*2,y-7);ctx.stroke();
   ctx.fillStyle='rgba(255,255,255,.16)';for(let k=0;k<3;k++){const rx=x-7+hash(i*19+k)*14,ry=y-5+hash(i*29+k)*9;ctx.beginPath();ctx.ellipse(rx,ry,1.5,.8,hash(i+k),0,7);ctx.fill();}
@@ -5352,6 +5357,10 @@ function drawBld(b,i,now){
     ctx.fillStyle='#5e2f1f';ctx.fillRect(px+T-10,py-4,5,8);
     ctx.fillStyle='#2a1c10';ctx.fillRect(x-3,py+T-10,6,9);
     ctx.fillStyle=S.phase!=='day'?'#ffd27a':'#6a8a9a';ctx.fillRect(px+6,py+15,5,5);
+    // Distinct hand-cut roof shingles and a framed entrance give the hut a clearer silhouette.
+    ctx.strokeStyle='rgba(238,190,132,.52)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(px+5,py+9);ctx.lineTo(x-3,py-1);ctx.moveTo(x+3,py-1);ctx.lineTo(px+T-5,py+9);ctx.moveTo(px+10,py+7);ctx.lineTo(px+14,py+10);ctx.moveTo(px+19,py+7);ctx.lineTo(px+23,py+10);ctx.stroke();
+    ctx.strokeStyle='#4b2c20';ctx.lineWidth=1.5;ctx.strokeRect(x-4,py+T-11,8,10);ctx.fillStyle='#e5bd78';ctx.beginPath();ctx.arc(x+2,py+T-6,1,0,7);ctx.fill();
+    ctx.strokeStyle='rgba(255,235,196,.6)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(px+6,py+15);ctx.lineTo(px+11,py+15);ctx.lineTo(px+11,py+20);ctx.stroke();
   }else if(b.t==='spike'){
     ctx.fillStyle='#4f3820';ctx.fillRect(px+3,py+3,T-6,T-6);
     ctx.fillStyle='#cfd5d8';
@@ -5590,6 +5599,18 @@ function drawNpc(k,i,now){
   // A soft cheek tint and collar seam tie the little keeper sprites to the player style.
   ctx.fillStyle='rgba(176,104,82,.2)';ctx.beginPath();ctx.ellipse(x-2.8,y+16+by,1.6,.8,0,0,7);ctx.ellipse(x+2.8,y+16+by,1.6,.8,0,0,7);ctx.fill();
   ctx.strokeStyle='rgba(244,225,190,.42)';ctx.lineWidth=.8;ctx.beginPath();ctx.arc(x,y+18+by,5.8,.25,Math.PI-.25);ctx.stroke();
+  // Small profession-specific headwear/accessories distinguish keepers without extra sprites.
+  if(n.id==='shop'){
+    ctx.fillStyle='#a85f4e';ctx.beginPath();ctx.ellipse(x,y+10+by,6.2,2.1,0,Math.PI,Math.PI*2);ctx.fill();ctx.fillStyle='#e7b78a';ctx.fillRect(x-6,y+9+by,12,1.8);ctx.fillStyle='#f4d6a7';ctx.fillRect(x-1,y+6+by,2,2);
+  }else if(n.id==='smith'){
+    ctx.fillStyle='#66534a';ctx.beginPath();ctx.moveTo(x-6,y+11+by);ctx.lineTo(x-4,y+6+by);ctx.lineTo(x+4,y+6+by);ctx.lineTo(x+6,y+11+by);ctx.closePath();ctx.fill();ctx.fillStyle='#d08a4a';ctx.fillRect(x-5,y+10+by,10,1.6);
+  }else if(n.id==='gem'){
+    ctx.fillStyle='#718b83';ctx.beginPath();ctx.moveTo(x-6,y+10+by);ctx.quadraticCurveTo(x,y+3+by,x+6,y+10+by);ctx.lineTo(x+4,y+8+by);ctx.lineTo(x-4,y+8+by);ctx.closePath();ctx.fill();ctx.fillStyle='#bfe8e5';ctx.beginPath();ctx.moveTo(x,y+5+by);ctx.lineTo(x+2,y+8+by);ctx.lineTo(x,y+10+by);ctx.lineTo(x-2,y+8+by);ctx.closePath();ctx.fill();
+  }else if(n.id==='altar'){
+    ctx.strokeStyle='#d8b56f';ctx.lineWidth=1.4;ctx.beginPath();ctx.arc(x,y+9+by,5.5,Math.PI,Math.PI*2);ctx.stroke();ctx.fillStyle='#ffe39a';ctx.beginPath();ctx.arc(x,y+5+by,1.5,0,7);ctx.fill();
+  }else if(n.id==='tower'){
+    ctx.fillStyle='#8b755f';ctx.beginPath();ctx.moveTo(x-6,y+10+by);ctx.lineTo(x-4,y+5+by);ctx.lineTo(x+4,y+5+by);ctx.lineTo(x+6,y+10+by);ctx.closePath();ctx.fill();ctx.strokeStyle='#e0b875';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x+3,y+6+by);ctx.lineTo(x+7,y+2+by);ctx.stroke();
+  }
   ctx.font='bold 12px "Gowun Dodum",sans-serif';ctx.textAlign='center';ctx.fillStyle='rgba(0,0,0,.65)';ctx.fillText(n.n,x+1,py-9);ctx.fillStyle='#f0d39a';ctx.fillText(n.n,x,py-10);
 }
 function drawLair(L,now){
