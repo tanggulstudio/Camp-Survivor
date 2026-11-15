@@ -559,6 +559,57 @@ button,.tool,.isl,.slot,.trade,.cardb{-webkit-tap-highlight-color:transparent}
   .hbtn:active,.big:active,.bcat:active,.tool:active,.ab:active{transform:none}
 }
 
+
+/* ---------- soft storybook UI fixes 2026-11-15 ---------- */
+.hbtn.warn{
+  color:#70431f!important;
+  background:#f1e5cf!important;
+  border-color:#b87943!important;
+  font-weight:700;
+}
+#consent{
+  color:#344538;
+  background:#fbf7eb;
+  border:1px solid rgba(76,91,66,.28);
+  box-shadow:0 8px 30px rgba(45,55,39,.2);
+}
+#consent> b,#consentTitle{color:#344538}
+#consent p{color:#52604f}
+#consent p b{color:#405b45}
+#consent a{color:#80502b;text-decoration:underline;text-underline-offset:2px}
+#consent .big{
+  color:#344538;
+  background:#eee5d1;
+  border-color:rgba(76,91,66,.28);
+}
+#consent .big:hover{background:#e7d8bd;border-color:#b87943}
+.xbtn{
+  background:#eee7d7;
+  border-color:rgba(76,91,66,.28);
+  color:#405343;
+  box-shadow:0 2px 6px rgba(45,55,39,.1);
+}
+.xbtn:hover{background:#e7d8bd;border-color:#b87943;color:#70431f}
+.trade:disabled{
+  opacity:1;
+  color:#52604f;
+  background:#eee8d8;
+  border-color:#d2c8b5;
+  cursor:default;
+}
+.trade:disabled b,.trade:disabled span{color:#52604f}
+@media (max-width:420px){
+  .right{width:calc(50% - 2px);max-width:50%;min-width:0}
+  .btns{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    width:100%;
+    gap:5px;
+  }
+  .btns .hbtn{width:100%;min-width:0;padding-inline:4px;font-size:11.5px}
+  .mini{display:block;flex:0 0 auto;align-self:flex-end;margin-top:4px}
+}
+
 </style>
 </head>
 <body>
@@ -5102,6 +5153,10 @@ function drawBush(i,now){
   ctx.fillStyle='#d8404c';for(let k=0;k<S.rhp[i]*2;k++){ctx.beginPath();ctx.arc(x-8+hash(i*9+k)*16+sh,y-8+hash(i*11+k)*13,2,0,Math.PI*2);ctx.fill();}
   ctx.strokeStyle='rgba(235,239,190,.3)';ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(x-7+sh,y-7);ctx.quadraticCurveTo(x-3+sh,y-12,x+1+sh,y-9);ctx.stroke();
   for(let k=0;k<4;k++){const fx=x-8+hash(i*31+k)*16+sh,fy=y-7+hash(i*37+k)*10;ctx.fillStyle='rgba(255,239,205,.22)';ctx.beginPath();ctx.ellipse(fx,fy,1.3,.7,hash(i+k),0,7);ctx.fill();}
+  // A few low leaves, tiny blossoms and occasional mushrooms vary the gatherable silhouette.
+  ctx.strokeStyle='rgba(188,211,137,.58)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x-8+sh,y+5);ctx.quadraticCurveTo(x-12+sh,y+1,x-13+sh,y-2);ctx.moveTo(x+5+sh,y+5);ctx.quadraticCurveTo(x+10+sh,y+1,x+12+sh,y-3);ctx.stroke();
+  if(hash(i*17+29)>.58){const mx=x+(hash(i*19+7)-.5)*12+sh,my=y+5;ctx.fillStyle='#e7d8b7';ctx.beginPath();ctx.ellipse(mx,my+2,3.2,2.1,0,0,7);ctx.fill();ctx.fillStyle=hash(i*23+3)>.5?'#b96c61':'#c99b72';ctx.beginPath();ctx.ellipse(mx,my,3.4,2.1,0,Math.PI,Math.PI*2);ctx.fill();ctx.fillStyle='rgba(255,245,220,.55)';ctx.beginPath();ctx.ellipse(mx-1,my-.8,1.2,.55,-.2,0,7);ctx.fill();}
+  if(hash(i*31+11)>.72){ctx.fillStyle='#f2d9a4';for(let k=0;k<3;k++){const fx=x-5+k*5+sh,fy=y-9+(k%2)*2;ctx.beginPath();ctx.arc(fx,fy,1.2,0,7);ctx.fill();}}
 }
 function drawRock(i){
   const [x,y]=cCenter(i),h=hash(i),rv=S.res[i],ore=rv===3||rv===9||rv>=11,ob=rv===15,em=rv===9,OC={3:'#d08a4a',9:'#4fd08a',11:'#ee9058',12:'#ffd23a',13:'#6a9aff',15:'#c080ff',17:'#e8fbff'}[rv],mi=rv===17,cny=regionOfCell(i)===2;
@@ -5109,7 +5164,12 @@ function drawRock(i){
   ctx.fillStyle=mi?'#5a8aa0':ob?'#1e1626':em?'#3e4a44':rv===13?'#363a4e':rv===12?'#55504a':ore?'#4d4644':cny?'#8a6e5e':'#7d868a';ctx.beginPath();
   for(let k=0;k<7;k++){const a=k/7*Math.PI*2,r=10+hash(i*7+k)*5;const px=x+Math.cos(a)*r,py=y+Math.sin(a)*r*.8;k?ctx.lineTo(px,py):ctx.moveTo(px,py);}
   ctx.closePath();ctx.fill();
-  if(ore){ctx.fillStyle=OC;for(let k=0;k<5;k++){ctx.beginPath();ctx.arc(x-7+hash(i*3+k)*14,y-6+hash(i*5+k)*11,1.8,0,Math.PI*2);ctx.fill();}ctx.fillStyle='#6a615d';ctx.beginPath();ctx.ellipse(x-3-h*2,y-4,5,3,-.4,0,Math.PI*2);ctx.fill();}
+  if(ore){ctx.fillStyle=OC;for(let k=0;k<5;k++){ctx.beginPath();ctx.arc(x-7+hash(i*3+k)*14,y-6+hash(i*5+k)*11,1.8,0,Math.PI*2);ctx.fill();}ctx.fillStyle='#6a615d';ctx.beginPath();ctx.ellipse(x-3-h*2,y-4,5,3,-.4,0,Math.PI*2);ctx.fill();
+    // Three tiny, deterministic facets make each ore type readable at a glance.
+    const crystal=(cx,cy,w,hh,col,hi)=>{ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(cx-w*.5,cy+hh*.45);ctx.lineTo(cx-w*.22,cy-hh*.48);ctx.lineTo(cx+w*.12,cy-hh*.62);ctx.lineTo(cx+w*.5,cy+hh*.45);ctx.closePath();ctx.fill();ctx.fillStyle=hi;ctx.beginPath();ctx.moveTo(cx-w*.22,cy-hh*.48);ctx.lineTo(cx+w*.12,cy-hh*.62);ctx.lineTo(cx+w*.08,cy+hh*.35);ctx.closePath();ctx.fill();};
+    const facets=rv===3?['#c77b43','#f0bd78']:rv===9?['#398d65','#a8efb2']:rv===11?['#9b6250','#efb08a']:rv===12?['#b58a28','#ffe69a']:rv===13?['#526da8','#c4dcff']:rv===15?['#79549b','#d5a9f5']:['#548ca8','#d5f5ff'];
+    crystal(x-5,y+1,5,9,facets[0],facets[1]);crystal(x+1,y-3,6,12,facets[0],facets[1]);crystal(x+7,y+2,4,7,facets[0],facets[1]);
+  }
   else{ctx.fillStyle='#a3abae';ctx.beginPath();ctx.ellipse(x-3-h*2,y-4,6,4,-.4,0,Math.PI*2);ctx.fill();}
   ctx.strokeStyle='rgba(255,244,218,.28)';ctx.lineWidth=.9;ctx.beginPath();ctx.moveTo(x-6-h*2,y-5);ctx.quadraticCurveTo(x-2-h*2,y-10,x+1-h*2,y-7);ctx.stroke();
   ctx.fillStyle='rgba(255,255,255,.16)';for(let k=0;k<3;k++){const rx=x-7+hash(i*19+k)*14,ry=y-5+hash(i*29+k)*9;ctx.beginPath();ctx.ellipse(rx,ry,1.5,.8,hash(i+k),0,7);ctx.fill();}
@@ -5301,6 +5361,10 @@ function drawBld(b,i,now){
     ctx.fillStyle='#5e2f1f';ctx.fillRect(px+T-10,py-4,5,8);
     ctx.fillStyle='#2a1c10';ctx.fillRect(x-3,py+T-10,6,9);
     ctx.fillStyle=S.phase!=='day'?'#ffd27a':'#6a8a9a';ctx.fillRect(px+6,py+15,5,5);
+    // Distinct hand-cut roof shingles and a framed entrance give the hut a clearer silhouette.
+    ctx.strokeStyle='rgba(238,190,132,.52)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(px+5,py+9);ctx.lineTo(x-3,py-1);ctx.moveTo(x+3,py-1);ctx.lineTo(px+T-5,py+9);ctx.moveTo(px+10,py+7);ctx.lineTo(px+14,py+10);ctx.moveTo(px+19,py+7);ctx.lineTo(px+23,py+10);ctx.stroke();
+    ctx.strokeStyle='#4b2c20';ctx.lineWidth=1.5;ctx.strokeRect(x-4,py+T-11,8,10);ctx.fillStyle='#e5bd78';ctx.beginPath();ctx.arc(x+2,py+T-6,1,0,7);ctx.fill();
+    ctx.strokeStyle='rgba(255,235,196,.6)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(px+6,py+15);ctx.lineTo(px+11,py+15);ctx.lineTo(px+11,py+20);ctx.stroke();
   }else if(b.t==='spike'){
     ctx.fillStyle='#4f3820';ctx.fillRect(px+3,py+3,T-6,T-6);
     ctx.fillStyle='#cfd5d8';
@@ -5539,6 +5603,18 @@ function drawNpc(k,i,now){
   // A soft cheek tint and collar seam tie the little keeper sprites to the player style.
   ctx.fillStyle='rgba(176,104,82,.2)';ctx.beginPath();ctx.ellipse(x-2.8,y+16+by,1.6,.8,0,0,7);ctx.ellipse(x+2.8,y+16+by,1.6,.8,0,0,7);ctx.fill();
   ctx.strokeStyle='rgba(244,225,190,.42)';ctx.lineWidth=.8;ctx.beginPath();ctx.arc(x,y+18+by,5.8,.25,Math.PI-.25);ctx.stroke();
+  // Small profession-specific headwear/accessories distinguish keepers without extra sprites.
+  if(n.id==='shop'){
+    ctx.fillStyle='#a85f4e';ctx.beginPath();ctx.ellipse(x,y+10+by,6.2,2.1,0,Math.PI,Math.PI*2);ctx.fill();ctx.fillStyle='#e7b78a';ctx.fillRect(x-6,y+9+by,12,1.8);ctx.fillStyle='#f4d6a7';ctx.fillRect(x-1,y+6+by,2,2);
+  }else if(n.id==='smith'){
+    ctx.fillStyle='#66534a';ctx.beginPath();ctx.moveTo(x-6,y+11+by);ctx.lineTo(x-4,y+6+by);ctx.lineTo(x+4,y+6+by);ctx.lineTo(x+6,y+11+by);ctx.closePath();ctx.fill();ctx.fillStyle='#d08a4a';ctx.fillRect(x-5,y+10+by,10,1.6);
+  }else if(n.id==='gem'){
+    ctx.fillStyle='#718b83';ctx.beginPath();ctx.moveTo(x-6,y+10+by);ctx.quadraticCurveTo(x,y+3+by,x+6,y+10+by);ctx.lineTo(x+4,y+8+by);ctx.lineTo(x-4,y+8+by);ctx.closePath();ctx.fill();ctx.fillStyle='#bfe8e5';ctx.beginPath();ctx.moveTo(x,y+5+by);ctx.lineTo(x+2,y+8+by);ctx.lineTo(x,y+10+by);ctx.lineTo(x-2,y+8+by);ctx.closePath();ctx.fill();
+  }else if(n.id==='altar'){
+    ctx.strokeStyle='#d8b56f';ctx.lineWidth=1.4;ctx.beginPath();ctx.arc(x,y+9+by,5.5,Math.PI,Math.PI*2);ctx.stroke();ctx.fillStyle='#ffe39a';ctx.beginPath();ctx.arc(x,y+5+by,1.5,0,7);ctx.fill();
+  }else if(n.id==='tower'){
+    ctx.fillStyle='#8b755f';ctx.beginPath();ctx.moveTo(x-6,y+10+by);ctx.lineTo(x-4,y+5+by);ctx.lineTo(x+4,y+5+by);ctx.lineTo(x+6,y+10+by);ctx.closePath();ctx.fill();ctx.strokeStyle='#e0b875';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x+3,y+6+by);ctx.lineTo(x+7,y+2+by);ctx.stroke();
+  }
   ctx.font='bold 12px "Gowun Dodum",sans-serif';ctx.textAlign='center';ctx.fillStyle='rgba(0,0,0,.65)';ctx.fillText(n.n,x+1,py-9);ctx.fillStyle='#f0d39a';ctx.fillText(n.n,x,py-10);
 }
 function drawLair(L,now){
