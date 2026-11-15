@@ -4694,15 +4694,15 @@ function draw(now){
   // lighting
   let dark=0;
   const inDg=dgCell(cellAt(p.x,p.y))>=0;
-  if(S.phase==='night')dark=.78;
-  else if(S.phase==='day'){const dl=dayLen(),s=dl-14;if(S.t>s)dark=Math.min(.78,(S.t-s)/14*.78);}
-  if(S.phase==='night'&&S.nightEv==='fog'&&!inDg)dark=Math.min(.95,dark+.15);
-  if(inDg)dark=Math.max(dark,.8);
+  if(S.phase==='night')dark=.64;
+  else if(S.phase==='day'){const dl=dayLen(),s=dl-14;if(S.t>s)dark=Math.min(.64,(S.t-s)/14*.64);}
+  if(S.phase==='night'&&S.nightEv==='fog'&&!inDg)dark=Math.min(.84,dark+.12);
+  if(inDg)dark=Math.max(dark,.72);
   {const kk=1-Math.exp(-fdt*(Math.abs(dark-(draw.dk||0))>.5?2.2:4));draw.dk=(draw.dk==null?dark:draw.dk+(dark-draw.dk)*kk);dark=draw.dk;}
   if(dark>.01){
     lctx.setTransform(1,0,0,1,0,0);lctx.globalCompositeOperation='source-over';
     lctx.clearRect(0,0,lightCv.width,lightCv.height);
-    lctx.fillStyle=(S.event&&S.event.id==='blood'?'rgba(34,4,10,':S.nightEv==='fog'&&S.phase==='night'?'rgba(30,34,44,':'rgba(6,10,28,')+dark+')';lctx.fillRect(0,0,lightCv.width,lightCv.height);
+    lctx.fillStyle=(S.event&&S.event.id==='blood'?'rgba(34,4,10,':S.nightEv==='fog'&&S.phase==='night'?'rgba(30,34,44,':'rgba(23,33,46,')+dark+')';lctx.fillRect(0,0,lightCv.width,lightCv.height);
     lctx.globalCompositeOperation='destination-out';
     const k=dpr*scale,fl=1+Math.sin(now/120)*.04+Math.sin(now/73)*.03;
     const L=(wx,wy,r,s)=>{const sx=(wx-camX)*k,sy=(wy-camY)*k,R=r*k;if(sx<-R||sy<-R||sx>lightCv.width+R||sy>lightCv.height+R)return;
