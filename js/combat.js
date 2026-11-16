@@ -476,14 +476,16 @@ const STORY={
     _L("밤은 여전히 찾아온다. 하지만 이제 화톳불 곁에는 함께하는 사람들이 있다. 무진의 망치 소리, 별이의 웃음소리, 그리고 {name}. 솔빛의 이야기는 계속된다.","Night still comes. But now there are people beside the bonfire. The ring of Mujin's hammer, Byeoli's laughter, and {name}. Solbit's story goes on.")]},
 };
 const STORY_ORDER=["prologue", "dawn2", "day3", "chief", "records", "dungeon", "hydra", "dream", "golem", "flame", "frost", "abyss"];
-let storyId=null,storyPg=0,storyAfter=null;
-function showStory(id,after){const st=STORY[id];if(!st){if(after)after();return;}if(!S.story)S.story=[];if(!S.story.includes(id))S.story.push(id);
+let storyId=null,storyPg=0,storyAfter=null,storyIdx=null;
+// A new game opens with the short prologue (the raid, the four survivors, the bonfire); the full one stays in the bag's journal.
+STORY.prologue.short=[2,4,6];
+function showStory(id,after,short){const st=STORY[id];if(!st){if(after)after();return;}storyIdx=short&&st.short?st.short:null;if(!S.story)S.story=[];if(!S.story.includes(id))S.story.push(id);
   storyId=id;storyPg=0;storyAfter=after||null;S.menu=true;renderStory();$('ovStory').hidden=false;}
-function renderStory(){const st=STORY[storyId];$('storyTitle').textContent=st.t;$('storyArt').innerHTML=sceneSvg(st.sc[storyPg]||st.sc[0]);$('storyText').textContent=storyName(st.pages[storyPg]);
-  $('storyPg').textContent=(storyPg+1)+' / '+st.pages.length;$('storyNext').textContent=storyPg<st.pages.length-1?_T('다음'):_T('계속하기');$('storyPrev').hidden=storyPg===0;}
+function renderStory(){const st=STORY[storyId];$('storyTitle').textContent=st.t;const pi=storyIdx?storyIdx[storyPg]:storyPg,pn=storyIdx?storyIdx.length:st.pages.length;$('storyArt').innerHTML=sceneSvg(st.sc[pi]||st.sc[0]);$('storyText').textContent=storyName(st.pages[pi]);
+  $('storyPg').textContent=(storyPg+1)+' / '+pn;$('storyNext').textContent=storyPg<pn-1?_T('다음'):_T('계속하기');$('storyPrev').hidden=storyPg===0;}
 function storyName(t){const n=(S&&S.pname)||_T('캠퍼'),c=n.charCodeAt(n.length-1),bat=c>=0xAC00&&c<=0xD7A3&&(c-0xAC00)%28!==0;
   return t.split('{name}은').join(n+(bat?'은':'는')).split('{name}이').join(n+(bat?'이':'가')).split('{name}을').join(n+(bat?'을':'를')).split('{name}').join(n);}
-function storyNext(){const st=STORY[storyId];if(storyPg<st.pages.length-1){storyPg++;renderStory();return;}closeStory();}
+function storyNext(){const st=STORY[storyId],pn=storyIdx?storyIdx.length:st.pages.length;if(storyPg<pn-1){storyPg++;renderStory();return;}closeStory();}
 function closeStory(){$('ovStory').hidden=true;S.menu=false;const a=storyAfter;storyAfter=null;if(a)a();}
 function storyLater(id){setTimeout(()=>{if(running&&S)showStory(id);},2400);}
 function nearWarmth(){const p=S.p,cx=Math.floor(p.x/T),cy=Math.floor(p.y/T);for(let dy=-3;dy<=3;dy++)for(let dx=-3;dx<=3;dx++){const b=S.bld[idx(cx+dx,cy+dy)];if(b&&(b.t==='fire'||b.t==='torch'))return true;}return false}

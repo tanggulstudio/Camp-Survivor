@@ -140,7 +140,8 @@ function nextGoals(){const g=[];
   const wsl=S.eq.weapon,wt=wsl&&ITEMS[wsl].recipe?gearTier(wsl):0,best=Math.max(...Object.keys(S.got||{}).map(k=>MAT_RANK[k]||0),1);
   if(best>wt){const cls=wsl?ITEMS[wsl].cls:undefined;const cand=Object.keys(ITEMS).find(id=>{const e=ITEMS[id];return e.slot==='weapon'&&e.recipe&&e.cls===cls&&gearTier(id)===best&&!owns(id);});if(cand)g.push({t:ITEMS[cand].n+_T(' 만들어 보기'),d:_T('지금 무기보다 강해요 · 필요: ')+costText(ITEMS[cand].recipe),p:Object.keys(ITEMS[cand].recipe).map(k=>Math.min(1,getAmt(k)/ITEMS[cand].recipe[k])).reduce((a,b)=>a+b,0)/Object.keys(ITEMS[cand].recipe).length});}
   const BO=[['chief',_T('고블린 족장 쓰러뜨리기'),_T('5일째 밤마다 마을로 와요')],['hydra',_T('히드라 쓰러뜨리기'),_T('늪의 미끼를 만들어 둥지에 바쳐요')],['golem',_T('수정 골렘 쓰러뜨리기'),_T('공명석을 만들어 협곡 제단에 바쳐요')],['flame',_T('화염 군주 쓰러뜨리기'),_T('불씨 심지를 만들어 화구에 바쳐요')],['frost',_T('서리 여왕 쓰러뜨리기'),_T('서리 종을 만들어 얼음 제단에 바쳐요')]];
-  const bo=BO[S.prog];if(bo)g.push({t:bo[1],d:bo[2],p:null});return g.slice(0,2);}
+  const bo=BO[S.prog];if(bo)g.push({t:bo[1],d:bo[2],p:null});
+  {const lg=lifeGoal();if(lg){g.splice(1,0,lg);return g.slice(0,3);}}return g.slice(0,2);}
 const SPECIAL={sunstone:[_T('태양을 머금은 돌'),_T('따뜻하게 빛나는 돌이에요. 캠프의 태양 제단에 바치면 낮이 길어져서 멀리 탐험하기 편해져요!'),_T('태양 제단에서 F키로 바치기')],
  ess:[_T('장비 정수'),_T('안 쓰는 장비를 분해하면 나오는 가루예요. 대장장이에게 가져가면 장비를 더 강하게 강화할 수 있어요.'),_T('가방 → 장비 → 분해 / 대장장이 강화')],
  token:[_T('탑 증표'),_T('도전의 탑을 오르며 모은 증표예요. 탑 앞 상인에게 영구 강화와 바꿀 수 있어요.'),_T('탑 상인에게 가져가기')],
@@ -184,7 +185,7 @@ function tutCheck(){const st=tutStep();if(!st||!running||NC())return;let ok=fals
 let GOALMINI=null;function goalMini(){if(GOALMINI==null){let v=null;try{v=localStorage.getItem('cs-goalmini');}catch(_){}GOALMINI=v==null?matchMedia('(max-width:580px)').matches:v==='1';document.body.classList.toggle('goalmini',GOALMINI);}return GOALMINI}
 function toggleGoalMini(){GOALMINI=!goalMini();try{localStorage.setItem('cs-goalmini',GOALMINI?'1':'0');}catch(_){}document.body.classList.toggle('goalmini',GOALMINI);renderTut();}
 function renderTut(){goalMini();const el=$('tutBox');if(!el)return;const st=tutStep();
-  if(!st){el.hidden=!running||S.goalOff||S.tower||NC();if(el.hidden)return;const gs=nextGoals();if(!gs.length){el.hidden=true;return;}el.classList.add('goals');$('tutT').textContent=_T('다음 목표')+(goalMini()?' ▸':' ▾');$('tutD').innerHTML=gs.map(g=>'<span class="gl"><b>'+g.t+'</b><small>'+g.d+'</small>'+(g.p!=null?'<i class="gp"><i style="width:'+Math.round(g.p*100)+'%"></i></i>':'')+'</span>').join('');$('tutSkip').textContent=_T('목표 숨기기');return;}
+  if(!st){el.hidden=!running||S.goalOff||S.tower||NC();if(el.hidden)return;const gs=nextGoals();if(!gs.length){el.hidden=true;return;}el.classList.add('goals');$('tutT').textContent=_T('다음 목표')+(goalMini()?' ▸':' ▾');$('tutD').innerHTML=gs.map(g=>'<span class="gl'+(g.life?' life':'')+'"><b>'+g.t+'</b><small>'+g.d+'</small>'+(g.p!=null?'<i class="gp"><i style="width:'+Math.round(g.p*100)+'%"></i></i>':'')+'</span>').join('');$('tutSkip').textContent=_T('목표 숨기기');return;}
   el.classList.remove('goals');el.hidden=!running;$('tutSkip').textContent=_T('튜토리얼 건너뛰기');$('tutT').textContent=(S.tut+1)+' / '+TUT.length+' · '+st.t;$('tutD').textContent=st.d;}
 function tutArrow(now){const st=tutStep();if(!st||!st.arrow||S.p.dead)return;const p=S.p,cx=Math.floor(p.x/T),cy=Math.floor(p.y/T);let best=-1,bd=1e9;
   for(let dy=-14;dy<=14;dy++)for(let dx=-14;dx<=14;dx++){const x=cx+dx,y=cy+dy;if(x<0||y<0||x>=W||y>=H)continue;const v=S.res[idx(x,y)];if(st.arrow===1?v===1:(v===2)){const d=dx*dx+dy*dy;if(d<bd){bd=d;best=idx(x,y);}}}

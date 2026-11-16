@@ -220,7 +220,7 @@ function startNew(diff){
   $('ovDiff').hidden=true;
   setWorld(400,(Math.random()*1e9)|0);S=newState();S.diff=diff;S.mut=MUTSEL.slice();S.pname=(($('pname').value||'').trim()||_T('캠퍼')).slice(0,8);genMap(S);openLanes(S);clearPlot(S);makeGrass();flowDirty=BLC=true;if(DIFF[diff].core){S.core.max+=DIFF[diff].core;S.core.hp=S.core.max;}{const ls=mlv('start');S.wood+=15*ls;S.stone+=15*ls;S.gold+=40*mlv('gold');S.items.recall=(S.items.recall||0)+2+mlv('recall');S.core.max=Math.round(S.core.max*(1+.1*mlv('core')));S.core.hp=S.core.max;S.lives=3+mlv('life');S.mods.wallHp*=1+.1*mlv('wall');S.mods.towerDmg*=1+.06*mlv('tower');if(mlv('bomb'))S.items.d_bomb=(S.items.d_bomb||0)+2*mlv('bomb');for(let k=0;k<mlv('vill');k++)try{addVillager();}catch(_){}if(mlv('pet'))try{S.pets.push({t:'wolf',lv:1,xp:0});if(S.petOn<0)S.petOn=0;}catch(_){}{const kt=KITS.find(k=>k.id===(META.kit||''));if(kt&&kt.eq)for(const sl in kt.eq)if(ITEMS[kt.eq[sl]])S.eq[sl]=kt.eq[sl];}}
   S.tut=0;begin();S.phase='dawn';
-  showStory('prologue',()=>{beginDay();renderTut();});
+  showStory('prologue',()=>{beginDay();renderTut();},true);
 }
 function begin(){$('ovMap').hidden=true;mapT=0;setTimeout(renderAbil,0);$('ovTrade').hidden=true;$('ovShop').hidden=true;$('ovBag').hidden=true;$('ovStart').hidden=true;$('ovOver').hidden=true;$('ovPause').hidden=true;running=true;paused=false;selectTool(null);resize();}
 function gameOver(){

@@ -175,3 +175,14 @@ function bInfo(){let el=$('binfo');const bp=document.querySelector('#tray .bpane
   const c=cost(t),cs=[];for(const k in c){if(!c[k])continue;const have=S[RK[k]]||0;cs.push('<span class="'+(have>=c[k]?'ok':'no')+'">'+nameOf(k)+' '+Math.min(have,c[k])+'/'+c[k]+'</span>');}
   const lock=b.forge&&!forgeOn;
   el.innerHTML='<b>'+b.n+'</b>'+(d?'<p>'+L3(d[0],d[1],d[2])+'</p>':b.d?'<p>'+b.d+'</p>':'')+(ch.length?'<div class="bch">'+ch.map(x=>'<i>'+x+'</i>').join('')+'</div>':'')+'<div class="bcost">'+(lock?'<span class="no">'+_T('대장간 필요')+'</span>':cs.join(''))+'</div>';el.hidden=false;}
+/* ---------- life goals: point new players at what sets this game apart (fishing, cooking, farming, villagers, pets) ---------- */
+function lifeGoal(){if(!S||S.tower||NC()||(S.tut!=null&&S.tut<TUT.length))return null;const st=S.stats||{},d=S.day;let huts=0;forB(b=>{if(b.t==='hut')huts++;});
+  const G=[
+    [2,()=>(st.fish||0)>0,L3('🎣 물고기 낚아 보기','🎣 Catch a fish','🎣 钓一条鱼'),L3('가방 → 제작에서 낚싯대를 만들고, 물가에서 F를 눌러 던져요','Craft a fishing rod (Bag → Craft), then press F at the water','在背包 → 制作中做一根钓竿，然后在水边按 F 抛竿'),()=>S.tools.rod>=1?.5:0],
+    [2,()=>!!(S.skill&&S.skill.cook&&(S.skill.cook.xp>0||S.skill.cook.lv>1)),L3('🍲 첫 요리 하기','🍲 Cook your first meal','🍲 做第一道料理'),L3('모닥불이나 화톳불 곁에서 가방 → 요리. 요리마다 밤을 버티는 힘이 달라요','Stand by a fire and open Bag → Cook. Each dish helps differently at night','站在火边打开背包 → 烹饪。每道菜对夜战的帮助都不同'),null],
+    [3,()=>(st.harvest||0)>0,L3('🌾 밭에서 첫 수확','🌾 First harvest','🌾 第一次收获'),L3('건설 → 생산·건설에서 밭을 짓고 그 위를 지나가면 씨앗을 심어요. 물가 근처가 빨리 자라요','Build a field (Build → Production) and walk over it to plant. Near water grows faster','建造农田（建造 → 生产），走过即可播种。靠近水源长得更快'),null],
+    [3,()=>huts>0,L3('🏡 오두막 짓기','🏡 Build a hut','🏡 建一座小屋'),L3('캠프 동쪽 마을 터에 지으면 새 주민이 들어와 일을 도와요','Build it on the village plot east of camp and a new villager moves in to help','建在营地东边的村庄空地上，新村民会搬进来帮忙'),null],
+    [4,()=>(S.pets||[]).length>0,L3('🐾 첫 펫 데려오기','🐾 Hatch your first pet','🐾 孵出第一只宠物'),L3('둥지에서 알을 구해 부화기에 넣으면 며칠 뒤 함께 싸울 펫이 태어나요','Find an egg in a nest and put it in an incubator; a pet hatches in a few days','在巢穴找到蛋放进孵化器，几天后会孵出一起战斗的宠物'),null],
+  ];
+  for(const [dd,ok,t,dsc,pf] of G){if(d<dd)return null;let done=false;try{done=ok();}catch(_){}if(!done)return {t,d:dsc,p:pf?pf():null,life:1};}
+  return null;}

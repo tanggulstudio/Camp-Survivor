@@ -20,5 +20,5 @@ function i18nDom(){document.documentElement.lang=LANG==='zh'?'zh-CN':LANG;for(co
   for(const n of ns){const t=n.nodeValue,k=t.trim();if(k&&tr(k)!=null&&!(n.parentNode&&/^(SCRIPT|STYLE)$/.test(n.parentNode.nodeName)))n.nodeValue=t.replace(k,tr(k));}
   for(const el of document.querySelectorAll('[aria-label],[title],[placeholder]'))for(const a of ['aria-label','title','placeholder']){const v=el.getAttribute(a);if(v&&tr(v)!=null)el.setAttribute(a,tr(v));}
   if(tr(document.title)!=null)document.title=tr(document.title);}
-if(EN)Object.assign(EN,{"📸 마을 사진":"📸 Camp photo","체력 수치":"HP value","화톳불 수치":"Bonfire value","📸 결과 카드":"📸 Result card"});
+if(EN)Object.assign(EN,{"📸 마을 사진":"📸 Camp photo","체력 수치":"HP value","화톳불 수치":"Bonfire value","📸 결과 카드":"📸 Result card","농사 · 낚시 · 요리":"Farm · Fish · Cook","밤엔 화톳불 방어":"Defend the fire at night","보스 잡고 새 지역":"Beat bosses, open new lands","친구 최대 4명":"Co-op up to 4","게임 특징":"Game features"});
 try{i18nDom();}catch(_){}
