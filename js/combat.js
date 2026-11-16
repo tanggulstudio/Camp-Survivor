@@ -656,7 +656,7 @@ function tone(f,dur,o){const c=AU.ctx,t=(o&&o.at)||c.currentTime,g=c.createGain(
   let out=g;if(o&&o.lp){const f2=c.createBiquadFilter();f2.type='lowpass';f2.frequency.value=o.lp;g.connect(f2);out=f2;}os.connect(g);out.connect((o&&o.bus)||AU.fx);os.start(t);os.stop(t+dur+.05);}
 function noise(dur,o){const c=AU.ctx,t=(o&&o.at)||c.currentTime,s=c.createBufferSource(),g=c.createGain(),f=c.createBiquadFilter();s.buffer=AU.noise;s.loop=true;f.type=(o&&o.ft)||'lowpass';f.frequency.setValueAtTime((o&&o.f)||1200,t);if(o&&o.fto)f.frequency.exponentialRampToValueAtTime(o.fto,t+dur);f.Q.value=(o&&o.q)||1;
   const v=(o&&o.v)||.3;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+((o&&o.a)||.004));g.gain.exponentialRampToValueAtTime(.0008,t+dur);s.connect(f);f.connect(g);g.connect((o&&o.bus)||AU.fx);s.start(t,Math.random()*.5);s.stop(t+dur+.05);}
-const SFX_GAP={hit:.05,chop:.08,mine:.08,pickup:.06,shoot:.05,swing:.07,kill:.04,ui:.04,coin:.07,step:.2,heart:.8,horn:2};
+const SFX_GAP={hit:.05,chop:.08,mine:.08,pickup:.06,shoot:.05,swing:.07,kill:.04,ui:.04,coin:.07,step:.24,heart:.8,horn:2,tap:.03,tab:.03,open:.12,close:.12,err:.35,arrow:.06,bolt:.08,venom:.1,launch:.12,thud:.22,alarm:3,killBeast:.05,killSlime:.05,killShard:.05,killPoof:.05,crackle:.05,bird:.1,cricket:.1};
 function sfx(n,x,y){if(!AU.ctx||AU.mute||AU.vol.fx<=0)return;const c=AU.ctx,now=c.currentTime;if(now-(AU.last[n]||0)<(SFX_GAP[n]||.02))return;AU.last[n]=now;
   let v=1;if(x!=null&&S&&S.p){const d=Math.hypot(x-S.p.x,y-S.p.y)/T;if(d>18)return;v=Math.max(.15,1-d/18);}
   const r=1+(Math.random()-.5)*.08;
@@ -688,7 +688,58 @@ function sfx(n,x,y){if(!AU.ctx||AU.mute||AU.vol.fx<=0)return;const c=AU.ctx,now=
     case 'hatch':noise(.08,{ft:'highpass',f:2000,v:.2});[1320,1760,1568].forEach((f,k)=>tone(f,.12,{type:'sine',v:.08,at:c.currentTime+.1+k*.08}));break;
     case 'death':tone(300,1.2,{type:'triangle',to:60,v:.2,lp:900});break;
     case 'door':noise(.15,{f:500,v:.2});break;
+    // --- UI
+    case 'tap':tone(1350*r,.035,{type:'triangle',v:.045});tone(2100*r,.025,{type:'sine',v:.02,at:now+.012});break;
+    case 'tab':tone(950*r,.03,{type:'triangle',v:.04});break;
+    case 'open':noise(.16,{ft:'bandpass',f:500,fto:1900,q:.7,v:.07});tone(660,.12,{type:'sine',to:990,v:.035,at:now+.03});break;
+    case 'close':noise(.13,{ft:'bandpass',f:1700,fto:450,q:.7,v:.06});break;
+    case 'err':tone(196,.09,{type:'square',v:.05,lp:900});tone(165,.12,{type:'square',v:.05,lp:900,at:now+.1});break;
+    case 'equip':noise(.06,{ft:'highpass',f:3500,v:.08});tone(1760*r,.22,{type:'triangle',to:1660,v:.06});tone(2637*r,.18,{type:'sine',v:.03,at:now+.02});break;
+    case 'rare':[784,988,1319,1568,2093].forEach((f,k)=>tone(f,.4,{type:'triangle',v:.07,at:now+k*.06}));noise(.6,{ft:'highpass',f:6000,v:.05,at:now+.1});break;
+    case 'chest':noise(.25,{ft:'bandpass',f:420,fto:260,q:4,v:.12});tone(150,.22,{type:'sawtooth',to:120,v:.04,lp:600});[1319,1760,2093].forEach((f,k)=>tone(f,.25,{type:'sine',v:.05,at:now+.22+k*.05}));break;
+    case 'eat':for(let k=0;k<2;k++)noise(.05,{ft:'bandpass',f:1800*r,q:1.5,v:.13,at:now+k*.13});tone(330,.12,{type:'sine',to:200,v:.06,at:now+.3});break;
+    case 'sizzle':noise(.7,{ft:'highpass',f:3800,v:.09,a:.04});noise(.25,{ft:'bandpass',f:900,q:2,v:.05,at:now+.05});break;
+    case 'plant':noise(.08,{f:500,v:.14});tone(260*r,.06,{type:'sine',v:.05});break;
+    case 'harvest':tone(520*r,.06,{type:'sine',to:900,v:.08});noise(.05,{ft:'bandpass',f:2400,v:.06,at:now+.02});break;
+    case 'bite':tone(240,.14,{type:'sine',to:110,v:.12});tone(1568,.3,{type:'sine',v:.06,at:now+.08});break;
+    case 'discover':[659,880,1175].forEach((f,k)=>tone(f,.45,{type:'sine',v:.08,at:now+k*.09}));tone(1760,.6,{type:'triangle',v:.035,at:now+.27});break;
+    case 'ember':noise(1.6,{ft:'bandpass',f:300,fto:1400,q:.6,v:.1,a:.5});[392,523,659,784].forEach((f,k)=>tone(f,.9,{type:'sine',v:.06,at:now+.6+k*.14}));break;
+    case 'shutter':noise(.03,{ft:'highpass',f:2500,v:.12});noise(.05,{ft:'bandpass',f:1200,q:2,v:.08,at:now+.07});break;
+    // --- towers
+    case 'arrow':tone(420*r,.12,{type:'triangle',to:180,v:.07*v});noise(.05,{ft:'highpass',f:3500,v:.05*v});break;
+    case 'bolt':noise(.05,{ft:'bandpass',f:700,q:3,v:.14*v});tone(130*r,.14,{type:'square',to:70,v:.06*v,lp:700});break;
+    case 'venom':for(let k=0;k<3;k++)tone((260+k*90)*r,.07,{type:'sine',to:(420+k*120)*r,v:.06*v,at:now+k*.05});break;
+    case 'launch':noise(.22,{f:260,fto:90,v:.2*v});tone(95*r,.2,{type:'sine',to:55,v:.12*v});break;
+    // --- monsters and the camp
+    case 'killBeast':tone(180*r,.22,{type:'sawtooth',to:70,v:.09*v,lp:700});noise(.16,{f:700,fto:200,v:.12*v});break;
+    case 'killSlime':noise(.14,{ft:'bandpass',f:500,fto:180,q:2,v:.2*v});tone(140*r,.16,{type:'sine',to:60,v:.1*v});break;
+    case 'killShard':[2349,2794,3136].forEach((f,k)=>tone(f*r,.18,{type:'sine',v:.05*v,at:now+k*.03}));noise(.12,{ft:'highpass',f:5000,v:.08*v});break;
+    case 'killPoof':noise(.22,{ft:'bandpass',f:1200,fto:3000,q:.6,v:.12*v});tone(880*r,.14,{type:'sine',to:1760,v:.04*v});break;
+    case 'thud':noise(.08,{f:300,v:.18*v});tone(90*r,.09,{type:'sine',to:60,v:.08*v});break;
+    case 'alarm':[880,698,880].forEach((f,k)=>tone(f,.16,{type:'triangle',v:.07,at:now+k*.17}));break;
+    case 'step':noise(.05,{ft:'bandpass',f:STEP_F*r,q:1.1,v:.075});break;
+    // --- ambience (very quiet)
+    case 'crackle':noise(.03,{ft:'highpass',f:1800+Math.random()*2500,v:(.02+Math.random()*.04)*v});break;
+    case 'bird':{const b0=2200+Math.random()*1600;for(let k=0;k<2+((Math.random()*3)|0);k++)tone(b0*(1+(Math.random()-.5)*.15),.09,{type:'sine',to:b0*1.25,v:.025*v,at:now+k*.12});break;}
+    case 'cricket':for(let k=0;k<3;k++)tone(4400*r,.03,{type:'sine',v:.012*v,at:now+k*.05});break;
+    case 'owl':tone(392,.32,{type:'sine',to:370,v:.035*v,lp:900});tone(330,.5,{type:'sine',to:300,v:.035*v,lp:900,at:now+.42});break;
+    case 'frog':tone(140*r,.16,{type:'square',to:110,v:.025*v,lp:420});tone(150*r,.12,{type:'square',to:120,v:.02*v,lp:420,at:now+.2});break;
+    case 'wind':noise(2.6,{ft:'bandpass',f:500,fto:900,q:.5,v:.04*v,a:1});break;
+    case 'rumble':noise(1.8,{f:160,fto:60,v:.08*v,a:.4});break;
   }}
+let STEP_F=900;
+const KILL_SND={wolf:'killBeast',boar:'killBeast',snowwolf:'killBeast',yeti:'killBeast',scorp:'killBeast',toad:'killSlime',magma:'killSlime',shard:'killShard',golem:'killShard',wisp:'killPoof',leafkin:'killPoof',cinder:'killPoof',bee:'killPoof',sporebat:'killPoof',bat:'killPoof',imp:'killPoof'};
+// Ambience: birds by day, crickets and an owl at night, frogs in the swamp, wind on the tundra, rumbles near the volcano, crackle by the bonfire.
+const AMBT={bird:3,cricket:1,owl:25,frog:4,wind:6,rumble:12,crackle:.3};
+function ambTick(dt){if(!AU.ctx||AU.mute||!SET.amb||!running||!S||S.tower)return;const p=S.p,rg=regionAtPos?regionAtPos(p.x,p.y):0,night=S.phase==='night';
+  for(const k in AMBT){AMBT[k]-=dt;if(AMBT[k]>0)continue;
+    if(k==='bird'){AMBT[k]=5+Math.random()*9;if(!night&&rg!==3&&rg!==4)sfx('bird',p.x+(Math.random()-.5)*12*T,p.y+(Math.random()-.5)*12*T);}
+    else if(k==='cricket'){AMBT[k]=.7+Math.random()*1.1;if(night&&rg!==4)sfx('cricket',p.x+(Math.random()-.5)*10*T,p.y+(Math.random()-.5)*10*T);}
+    else if(k==='owl'){AMBT[k]=22+Math.random()*30;if(night&&rg<=1)sfx('owl',p.x+(Math.random()-.5)*14*T,p.y+(Math.random()-.5)*14*T);}
+    else if(k==='frog'){AMBT[k]=2.5+Math.random()*4;if(rg===1)sfx('frog',p.x+(Math.random()-.5)*12*T,p.y+(Math.random()-.5)*12*T);}
+    else if(k==='wind'){AMBT[k]=6+Math.random()*8;if(rg===4)sfx('wind');}
+    else if(k==='rumble'){AMBT[k]=10+Math.random()*14;if(rg===3)sfx('rumble');}
+    else if(k==='crackle'){AMBT[k]=.12+Math.random()*.4;const [cx,cy]=cCenter(CI);if(Math.hypot(cx-p.x,cy-p.y)<7*T)sfx('crackle',cx,cy);}}}
 // ---- music ----
 const NOTE=m=>440*Math.pow(2,(m-69)/12);
 const MODES={maj:[0,2,4,5,7,9,11],min:[0,2,3,5,7,8,10],dor:[0,2,3,5,7,9,10],phr:[0,1,3,5,7,8,10],lyd:[0,2,4,6,7,9,11],pent:[0,2,4,7,9,12,14]};

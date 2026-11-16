@@ -130,7 +130,7 @@ function renderMut(){const b=$('mutBox');if(!b)return;b.innerHTML='<b>'+_L('도�
 const UNLOCK={catapult:'i',healfire:'u',iwall:'i',ballista:'i',mine:'i',repairer:'i',magic:'c',venom:'o',prism:'d',drill1:'u',drill2:'a',drill3:'d',collector:'u',incub:'egg'};
 function bUnlocked(t){const k=UNLOCK[t];if(!k)return true;return !!(S&&S.got&&S.got[k]);}
 const DISC_LINE={u:_T('구리 곡괭이를 만들면 철광석을 캘 수 있어요. 구리 드릴도 지어 봐요!'),i:_T('철 장비랑 쇠뇌탑·투석기를 만들 수 있어요. 철 곡괭이로 금과 마력석을 노려 봐요!'),a:_T('황금 장비가 반짝여요. 황금 곡괭이를 만들면 코발트를 캘 수 있어요!'),o:_T('코발트 장비와 독안개탑이 열렸어요. 이제 늪 깊숙이 들어가 볼까요?'),c:_T('마법탑과 마법 무기를 만들 수 있어요!'),e:_T('에메랄드 장비는 확 강해져요. 에메랄드 곡괭이로 다이아몬드를 노려 봐요!'),d:_T('다이아 포탑과 다이아 장비! 다이아 곡괭이면 흑요석도 캘 수 있어요.'),b:_T('흑요석 장비는 한 단계 위예요. 흑요석 곡괭이로 미스릴을 캐 봐요!'),m:_T('최고급 미스릴! 미스릴 장비로 끝까지 가 봐요.')};
-function discover(k){const el=$('disc');if(!el)return;const blds=Object.keys(UNLOCK).filter(t=>UNLOCK[t]===k).map(t=>B[t].n);let eqN=0;for(const id in ITEMS){const r=ITEMS[id].recipe;if(r&&r[k])eqN++;}
+function discover(k){const el=$('disc');if(!el)return;sfx('discover');const blds=Object.keys(UNLOCK).filter(t=>UNLOCK[t]===k).map(t=>B[t].n);let eqN=0;for(const id in ITEMS){const r=ITEMS[id].recipe;if(r&&r[k])eqN++;}
   const tl=[];for(const tk in TOOLS_EQ)for(const tr of TOOLS_EQ[tk].tiers)if(tr.r&&tr.r[k])tl.push(tr.n);
   $('discIc').innerHTML=itemIcon(k);$('discT').textContent=_T('새 자원 발견! ')+nameOf(k);$('discD').textContent=DISC_LINE[k]||'';
   $('discL').innerHTML=[blds.length?_T('<li><b>건물</b> ')+blds.join(', ')+'</li>':'',tl.length?_T('<li><b>도구</b> ')+tl.join(', ')+'</li>':'',eqN?_T('<li><b>장비</b> ')+eqN+_T('종을 만들 수 있어요</li>'):''].join('');
@@ -253,7 +253,7 @@ const GOLD={yeti:14,wisp:12,frost:1400,imp:9,magma:12,flame:800,goblin:2,wolf:2,
 function killEnemy(e){
   const rem=NH()&&netCredit(e);
   if(!rem){const gv=Math.round((GOLD[e.t]||1)*(1+S.day*.08));S.gold+=gv;float(e.x+10,e.y-26,'+'+gv+'G','#ffd23a');}
-  e.dead=true;sfx('kill',e.x,e.y);smoke(e.x,e.y,e.lair?16:5);if(e.lair){shake(10);burst(e.x,e.y,'#ffe08a',30);}burst(e.x,e.y,'#9fc06a',8);if(!rem){S.kills++;codexKill(e.t);skXp(combatSkill(),Math.max(1,Math.round(ET[e.t].xp*.6)));}if(!rem)gainXp(ET[e.t].xp*(e.arena?1+(S.tower?S.tower.floor*.05:0):1));
+  e.dead=true;sfx(KILL_SND[e.t]||'kill',e.x,e.y);smoke(e.x,e.y,e.lair?16:5);if(e.lair){shake(10);burst(e.x,e.y,'#ffe08a',30);}burst(e.x,e.y,'#9fc06a',8);if(!rem){S.kills++;codexKill(e.t);skXp(combatSkill(),Math.max(1,Math.round(ET[e.t].xp*.6)));}if(!rem)gainXp(ET[e.t].xp*(e.arena?1+(S.tower?S.tower.floor*.05:0):1));
   if(e.dgBoss!=null||e.lmBoss!=null)specialBossDown(e);
   if(e.t==='chief'&&!e.wild&&!e.arena)S.restNext=1;
   if(e.arena){if(e.boss||e.elite)drop(e.x,e.y,'token',1);if(Math.random()<.04)drop(e.x,e.y,'token',1);return;}
@@ -315,10 +315,10 @@ function hurtPlayer(d){
 }
 function hurtCore(d){
   if(S.peace)return;
-  S.core.hp-=d;const [x,y]=cCenter(CI);float(x,y-24,'-'+Math.round(d),'#ffb27a');
+  S.core.hp-=d;sfx('alarm');const [x,y]=cCenter(CI);float(x,y-24,'-'+Math.round(d),'#ffb27a');
   if(S.core.hp<=0){S.core.hp=0;gameOver();}
 }
 function damageBld(i,d){
-  const b=S.bld[i];if(!b)return;b.hp-=d;b.hurt=.12;
+  const b=S.bld[i];if(!b)return;b.hp-=d;b.hurt=.12;{const [hx,hy]=cCenter(i);sfx('thud',hx,hy);}
   if(b.hp<=0){const [x,y]=cCenter(i);burst(x,y,b.t==='swall'?'#9aa3a8':'#a06a3c',10);S.bld[i]=null;flowDirty=BLC=true;}
 }

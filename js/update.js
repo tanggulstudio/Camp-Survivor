@@ -2,7 +2,7 @@
 'use strict';
 /* ---------- update ---------- */
 function update(dt){
-  const p=S.p;
+  const p=S.p;try{ambTick(dt);}catch(_){}
   if(flowDirty)computeFlow();
   forgeOn=hasForge();S.oreHintT=Math.max(0,S.oreHintT-dt);
 
@@ -86,7 +86,7 @@ function update(dt){
     if(p.dead<=0){p.dead=0;p.wake=1.6;p.hp=Math.round(pMax()*.6);const [x,y]=cCenter(freeCellNear(CI));p.x=x;p.y=y;}
   }else{
     if(m>.12){
-      p.moving=true;p.face=Math.atan2(my,mx);
+      p.moving=true;p.face=Math.atan2(my,mx);if(SET.step){p.stepT=(p.stepT||0)-dt;if(p.stepT<=0){p.stepT=.3;const ci=cellAt(p.x,p.y);STEP_F=ci>=0&&(S.road[ci]||S.town[ci])?1500:700;sfx('step');}}
       const spd=pSpd(),nx=p.x+mx*spd*dt,ny=p.y+my*spd*dt,ox0=p.x,oy0=p.y;p.aim=Math.atan2(my,mx);
       if(!hitsP(nx,p.y,10))p.x=nx;if(!hitsP(p.x,ny,10))p.y=ny;
       p.stuck=Math.hypot(p.x-ox0,p.y-oy0)<spd*dt*.25;
@@ -132,7 +132,7 @@ function update(dt){
             if(!S.fishHint){S.fishHint=1;toast(_T('낚싯줄 휙! 찌가 쑥 들어가면 F키나 스페이스로 낚아채 봐'),3400);}}
           const [ox,oy]=cCenter(p.fishW);p.face=Math.atan2(oy-p.y,ox-p.x);
           if(p.bite>0){p.bite-=dt;if(p.bite<=0){p.bite=0;float(p.x,p.y-26,_T('놓쳤다'),'#aab59d');p.fishT=fishWait();}}
-          else{p.fishT-=dt;if(p.fishT<=0)p.bite=.9+(toolP('rod')-1)*.5+eqSum('fish')*.8;}
+          else{p.fishT-=dt;if(p.fishT<=0){p.bite=.9+(toolP('rod')-1)*.5+eqSum('fish')*.8;sfx('bite');}}
         }
       }
     }
@@ -184,6 +184,7 @@ function update(dt){
       if(!tg)continue;
       const dmg=A.dmg*S.mods.towerDmg*(1+(S.day-1)*.05)*(1+(lv-1)*.45);
       b.ang=Math.atan2(tg.y-y,tg.x-x);b.cd=A.cd*(1-(lv-1)*.1);
+      if(A.kind!=='chain')sfx({arrow:'arrow',bolt:'bolt',venom:'venom',blast:'launch'}[A.kind]||'shoot',x,y);
       if(A.kind==='chain'){
         const pts=[[x,y-22]],hitSet=new Set();let cur=tg;
         for(let k=0;k<3&&cur;k++){

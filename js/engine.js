@@ -71,14 +71,14 @@ function pickAcc(prefer){
 function dropAcc(x,y,prefer){const id=pickAcc(prefer);if(id)drop(x,y,'eq:'+id,1);else drop(x,y,'c',1);}
 function collectPick(k){
   sfx(k.kind==='g'?'coin':'pickup');
-  if(k.kind.slice(0,3)==='eq:'){const id=k.kind.slice(3);S.inv.push(id);float(k.x,k.y-16,ITEMS[id].n,'#ffd27a');toast((ITEMS[id].rare==='set'?_T('세트 장비 획득! '):ITEMS[id].rare==='unique'?_T('고유 장비 획득! '):_T('장비 획득: '))+'['+SLOT_KIND[ITEMS[id].slot]+'] '+ITEMS[id].n+_T(' — 가방(I)에서 장착하세요'),3400);return;}
+  if(k.kind.slice(0,3)==='eq:'){const id=k.kind.slice(3);S.inv.push(id);sfx(ITEMS[id].rare==='set'||ITEMS[id].rare==='unique'||ITEMS[id].boss?'rare':'equip');float(k.x,k.y-16,ITEMS[id].n,'#ffd27a');toast((ITEMS[id].rare==='set'?_T('세트 장비 획득! '):ITEMS[id].rare==='unique'?_T('고유 장비 획득! '):_T('장비 획득: '))+'['+SLOT_KIND[ITEMS[id].slot]+'] '+ITEMS[id].n+_T(' — 가방(I)에서 장착하세요'),3400);return;}
   addAmt(k.kind,k.n);float(k.x,k.y-14,'+'+k.n+' '+nameOf(k.kind),colorOf(k.kind));
 }
 function waterNear(i,r){const x0=i%W,y0=(i/W)|0;for(let y=y0-r;y<=y0+r;y++)for(let x=x0-r;x<=x0+r;x++){if(x<0||y<0||x>=W||y>=H)continue;if(S.water[idx(x,y)]===1)return true;}return false}
 function harvestField(i,who){
   const b=S.bld[i],[x,y]=cCenter(i);if(!b)return;
   const C=CROPS[b.crop||'wheat']||CROPS.wheat,ck=b.crop||'wheat',w=C.y[0]+Math.floor(Math.random()*(C.y[1]-C.y[0]+1))+(who&&who.tr==='farmer'?1:0),sd=Math.random()<.85?1:0,sd2=Math.random()<.3?1:0;
-  S.items[ck]=(S.items[ck]||0)+w;S.items[C.seed]=(S.items[C.seed]||0)+sd+sd2;b.g=0;b.seeded=false;S.stats=S.stats||{};S.stats.harvest=(S.stats.harvest||0)+1;
+  S.items[ck]=(S.items[ck]||0)+w;S.items[C.seed]=(S.items[C.seed]||0)+sd+sd2;b.g=0;b.seeded=false;if(who==='p'||Math.hypot(x-S.p.x,y-S.p.y)<6*T)sfx('harvest',x,y);S.stats=S.stats||{};S.stats.harvest=(S.stats.harvest||0)+1;
   if(who==='p'||Math.hypot(x-S.p.x,y-S.p.y)<6*T)float(x,y-12,'+'+w+' '+C.n,C.col);
   burst(x,y,C.col,8);
   plantField(i,who,C.seed);
@@ -133,7 +133,7 @@ function float(x,y,txt,col){if(!SET.dmg&&/^-?\d/.test(String(txt)))return;
 function burst(x,y,col,n){for(let k=0;k<n;k++){const a=Math.random()*Math.PI*2,v=30+Math.random()*90;S.fx.push({k:'p',x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,col,t:0,life:.4+Math.random()*.4});}}
 let toastTimer=0;
 function toast(msg,ms){const el=document.getElementById('toast');try{const so=document.getElementById('ovShop'),sm=document.getElementById('shopMsg');if(so&&sm&&!so.hidden){sm.textContent='✓ '+msg;sm.hidden=false;sm.classList.remove('pop');void sm.offsetWidth;sm.classList.add('pop');}}catch(_){}if(el.classList.contains('on')&&performance.now()-toastAt<1500){if(el.textContent!==msg&&!toastQ.some(q=>q[0]===msg)){toastQ.push([msg,ms]);if(toastQ.length>3)toastQ.shift();clearTimeout(toastTimer);toastTimer=setTimeout(toastNext,Math.max(0,toastAt+1500-performance.now()));}return;}
-  toastShow(msg,ms);}
+  if(/부족|모자라|모자랍|필요해요|할 수 없|Not enough|need more/i.test(String(msg)))sfx('err');toastShow(msg,ms);}
 // Notices that arrive in a burst queue up (each stays at least 1.5s, at most 3 waiting) instead of overwriting each other.
 let toastQ=[],toastAt=0;
 function toastShow(msg,ms){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('on');toastAt=performance.now();clearTimeout(toastTimer);toastTimer=setTimeout(toastNext,toastQ.length?1500:(ms||2400));}
@@ -169,7 +169,7 @@ function grantRelic(){
   const c=pool[Math.floor(Math.random()*pool.length)];c.a(S);return c;
 }
 function openChest(c){
-  burst(c.x,c.y,c.kind==='gold'?'#ffe08a':'#e8c98a',16);
+  sfx('chest');burst(c.x,c.y,c.kind==='gold'?'#ffe08a':'#e8c98a',16);
   if(c.kind==='cursed'){makeEnemy('mimic',c.x,c.y);toast(_T('앗, 상자가 입을 쩍 벌렸어! 미믹이야!'),2600);return;}
   const gold=c.kind==='gold'||c.kind==='legend',sc=1+S.day*.1,m=gold?2.5:c.kind==='rare'?1.6:1,lines=[];
   const add=(k,n)=>{n=Math.round(n);if(n<=0)return;S[RK[k]]+=n;lines.push(RN[k]+' +'+n);};
@@ -361,7 +361,7 @@ function bagAct(act,arg){setTimeout(renderAbil,0);
     const i=+arg,id=S.inv[i];if(id==null)return;const sl=ITEMS[id].slot;
     const key=sl==='acc'?(!S.eq.acc1?'acc1':!S.eq.acc2?'acc2':'acc1'):sl;
     const old=S.eq[key];S.inv.splice(i,1);if(old)S.inv.push(old);S.eq[key]=id;bagSel='slot:'+key;
-  }else if(act==='unequip'){
+  }else if(act==='unequip'){sfx('close');
     const id=S.eq[arg];if(id){S.inv.push(id);S.eq[arg]=null;S.p.hp=Math.min(S.p.hp,pMax());bagSel='inv:'+(S.inv.length-1);}
   }else if(act==='tool'){
     const nx=TOOLS_EQ[arg].tiers[S.tools[arg]+1];if(!nx||!afford(nx.r)||(nx.forge&&!nearForge()))return;
@@ -374,13 +374,13 @@ function bagAct(act,arg){setTimeout(renderAbil,0);
     toast(e.n+_T(' 완성')+(key?_T(' · 바로 장착했다'):_T(' · 보관함에 넣었다')),2200);
   }else if(act==='cook'){
     const r=RECIPES.find(x=>x.id===arg);if(!r||!nearFire()||!haveItems(r.need))return;
-    if(Math.random()>=dblChance('cook'))for(const k in r.need)addAmt(k,-r.need[k]);else toast(_T('손이 익었는지 재료를 아꼈어!'),1400);S.items['d_'+r.id]=(S.items['d_'+r.id]||0)+1;skXp('cook',10);if(Math.random()<skBonus('cook'))S.items['d_'+r.id]++;
+    sfx('sizzle');if(Math.random()>=dblChance('cook'))for(const k in r.need)addAmt(k,-r.need[k]);else toast(_T('손이 익었는지 재료를 아꼈어!'),1400);S.items['d_'+r.id]=(S.items['d_'+r.id]||0)+1;skXp('cook',10);if(Math.random()<skBonus('cook'))S.items['d_'+r.id]++;
   }else if(act==='seedsel'){S.seedSel=arg;toast(ITEM_NAME[arg]+_T('(으)로 심을게요'),1400);
   }else if(act==='eat'){const r=RECIPES.find(x=>x.id===arg);if(r)eat(r);return;}
   renderBag();
 }
 function eat(r){
-  const it=S.items,p=S.p;if(r.id==='bomb'){closeBag&&!$('ovBag').hidden&&closeBag();throwBomb();return;}if(!(it['d_'+r.id]>0))return;it['d_'+r.id]--;
+  const it=S.items,p=S.p;if(r.id!=='bomb')sfx('eat');if(r.id==='bomb'){closeBag&&!$('ovBag').hidden&&closeBag();throwBomb();return;}if(!(it['d_'+r.id]>0))return;it['d_'+r.id]--;
   if(r.hp!=null){p.hp=Math.min(pMax(),p.hp+r.hp);if(r.buff)S.buffs[r.buff]=1;}
   else if(r.id==='grill')p.hp=Math.min(pMax(),p.hp+40);
   else if(r.id==='potion')p.hp=Math.min(pMax(),p.hp+60);

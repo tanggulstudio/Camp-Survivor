@@ -102,7 +102,7 @@ function save(){
   try{localStorage.setItem(SAVE_KEY,JSON.stringify(buildSave()));}catch(_){}
 }
 // Village photo: the current view (no HUD) with a small caption, shared on phones or saved as a PNG.
-async function villagePhoto(){if(!running||!S)return;const src=$('cv');const w=src.width,h=src.height,u=Math.max(1,Math.min(w,h)/420);
+async function villagePhoto(){if(!running||!S)return;sfx('shutter');const src=$('cv');const w=src.width,h=src.height,u=Math.max(1,Math.min(w,h)/420);
   const title='🔥 '+_L('캠프 서바이버','Camp Survivor')+' · '+_L(S.day+'일째',('Day '+S.day))+(S.pname?' · '+S.pname:''),url=/^https?:$/.test(location.protocol)?location.host+location.pathname.replace(/index\.html$/,''):'';
   const fs=Math.round(17*u),fs2=Math.round(12*u),pad=Math.round(14*u),mc=document.createElement('canvas').getContext('2d');
   mc.font='700 '+fs+'px "Gowun Dodum",sans-serif';const tw=mc.measureText(title).width;mc.font=fs2+'px "Gowun Dodum",sans-serif';const uw=mc.measureText(url).width;
@@ -117,12 +117,16 @@ async function villagePhoto(){if(!running||!S)return;const src=$('cv');const w=s
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1500);toast(_L('마을 사진을 저장했어요','Saved a photo of your camp'),2400);}
 // ---- small UI juice helpers
 function hudPulse(cls){const el=document.querySelector('.card-hud.'+cls);if(!el)return;el.classList.remove('pulse');void el.offsetWidth;el.classList.add('pulse');}
-function emberFade(){const g=$('game');if(!g)return;let d=$('emberFx');if(!d){d=document.createElement('div');d.id='emberFx';d.innerHTML='<span>'+_L('불씨가 다시 타오릅니다','An ember flares back to life')+'</span>';g.appendChild(d);}d.classList.remove('on');void d.offsetWidth;d.classList.add('on');}
+function emberFade(){const g=$('game');if(!g)return;sfx('ember');let d=$('emberFx');if(!d){d=document.createElement('div');d.id='emberFx';d.innerHTML='<span>'+_L('불씨가 다시 타오릅니다','An ember flares back to life')+'</span>';g.appendChild(d);}d.classList.remove('on');void d.offsetWidth;d.classList.add('on');}
 // resource counters pop when they go up
 {const prev={};setInterval(()=>{if(!running)return;for(const b of document.querySelectorAll('.res b[id]')){const v=+b.textContent||0,o=prev[b.id];prev[b.id]=v;if(o!=null&&v>o){const it=b.parentElement;it.classList.remove('bump');void it.offsetWidth;it.classList.add('bump');}}},150);}
 // if the display font isn't available (fonts not allowed), use a heavy system weight so titles don't look thin
 {const chk=()=>{let ok=false;try{document.fonts.forEach(f=>{if(/Black Han Sans/.test(f.family)&&f.status==='loaded')ok=true;});}catch(_){}document.body.classList.toggle('nodisp',!ok);};
   chk();try{document.fonts.addEventListener('loadingdone',chk);document.fonts.ready.then(chk);}catch(_){}setTimeout(chk,3000);}
+// UI sounds: taps on buttons, tabs, windows opening/closing
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('button');if(!b||b.disabled||b.closest('#abil,.abil,.ab,.joy,#touch'))return;
+  if(b.matches('.xbtn'))sfx('close');else if(b.matches('.tab,.chip,.ctab'))sfx('tab');else if(b.matches('[data-act^="equip"]'))sfx('equip');else sfx('tap');},true);
+{const seen=new WeakMap();new MutationObserver(ms=>{for(const m of ms){const el=m.target;if(!el.classList||!el.classList.contains('overlay'))continue;const was=seen.get(el),now=!el.hidden;if(was===now)continue;seen.set(el,now);if(el.id==='ovStart'||el.id==='ovOver'||!running)continue;sfx(now?'open':'close');}}).observe(document.body,{subtree:true,attributes:true,attributeFilter:['hidden']});}
 function buildSave(){
   {
     const bl=[];forB((b,i)=>bl.push([i,b.t,Math.round(b.hp),b.max,+(b.g||0).toFixed(2),b.seeded?1:0,b.lv||1,b.crop||0]));
@@ -356,14 +360,14 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!
 /* ---------- loop ---------- */
 let last=performance.now();
 /* ---------- settings ---------- */
-const SET=(()=>{const d={ui:1,shake:1,dmg:1,vib:1,grid:1};try{const o=JSON.parse(localStorage.getItem('cs-set-v1')||'{}');return Object.assign(d,o);}catch(_){return d}})();
+const SET=(()=>{const d={ui:1,shake:1,dmg:1,vib:1,grid:1,amb:1,step:1};try{const o=JSON.parse(localStorage.getItem('cs-set-v1')||'{}');return Object.assign(d,o);}catch(_){return d}})();
 function saveSet(){try{localStorage.setItem('cs-set-v1',JSON.stringify(SET));}catch(_){}}
 function applySet(){document.documentElement.style.setProperty('--uiz',String(SET.ui||1));}
 function isFs(){return !!document.fullscreenElement}
 function toggleFs(){try{if(window.desktop&&window.desktop.toggleFullscreen){window.desktop.toggleFullscreen();setTimeout(renderSet,300);return;}if(isFs())document.exitFullscreen();else document.documentElement.requestFullscreen().catch(()=>toast(_L('이 화면에서는 전체 화면을 쓸 수 없어요','Fullscreen is not available here'),1800));}catch(_){}setTimeout(renderSet,300);}
 function renderSet(){const b=$('setBox');if(!b)return;const on=v=>v?_L('켜짐','On'):_L('꺼짐','Off'),U=[[1,_L('보통','Normal')],[1.15,_L('크게','Large')],[1.3,_L('아주 크게','Huge')]];
   b.innerHTML='<h3>'+_L('설정','Settings')+'</h3><div class="setg"><button type="button" class="chip" data-set="grid">'+_L('건설 칸 표시','Build grid')+': '+on(SET.grid!==0)+'</button></div><div class="setg" role="group" aria-label="'+_L('글자·화면 크기','Text & UI size')+'"><span>'+_L('글자·화면 크기','Text & UI size')+'</span>'+U.map(([v,n])=>'<button type="button" class="chip'+(SET.ui===v?' on':'')+'" data-ui="'+v+'">'+n+'</button>').join('')+'</div>'+
-  '<div class="setg"><button type="button" class="chip" data-set="shake">'+_L('화면 흔들림','Screen shake')+': '+on(SET.shake)+'</button><button type="button" class="chip" data-set="dmg">'+_L('피해 숫자','Damage numbers')+': '+on(SET.dmg)+'</button><button type="button" class="chip" data-set="vib">'+_L('패드 진동','Rumble')+': '+on(SET.vib)+'</button><button type="button" class="chip" data-set="fs">'+_L('전체 화면','Fullscreen')+'</button></div>'+(running&&S&&S.peaceOK&&!NC()?'<div class="setg"><button type="button" class="chip'+(S.peace?' on':'')+'" data-set="peace">🕊 '+_L('평화 모드','Peace Mode')+': '+on(S.peace)+'</button><span style="min-width:0">'+_L('밤 습격과 보스가 오지 않고 화톳불이 꺼지지 않아요. 대신 아침 불씨는 모이지 않아요','No night raids or bosses and the bonfire cannot go out. Morning embers pause while it is on')+'</span></div>':running&&S&&!S.peaceOK?'<p class="dim2">🕊 '+_L('평화 모드는 100일째 아침부터 켤 수 있어요','Peace Mode unlocks on the morning of day 100')+'</p>':'');}
+  '<div class="setg"><button type="button" class="chip" data-set="shake">'+_L('화면 흔들림','Screen shake')+': '+on(SET.shake)+'</button><button type="button" class="chip" data-set="dmg">'+_L('피해 숫자','Damage numbers')+': '+on(SET.dmg)+'</button><button type="button" class="chip" data-set="vib">'+_L('패드 진동','Rumble')+': '+on(SET.vib)+'</button><button type="button" class="chip" data-set="amb">'+_L('주변 소리','Ambience')+': '+on(SET.amb)+'</button><button type="button" class="chip" data-set="step">'+_L('발소리','Footsteps')+': '+on(SET.step)+'</button><button type="button" class="chip" data-set="fs">'+_L('전체 화면','Fullscreen')+'</button></div>'+(running&&S&&S.peaceOK&&!NC()?'<div class="setg"><button type="button" class="chip'+(S.peace?' on':'')+'" data-set="peace">🕊 '+_L('평화 모드','Peace Mode')+': '+on(S.peace)+'</button><span style="min-width:0">'+_L('밤 습격과 보스가 오지 않고 화톳불이 꺼지지 않아요. 대신 아침 불씨는 모이지 않아요','No night raids or bosses and the bonfire cannot go out. Morning embers pause while it is on')+'</span></div>':running&&S&&!S.peaceOK?'<p class="dim2">🕊 '+_L('평화 모드는 100일째 아침부터 켤 수 있어요','Peace Mode unlocks on the morning of day 100')+'</p>':'');}
 document.addEventListener('click',e=>{const u=e.target.closest&&e.target.closest('[data-ui]');if(u){SET.ui=+u.dataset.ui;saveSet();applySet();renderSet();const n=$('setBox').querySelector('[data-ui="'+u.dataset.ui+'"]');if(n)n.focus();return;}
   const t=e.target.closest&&e.target.closest('[data-set]');if(!t)return;const k=t.dataset.set;if(k==='fs'){toggleFs();return;}if(k==='peace'){if(!S||!S.peaceOK)return;S.peace=!S.peace;if(S.peace&&S.phase==='night'){S.spawnQ=[];S.surge=null;for(const e of S.enemies)if(!e.wild&&!e.lair)burst(e.x,e.y,'#ffe08a',8);S.enemies=S.enemies.filter(e=>e.wild||e.lair);}renderSet();const n2=$('setBox').querySelector('[data-set="peace"]');if(n2)n2.focus();return;}SET[k]=SET[k]?0:1;saveSet();renderSet();const n=$('setBox').querySelector('[data-set="'+k+'"]');if(n)n.focus();});
 applySet();

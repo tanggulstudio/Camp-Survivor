@@ -492,7 +492,7 @@ const SEED_OF={};
 for(const c in CROPS)SEED_OF[CROPS[c].seed]=c;
 function seedKeys(){return Object.keys(SEED_OF)}
 function pickSeed(){const pref=S.seedSel&&SEED_OF[S.seedSel]?S.seedSel:null;if(pref&&(S.items[pref]||0)>0)return pref;for(const k of seedKeys())if((S.items[k]||0)>0)return k;return null}
-function plantField(i,who,want){const b=S.bld[i];if(!b||b.seeded)return false;const k=want&&(S.items[want]||0)>0?want:pickSeed();if(!k)return false;S.items[k]--;b.seeded=true;b.g=0;b.crop=SEED_OF[k];const [x,y]=cCenter(i);if(who==='p'||Math.hypot(x-S.p.x,y-S.p.y)<6*T)float(x,y-10,CROPS[b.crop].n+_T(' 심기'),'#bfe3a8');return true}
+function plantField(i,who,want){const b=S.bld[i];if(!b||b.seeded)return false;const k=want&&(S.items[want]||0)>0?want:pickSeed();if(!k)return false;S.items[k]--;if(who==='p')sfx('plant');b.seeded=true;b.g=0;b.crop=SEED_OF[k];const [x,y]=cCenter(i);if(who==='p'||Math.hypot(x-S.p.x,y-S.p.y)<6*T)float(x,y-10,CROPS[b.crop].n+_T(' 심기'),'#bfe3a8');return true}
 const RECIPES=[
   {id:'grill',n:_T('생선구이'),need:{fish:1},d:_T('체력 40 회복')},
   {id:'pie',n:_T('베리 파이'),need:{berry:3},d:_T('다음 아침까지 체력이 계속 회복된다')},
