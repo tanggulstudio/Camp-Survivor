@@ -68,7 +68,7 @@ body.bopen .bossbar{bottom:calc(196px + env(safe-area-inset-bottom,0px))}
 .hbtn:active{transform:translateY(1px)}
 .hbtn.warn{border-color:rgba(255,160,71,.5);color:#ffd2a3}
 
-#toast{position:absolute;left:50%;top:calc(150px + env(safe-area-inset-top,0px));transform:translateX(-50%);background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:9px 16px;font-size:14px;line-height:1.45;text-align:center;width:max-content;max-width:min(520px,calc(100% - 32px));pointer-events:none;transition:opacity .25s;opacity:0}
+#toast{position:absolute;left:50%;top:calc(var(--hudb,150px) + 8px);transform:translateX(-50%);background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:9px 16px;font-size:14px;line-height:1.45;text-align:center;width:max-content;max-width:min(520px,calc(100% - 32px));pointer-events:none;transition:opacity .25s;opacity:0}
 #toast.on{opacity:1}
 .abil{position:absolute;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(98px + env(safe-area-inset-bottom,0px));display:flex;gap:8px}
 .ab{position:relative;width:52px;height:52px;border-radius:12px;background:var(--panel);border:1px solid rgba(255,210,122,.45);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;overflow:hidden}
@@ -244,7 +244,7 @@ body.bopen .bossbar{bottom:calc(196px + env(safe-area-inset-bottom,0px))}
 .tut .gl small{color:#c8c4b4;font-size:11.5px;line-height:1.4}
 .gp{display:block;height:4px;border-radius:2px;background:rgba(255,255,255,.12);overflow:hidden}
 .gp i{display:block;height:100%;background:linear-gradient(90deg,#ffa047,#ffd27a)}
-.disc{position:absolute;left:50%;top:calc(110px + env(safe-area-inset-top,0px));transform:translateX(-50%);width:min(420px,calc(100% - 32px));background:linear-gradient(180deg,#2a2414,#16200f);border:2px solid #ffd27a;border-radius:14px;padding:14px 16px;display:flex;gap:12px;align-items:flex-start;box-shadow:0 0 40px rgba(255,200,100,.35);pointer-events:auto;z-index:20}
+.disc{position:absolute;left:50%;top:calc(var(--hudb,110px) + 8px);transform:translateX(-50%);width:min(420px,calc(100% - 32px));background:linear-gradient(180deg,#2a2414,#16200f);border:2px solid #ffd27a;border-radius:14px;padding:14px 16px;display:flex;gap:12px;align-items:flex-start;box-shadow:0 0 40px rgba(255,200,100,.35);pointer-events:auto;z-index:20}
 .regcard{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;z-index:22;width:min(560px,calc(100% - 32px));padding:22px 18px;background:radial-gradient(ellipse at center,rgba(10,14,10,.88),rgba(10,14,10,0) 72%)}
 .regcard small{display:block;letter-spacing:.3em;color:#ffd27a;font-size:13px}
 .regcard b{display:block;font-family:var(--f-disp);font-weight:400;font-size:clamp(34px,8vw,56px);color:#fff4d8;text-shadow:0 3px 18px rgba(0,0,0,.8),0 0 30px rgba(255,190,90,.35)}
@@ -637,6 +637,21 @@ button,.tool,.isl,.slot,.trade,.cardb{-webkit-tap-highlight-color:transparent}
 .cdd p{margin:5px 0 0;font-size:13px;line-height:1.55;color:#5d6654}
 .cdtag{display:inline-block;padding:2px 7px;border-radius:99px;background:#e7dcc2;color:#79603d;font-weight:700}
 @media(max-width:420px){.cdg{grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:7px}.cdc{padding:7px 3px}.cdc .cdi{width:46px;height:46px}.cdd{gap:9px;padding:11px}.cdd .cdi{width:54px;height:54px}}
+
+/* Phone HUD: smaller notices, and a toggle that folds the top bar down to the essentials. */
+.hudtog{display:none}
+@media (max-width:580px){
+  #toast{font-size:12.5px;padding:6px 12px;max-width:calc(100% - 24px)}
+  .disc{padding:9px 11px;gap:9px;font-size:12.5px}.disc p,.disc ul{font-size:12px;margin:2px 0 0}
+  .hudtog{display:block;position:absolute;left:max(8px,env(safe-area-inset-left,0px));top:calc(var(--hudb,200px) + 2px);z-index:6;pointer-events:auto;width:34px;height:22px;padding:0;border-radius:0 0 10px 10px;border:1px solid var(--line);border-top:0;background:var(--panel);color:var(--dim);font-size:13px;line-height:20px}
+  body.hudmini .ev,body.hudmini .stats .lb,body.hudmini .mini{display:none}
+  body.hudmini .stats{grid-template-columns:1fr;gap:3px;padding:5px 7px}
+  body.hudmini .stats .bar{height:5px}
+  body.hudmini .res{max-height:calc(1.5em + 14px);overflow:hidden}
+  body.hudmini .btns{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+  body.hudmini .btns .hbtn{font-size:10.5px;padding:4px 2px;white-space:normal;line-height:1.15;word-break:keep-all}
+  body.hudmini .hudtog{transform:rotate(180deg);border-radius:10px 10px 0 0;border-top:1px solid var(--line);border-bottom:0}
+}
 </style>
 </head>
 <body>
@@ -651,6 +666,7 @@ button,.tool,.isl,.slot,.trade,.cardb{-webkit-tap-highlight-color:transparent}
         <div class="ev calm" id="ev">평온한 날</div>
         <div class="bf" id="bf" hidden></div>
       </div>
+      <button type="button" class="hudtog" id="hudTog" aria-label="상단 정보 접기" aria-pressed="false">▴</button>
       <div class="card-hud stats">
         <span class="lb" id="lvl">Lv 1</span><div class="bar"><i id="xpFill"></i></div>
         <span class="lb">체력</span><div class="bar"><i id="hpFill"></i></div>
@@ -971,7 +987,7 @@ const B={
   incub:{n:_T('부화기'),cost:{w:16,s:8,u:4},hp:120,solid:1,flow:10},
   mine:{n:_T('광산'),cost:{w:12,s:10},hp:140,solid:1,flow:10,forge:1,prod:{res:3,every:8,out:'i'}},
 };
-const RK={m:'mithril',b:'obsidian',g:'gold',u:'copper',a:'goldore',o:'cobalt',w:'wood',s:'stone',i:'iron',c:'crystal',e:'emerald',d:'diamond'},RN={token:_T('탑 증표'),m:_T('미스릴'),b:_T('흑요석'),g:_T('금화'),u:_T('구리'),a:_T('금'),o:_T('코발트'),w:_T('나무'),s:_T('돌'),i:_T('철'),c:_T('마력석'),e:_T('에메랄드'),d:_T('다이아몬드')},RC={m:'#9fd8e8',b:'#c080ff',g:'#ffd23a',u:'#f0a070',a:'#ffe070',o:'#8aa8ff',w:'#e0b07a',s:'#d4dade',i:'#e09a6a',c:'#c9a6ff',e:'#7fe8aa',d:'#bff2ff'};
+const RK={m:'mithril',b:'obsidian',g:'gold',u:'copper',a:'goldore',o:'cobalt',w:'wood',s:'stone',i:'iron',c:'crystal',e:'emerald',d:'diamond'},RN={token:_T('탑 증표'),m:_T('미스릴'),b:_T('흑요석'),g:_T('금화'),u:_T('구리'),a:_T('금'),o:_T('코발트'),w:_T('나무'),s:_T('돌'),i:_T('철'),c:_T('마력석'),e:_T('에메랄드'),d:_T('다이아몬드')},RC={m:'#9fd8e8',b:'#c080ff',g:'#ffd23a',u:'#f0a070',a:'#ffe070',o:'#8aa8ff',w:'#e0b07a',s:'#d4dade',i:'#c9d6de',c:'#c9a6ff',e:'#7fe8aa',d:'#bff2ff'};
 const RES_HP=[0,5,7,9,3,4,4,200,200,15,18,8,12,14,200,20,200,24,250,1];
 const TOOLS=['wall','swall','iwall','door','tower','ballista','magic','venom','prism','spike','torch','fire','lumber','quarry','mine','drill1','drill2','drill3','collector','repairer','forge','field','hut','incub','scarecrow','catapult','healfire','flowerbed','pot','lamp','bench','fence','flag','statue','fountain','path','tent','mosaic','rug','rune','lawn','crystal','hedge','move','repair','upgrade','evolve','demolish'];
 const DRILL_PRI={2:1,11:2,3:3,12:4,6:5,13:6,9:7,10:8,15:9,17:10};
@@ -5309,8 +5325,24 @@ function drawRock(i){
     const crystal=(cx,cy,w,hh,col,hi)=>{ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(cx-w*.5,cy+hh*.45);ctx.lineTo(cx-w*.22,cy-hh*.48);ctx.lineTo(cx+w*.12,cy-hh*.62);ctx.lineTo(cx+w*.5,cy+hh*.45);ctx.closePath();ctx.fill();ctx.fillStyle=hi;ctx.beginPath();ctx.moveTo(cx-w*.22,cy-hh*.48);ctx.lineTo(cx+w*.12,cy-hh*.62);ctx.lineTo(cx+w*.08,cy+hh*.35);ctx.closePath();ctx.fill();};
     const facets=rv===3?['#7d8a94','#eef4f7']:rv===9?['#2f9a62','#b4f5c2']:rv===11?['#d0642a','#ffc08a']:rv===12?['#c8941e','#fff0a8']:rv===13?['#3f62b8','#cfe2ff']:rv===15?['#7a46b0','#e2b8ff']:['#4f9ac0','#effcff'];
     const big=(cx,cy,w,hh)=>{ctx.strokeStyle='rgba(20,16,20,.55)';ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(cx-w*.5,cy+hh*.45);ctx.lineTo(cx-w*.22,cy-hh*.48);ctx.lineTo(cx+w*.12,cy-hh*.62);ctx.lineTo(cx+w*.5,cy+hh*.45);ctx.closePath();ctx.stroke();crystal(cx,cy,w,hh,facets[0],facets[1]);};
-    big(x-6,y+1,7,12);big(x+1,y-4,8.5,17);big(x+7.5,y+2,6,10);
-    if(rv===3){ctx.fillStyle='rgba(176,92,52,.55)';ctx.beginPath();ctx.ellipse(x-6,y+4,1.6,1,0,0,7);ctx.ellipse(x+8,y+5,1.4,.9,0,0,7);ctx.fill();}
+    // Each ore has its own shape as well as colour, so it reads without relying on colour alone.
+    const [fd,fl]=facets,ol=(w)=>{ctx.strokeStyle='rgba(20,16,20,.6)';ctx.lineWidth=w||1.1;ctx.stroke();};
+    if(rv===11){// copper: thick veins with a couple of nuggets
+      ctx.lineCap='round';for(const [ax,ay,bx,by,cx2,cy2] of [[-9,-3,-2,-8,4,-3],[-7,4,0,0,8,3]]){ctx.strokeStyle='rgba(20,16,20,.55)';ctx.lineWidth=4.4;ctx.beginPath();ctx.moveTo(x+ax,y+ay);ctx.quadraticCurveTo(x+bx,y+by,x+cx2,y+cy2);ctx.stroke();ctx.strokeStyle=fd;ctx.lineWidth=3;ctx.stroke();ctx.strokeStyle=fl;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x+ax+.5,y+ay-.8);ctx.quadraticCurveTo(x+bx,y+by-1,x+cx2,y+cy2-.8);ctx.stroke();}ctx.lineCap='butt';
+      for(const [nx,ny,nr] of [[x+5,y-6,3.2],[x-4,y+6,2.6]]){ctx.beginPath();ctx.arc(nx,ny,nr,0,7);ctx.fillStyle=fd;ctx.fill();ol();ctx.fillStyle=fl;ctx.beginPath();ctx.arc(nx-.9,ny-.9,nr*.45,0,7);ctx.fill();}}
+    else if(rv===3){// iron: blocky cubes
+      for(const [cx2,cy2,sz] of [[x-5,y+1,6],[x+3,y-5,7],[x+6,y+3,5]]){ctx.beginPath();ctx.moveTo(cx2-sz/2,cy2-sz*.25);ctx.lineTo(cx2,cy2-sz*.55);ctx.lineTo(cx2+sz/2,cy2-sz*.25);ctx.lineTo(cx2+sz/2,cy2+sz*.45);ctx.lineTo(cx2,cy2+sz*.7);ctx.lineTo(cx2-sz/2,cy2+sz*.45);ctx.closePath();ctx.fillStyle=fd;ctx.fill();ol();
+        ctx.fillStyle=fl;ctx.beginPath();ctx.moveTo(cx2-sz/2,cy2-sz*.25);ctx.lineTo(cx2,cy2-sz*.55);ctx.lineTo(cx2+sz/2,cy2-sz*.25);ctx.lineTo(cx2,cy2+.05*sz);ctx.closePath();ctx.fill();ctx.fillStyle='rgba(176,92,52,.6)';ctx.beginPath();ctx.ellipse(cx2+sz*.22,cy2+sz*.3,.9,.6,0,0,7);ctx.fill();}}
+    else if(rv===12){// gold: fat round nuggets
+      for(const [nx,ny,nr] of [[x-4,y+1,4],[x+3,y-4,4.6],[x+5,y+4,3.2]]){ctx.beginPath();ctx.ellipse(nx,ny,nr*1.1,nr*.9,.3,0,7);ctx.fillStyle=fd;ctx.fill();ol();ctx.fillStyle=fl;ctx.beginPath();ctx.ellipse(nx-nr*.3,ny-nr*.3,nr*.5,nr*.35,.3,0,7);ctx.fill();}}
+    else if(rv===9){// emerald: hexagonal prisms
+      for(const [cx2,cy2,w2,h2] of [[x-5,y+2,5,10],[x+1,y-3,6,15],[x+7,y+2,4.4,9]]){ctx.beginPath();ctx.moveTo(cx2-w2/2,cy2+h2*.45);ctx.lineTo(cx2-w2/2,cy2-h2*.3);ctx.lineTo(cx2,cy2-h2*.55);ctx.lineTo(cx2+w2/2,cy2-h2*.3);ctx.lineTo(cx2+w2/2,cy2+h2*.45);ctx.closePath();ctx.fillStyle=fd;ctx.fill();ol();ctx.fillStyle=fl;ctx.fillRect(cx2-w2/2+.6,cy2-h2*.28,w2*.32,h2*.68);}}
+    else if(rv===15){// obsidian: broad glassy blades
+      for(const [cx2,cy2,w2,h2,t2] of [[x-4,y+2,9,10,-.35],[x+4,y-1,8,13,.25]]){ctx.save();ctx.translate(cx2,cy2);ctx.rotate(t2);ctx.beginPath();ctx.moveTo(-w2/2,h2*.4);ctx.lineTo(-w2*.1,-h2*.6);ctx.lineTo(w2/2,h2*.4);ctx.closePath();ctx.fillStyle=fd;ctx.fill();ol();ctx.fillStyle=fl;ctx.beginPath();ctx.moveTo(-w2*.1,-h2*.6);ctx.lineTo(-w2*.32,h2*.3);ctx.lineTo(-w2*.05,h2*.3);ctx.closePath();ctx.fill();ctx.restore();}}
+    else if(rv===17){// mithril: star-like crystal
+      big(x,y-2,7,15);ctx.save();ctx.translate(x+5,y+3);ctx.fillStyle=fl;ctx.beginPath();for(let k=0;k<8;k++){const rr2=k%2?1.6:4.6,an=k*Math.PI/4;ctx[k?'lineTo':'moveTo'](Math.cos(an)*rr2,Math.sin(an)*rr2);}ctx.closePath();ctx.fill();ol(.8);ctx.restore();}
+    else{// cobalt: tall thin needles
+      big(x-5,y+1,4.6,14);big(x+.5,y-4,5.2,19);big(x+5.5,y+1,4,12);}
     {const t=(performance.now()/1000+hash(i*41)*7)%3.2;if(t<.5){const a2=Math.sin(t/.5*Math.PI),sx=x+1.6,sy=y-11;ctx.strokeStyle='rgba(255,255,255,'+a2+')';ctx.lineWidth=1.1;ctx.beginPath();ctx.moveTo(sx-3.4*a2,sy);ctx.lineTo(sx+3.4*a2,sy);ctx.moveTo(sx,sy-3.4*a2);ctx.lineTo(sx,sy+3.4*a2);ctx.stroke();}}
   }
   else{ctx.fillStyle='#a3abae';ctx.beginPath();ctx.ellipse(x-3-h*2,y-4,6,4,-.4,0,Math.PI*2);ctx.fill();}
@@ -6013,10 +6045,12 @@ function drawHero(now){
 function drawPlayer(now){
   const p=S.p,bob=p.moving?Math.sin(now/80)*1.2:0;
   ctx.fillStyle='rgba(0,0,0,.3)';ctx.beginPath();ctx.ellipse(p.x,p.y+12,10,3.6,0,0,Math.PI*2);ctx.fill();
-  const behind=Math.sin(p.face)<-.3;if(!behind)drawHero(now);
+  // Weapon rests across the back unless it is swinging, gathering, fishing or digging.
+  const rest=!(p.atkT>0)&&!(p.gI>=0)&&!(p.fishW>=0)&&!(p.digT>0)&&!(p.bite>0),upF=Math.sin(p.face)<-.55;
+  const behind=rest?!upF:Math.sin(p.face)<-.3;if(!behind)drawHero(now);
   // tool / weapon
   const swing=p.atkT>0?(1-p.atkT/.18)*1.6-.8:(p.gI>=0?Math.sin(now/90)*.6:0);
-  ctx.save();ctx.translate(p.x+Math.cos(p.face)*3,p.y-2+bob);ctx.rotate(p.face+swing);
+  ctx.save();if(rest){const dr=p.dir||1;ctx.translate(p.x-dr*2.5,p.y-12+bob);ctx.rotate(dr>0?2.05:Math.PI-2.05);ctx.scale(.82,.82);}else{ctx.translate(p.x+Math.cos(p.face)*3,p.y-2+bob);ctx.rotate(p.face+swing);}
   const wc=weaponCls();
   if(wc==='bow'){ctx.strokeStyle='#8a5a34';ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(8,0,11,-1.25,1.25);ctx.stroke();ctx.strokeStyle='#e8e4d0';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(8+Math.cos(-1.25)*11,Math.sin(-1.25)*11);ctx.lineTo(p.atkT>0?6:10,0);ctx.lineTo(8+Math.cos(1.25)*11,Math.sin(1.25)*11);ctx.stroke();}
   else if(wc==='star'){ctx.fillStyle='#d5dbde';ctx.beginPath();for(let k=0;k<8;k++){const rr3=k%2?1.6:5.5,an=k/8*Math.PI*2+now/200;k?ctx.lineTo(16+Math.cos(an)*rr3,Math.sin(an)*rr3):ctx.moveTo(16+rr3,0);}ctx.closePath();ctx.fill();}
@@ -6563,6 +6597,11 @@ document.addEventListener('click',e=>{if(e.target.closest('button'))sfx('ui');})
 $('consentEss').addEventListener('click',()=>setConsent(false));
 document.querySelector('.card-hud.res').addEventListener('click',e=>{const sp=e.target.closest('span[title]');if(!sp||!S)return;const ic=sp.querySelector('[data-icon]');const k=ic&&ic.dataset.icon;if(!k||k==='g'){toast(_T('금화 · 몬스터를 잡거나 재료를 팔면 모여요. 상점에서 쓰는 돈이에요'),3200);return;}toast(resInfo(k)+(MAT_DESC[k]?' — '+MAT_DESC[k]:''),4200);});
 $('disc').addEventListener('click',()=>{$('disc').hidden=true;});
+{const hud=document.querySelector('.hud'),setB=()=>{const r=hud.getBoundingClientRect(),g=$('game').getBoundingClientRect();document.documentElement.style.setProperty('--hudb',Math.round(r.bottom-g.top)+'px');};
+  try{new ResizeObserver(setB).observe(hud);}catch(_){addEventListener('resize',setB);}setB();
+  const tg=$('hudTog'),apply=on=>{document.body.classList.toggle('hudmini',on);tg.setAttribute('aria-pressed',on?'true':'false');tg.setAttribute('aria-label',on?_L('상단 정보 펼치기','Expand top bar'):_L('상단 정보 접기','Collapse top bar'));setTimeout(setB,0);};
+  let mini=false;try{mini=localStorage.getItem('cs-hudmini')==='1';}catch(_){}apply(mini);
+  tg.addEventListener('click',()=>{mini=!mini;try{localStorage.setItem('cs-hudmini',mini?'1':'0');}catch(_){}apply(mini);});}
 $('tutSkip').addEventListener('click',()=>{if(tutStep()){S.tut=TUT.length;renderTut();toast(_T('튜토리얼을 건너뛰었어요. 궁금한 건 일시정지 → 게임 방법에서 볼 수 있어요'),3000);}else{S.goalOff=1;renderTut();toast(_T('목표 안내를 숨겼어요. G키로 다시 켤 수 있어요'),2400);}});
 $('pnameSave').addEventListener('click',()=>{const v=($('pnameP').value||'').trim().slice(0,8);if(!v){toast(_T('이름을 한 글자 이상 적어 주세요'),1400);return;}S.pname=v;save();toast(_T('이제부터 ')+v+_T('(이)라고 부를게요!'),2000);});
 $('btnMeta').addEventListener('click',openMeta);$('metaX').addEventListener('click',closeMeta);SHOPS_INIT();
