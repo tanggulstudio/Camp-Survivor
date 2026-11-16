@@ -129,7 +129,12 @@ function resNear(i,type,r){const x0=i%W,y0=(i/W)|0;for(let y=y0-r;y<=y0+r;y++)fo
 function float(x,y,txt,col){if(!SET.dmg&&/^-?\d/.test(String(txt)))return;S.fx.push({k:'t',x,y,txt,col,t:0,life:1})}
 function burst(x,y,col,n){for(let k=0;k<n;k++){const a=Math.random()*Math.PI*2,v=30+Math.random()*90;S.fx.push({k:'p',x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,col,t:0,life:.4+Math.random()*.4});}}
 let toastTimer=0;
-function toast(msg,ms){const el=document.getElementById('toast');try{const so=document.getElementById('ovShop'),sm=document.getElementById('shopMsg');if(so&&sm&&!so.hidden){sm.textContent='✓ '+msg;sm.hidden=false;sm.classList.remove('pop');void sm.offsetWidth;sm.classList.add('pop');}}catch(_){}el.textContent=msg;el.classList.add('on');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('on'),ms||2400);}
+function toast(msg,ms){const el=document.getElementById('toast');try{const so=document.getElementById('ovShop'),sm=document.getElementById('shopMsg');if(so&&sm&&!so.hidden){sm.textContent='✓ '+msg;sm.hidden=false;sm.classList.remove('pop');void sm.offsetWidth;sm.classList.add('pop');}}catch(_){}if(el.classList.contains('on')&&performance.now()-toastAt<1500){if(el.textContent!==msg&&!toastQ.some(q=>q[0]===msg)){toastQ.push([msg,ms]);if(toastQ.length>3)toastQ.shift();clearTimeout(toastTimer);toastTimer=setTimeout(toastNext,Math.max(0,toastAt+1500-performance.now()));}return;}
+  toastShow(msg,ms);}
+// Notices that arrive in a burst queue up (each stays at least 1.5s, at most 3 waiting) instead of overwriting each other.
+let toastQ=[],toastAt=0;
+function toastShow(msg,ms){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('on');toastAt=performance.now();clearTimeout(toastTimer);toastTimer=setTimeout(toastNext,toastQ.length?1500:(ms||2400));}
+function toastNext(){const el=document.getElementById('toast');if(toastQ.length){const [m,t]=toastQ.shift();toastShow(m,t);}else el.classList.remove('on');}
 function freeCellNear(i0){
   const x0=i0%W,y0=(i0/W)|0;
   for(let r=1;r<8;r++)for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++){
