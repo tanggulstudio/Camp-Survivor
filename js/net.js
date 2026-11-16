@@ -296,7 +296,7 @@ function killEnemy(e){
 }
 function gainXp(n){n*=mutXp()*(1+.05*mlv('xp'))*(S.phase==='night'&&S.nightEv==='fog'?1.3:1);
   const p=S.p;p.xp+=n;petXp(n);
-  for(;;){const need=Math.round(8*Math.pow(p.lvl,1.5));if(p.xp<need)break;p.xp-=need;p.lvl++;sfx('level');p.max+=12;p.dmg+=2;p.hp=pMax();float(p.x,p.y-26,_T('레벨 업!'),'#9fd3ff');toast(_T('레벨 ')+p.lvl+_T(' — 체력과 공격력이 올랐다'));}
+  for(;;){const need=Math.round(8*Math.pow(p.lvl,1.5));if(p.xp<need)break;p.xp-=need;p.lvl++;sfx('level');p.max+=12;p.dmg+=2;p.hp=pMax();S.fx.push({k:'lvl',x:p.x,y:p.y,txt:_L('레벨 업! Lv '+p.lvl,'LEVEL UP! Lv '+p.lvl),t:0,life:1.6});burst(p.x,p.y-6,'#ffd27a',18);S.shake=Math.max(S.shake||0,3);hudPulse('stats');toast(_T('레벨 ')+p.lvl+_T(' — 체력과 공격력이 올랐다'));}
 }
 function hurtPlayer(d){
   if(S.p.remote){netTo(S.p.id,{hurt:d});return;}

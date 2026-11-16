@@ -703,6 +703,41 @@ body:has(.overlay:not([hidden])) .hudtog{display:none}
 body.goalmini .tut.goals small,body.goalmini .tut.goals .gl+.gl,body.goalmini .tut.goals #tutSkip{display:none}
 body.goalmini .tut.goals{padding:6px 10px;gap:2px}
 body.goalmini .tut.goals .gl b{font-size:12.5px}
+
+/* ---------- polish: motion and feedback (all off with reduced motion) ---------- */
+@keyframes ovIn{from{opacity:0}to{opacity:1}}
+@keyframes panIn{from{opacity:0;transform:translateY(12px) scale(.985)}to{opacity:1;transform:none}}
+@keyframes bump{0%{transform:scale(1)}35%{transform:scale(1.22)}100%{transform:scale(1)}}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,200,90,.65)}100%{box-shadow:0 0 0 14px rgba(255,200,90,0)}}
+@keyframes emberFx{0%{opacity:0}18%{opacity:1}70%{opacity:1}100%{opacity:0}}
+@keyframes emberTxt{0%{opacity:0;transform:translateY(8px)}30%{opacity:1;transform:none}75%{opacity:1}100%{opacity:0}}
+@keyframes toastIn{from{opacity:0;transform:translate(-50%,-6px)}to{opacity:1;transform:translate(-50%,0)}}
+@keyframes ember{0%{transform:translateY(0) scale(1);opacity:0}15%{opacity:.9}100%{transform:translateY(-120px) scale(.4);opacity:0}}
+.overlay:not([hidden]){animation:ovIn .18s ease-out}
+.overlay:not([hidden])>.panel{animation:panIn .24s cubic-bezier(.2,.9,.3,1.15)}
+.big,.hbtn,.chip,.tab,.diffb,.trade,.isl,.cdc,.xbtn,.linkbtn{transition:transform .09s ease,box-shadow .15s ease,background-color .15s ease,border-color .15s ease}
+.big:active,.hbtn:active,.chip:active,.tab:active,.diffb:active,.trade:not(:disabled):active,.isl:active,.cdc:active,.xbtn:active{transform:scale(.96)}
+@media (hover:hover){.big:hover,.hbtn:hover,.diffb:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(60,40,20,.12)}}
+#hpFill,#coreFill,#xpFill{transition:width .25s ease-out}
+.res .bump{animation:bump .32s ease-out}
+.card-hud.pulse{animation:pulse .7s ease-out}
+#toast.on{animation:toastIn .2s ease-out}
+#emberFx{position:absolute;inset:0;z-index:40;pointer-events:none;opacity:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 52%,rgba(255,150,60,.55),rgba(30,14,6,.92) 38%,rgba(8,6,4,.97) 75%)}
+#emberFx span{font-family:var(--f-disp);font-size:24px;color:#ffd27a;text-shadow:0 0 18px rgba(255,150,60,.8)}
+#emberFx.on{animation:emberFx 2.4s ease-in-out forwards}#emberFx.on span{animation:emberTxt 2.4s ease-in-out forwards}
+/* start screen: warmer title with a small fire and drifting embers */
+#ovStart .panel h1{background:linear-gradient(180deg,#5a3b22,#c0612c 120%);-webkit-background-clip:text;background-clip:text;color:transparent;letter-spacing:-.01em}
+#ovStart .panel h1 em{color:transparent}
+#ovStart .panel h1::before{content:'';display:block;width:46px;height:46px;margin-bottom:6px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cellipse cx='24' cy='42' rx='16' ry='4' fill='%23000' opacity='.15'/%3E%3Cpath d='M10 40l28-8M38 40L10 32' stroke='%236b4528' stroke-width='5' stroke-linecap='round'/%3E%3Cpath d='M24 4c4 8 12 12 12 22a12 12 0 0 1-24 0c0-6 4-9 6-13 1 4 3 6 5 6-1-6 0-10 1-15z' fill='%23ee6424'/%3E%3Cpath d='M24 14c3 6 7 9 7 14a7 7 0 0 1-14 0c0-4 2-6 4-9 1 3 2 4 3 4 0-4 0-6 0-9z' fill='%23ffb84a'/%3E%3Cpath d='M24 24c2 3 3 5 3 7a3 3 0 0 1-6 0c0-2 1-4 3-7z' fill='%23fff3c4'/%3E%3C/svg%3E") no-repeat center/contain}
+#ovStart .panel{overflow:hidden}
+#ovStart .embers{position:absolute;inset:auto 0 0 0;height:160px;pointer-events:none;overflow:hidden}
+#ovStart .embers i{position:absolute;bottom:-6px;width:5px;height:5px;border-radius:50%;background:#ffb04a;box-shadow:0 0 8px #ff8a3a;animation:ember 4.5s linear infinite}
+/* difficulty titles: clear, saturated colours */
+.diffb b{font-weight:400}
+.diffb:nth-of-type(1) b{color:#2f7a45!important}.diffb:nth-of-type(2) b{color:#946512!important}.diffb:nth-of-type(3) b{color:#b0432b!important}
+/* when the display font is unavailable, keep headings bold rather than thin */
+body.nodisp .panel h1,body.nodisp .panel h2,body.nodisp .day,body.nodisp .diffb b,body.nodisp .regcard b,body.nodisp .bossbar b,body.nodisp .disc b,body.nodisp .cardb b,body.nodisp #emberFx span{font-weight:800;letter-spacing:-.02em}
+@media (prefers-reduced-motion:reduce){.overlay:not([hidden]),.overlay:not([hidden])>.panel,.res .bump,.card-hud.pulse,#toast.on,#ovStart .embers i{animation:none!important}.big,.hbtn,.chip,.tab,.diffb,.trade,.isl,.cdc{transition:none}#emberFx.on{animation-duration:1.2s}}
 </style>
 </head>
 <body>
@@ -765,7 +800,7 @@ body.goalmini .tut.goals .gl b{font-size:12.5px}
 
   <div class="overlay" id="ovStart">
     <div class="panel">
-      <h1>캠프<br><em>서바이버</em></h1>
+      <h1>캠프<br><em>서바이버</em></h1><div class="embers" aria-hidden="true"><i style="left:8%;animation-delay:0.0s;animation-duration:4.6s"></i><i style="left:21%;animation-delay:1.6s;animation-duration:5.2s"></i><i style="left:34%;animation-delay:0.7s;animation-duration:4.1s"></i><i style="left:49%;animation-delay:2.4s;animation-duration:5.6s"></i><i style="left:63%;animation-delay:1.1s;animation-duration:4.4s"></i><i style="left:76%;animation-delay:3.0s;animation-duration:5.0s"></i><i style="left:88%;animation-delay:0.4s;animation-duration:4.8s"></i><i style="left:55%;animation-delay:3.6s;animation-duration:4.2s"></i></div>
       <span class="pg">CAMP SURVIVOR</span>
       <p>낮에는 모으고 짓고, 밤에는 화톳불을 지키세요. 보스를 쓰러뜨리면 숲 너머 새 지역이 열립니다.</p>
       <div class="row">

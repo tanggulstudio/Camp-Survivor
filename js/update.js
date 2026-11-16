@@ -267,7 +267,7 @@ function update(dt){
 
   // fx
   if(S.shake>0)S.shake=Math.max(0,S.shake-dt*18);
-  for(const f of S.fx){f.t+=dt;if(f.k==='p'||f.k==='smoke'){f.x+=f.vx*dt;f.y+=f.vy*dt;f.vx*=.9;f.vy*=.9;}else if(f.k==='t')f.y-=24*dt;}
+  for(const f of S.fx){f.t+=dt;if(f.k==='p'||f.k==='smoke'){f.x+=f.vx*dt;f.y+=f.vy*dt;f.vx*=.9;f.vy*=.9;}else if(f.k==='t')f.y-=24*dt;else if(f.k==='lvl'){f.x+=(S.p.x-f.x)*Math.min(1,dt*8);f.y+=(S.p.y-f.y)*Math.min(1,dt*8);}}
   S.fx=S.fx.filter(f=>f.t<f.life);
 }
 function updEnemy(e,dt){

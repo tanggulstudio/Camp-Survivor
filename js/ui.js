@@ -115,6 +115,14 @@ async function villagePhoto(){if(!running||!S)return;const src=$('cv');const w=s
   const blob=await new Promise(r=>c.toBlob(r,'image/png'));if(!blob){toast(_L('사진을 만들지 못했어요','Could not take the photo'),2200);return;}
   try{const f=new File([blob],name,{type:'image/png'});if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:_L('캠프 서바이버','Camp Survivor'),text:_L('내 캠프 '+S.day+'일째!','My camp, day '+S.day+'!')});return;}}catch(e){if(e&&e.name==='AbortError')return;}
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1500);toast(_L('마을 사진을 저장했어요','Saved a photo of your camp'),2400);}
+// ---- small UI juice helpers
+function hudPulse(cls){const el=document.querySelector('.card-hud.'+cls);if(!el)return;el.classList.remove('pulse');void el.offsetWidth;el.classList.add('pulse');}
+function emberFade(){const g=$('game');if(!g)return;let d=$('emberFx');if(!d){d=document.createElement('div');d.id='emberFx';d.innerHTML='<span>'+_L('불씨가 다시 타오릅니다','An ember flares back to life')+'</span>';g.appendChild(d);}d.classList.remove('on');void d.offsetWidth;d.classList.add('on');}
+// resource counters pop when they go up
+{const prev={};setInterval(()=>{if(!running)return;for(const b of document.querySelectorAll('.res b[id]')){const v=+b.textContent||0,o=prev[b.id];prev[b.id]=v;if(o!=null&&v>o){const it=b.parentElement;it.classList.remove('bump');void it.offsetWidth;it.classList.add('bump');}}},150);}
+// if the display font isn't available (fonts not allowed), use a heavy system weight so titles don't look thin
+{const chk=()=>{let ok=false;try{document.fonts.forEach(f=>{if(/Black Han Sans/.test(f.family)&&f.status==='loaded')ok=true;});}catch(_){}document.body.classList.toggle('nodisp',!ok);};
+  chk();try{document.fonts.addEventListener('loadingdone',chk);document.fonts.ready.then(chk);}catch(_){}setTimeout(chk,3000);}
 function buildSave(){
   {
     const bl=[];forB((b,i)=>bl.push([i,b.t,Math.round(b.hp),b.max,+(b.g||0).toFixed(2),b.seeded?1:0,b.lv||1,b.crop||0]));
@@ -214,7 +222,7 @@ function gameOver(){
   if(!NET.role&&(S.lives==null?3:S.lives)>1){let am=null;try{am=JSON.parse(localStorage.getItem(SAVE_KEY+'-am')||'null');}catch(_){}if(!am)am=readSave();
     if(am){const keep={eq:JSON.parse(JSON.stringify(S.eq)),inv:S.inv.slice(),stash:JSON.parse(JSON.stringify(S.stash||null)),tools:Object.assign({},S.tools),ess:S.items.ess||0,enh:S.enh?JSON.parse(JSON.stringify(S.enh)):null,lives:(S.lives==null?3:S.lives)-1};
       running=false;loadGame(am);S.eq=keep.eq;S.inv=keep.inv;if(keep.stash)S.stash=keep.stash;S.tools=keep.tools;S.items.ess=Math.max(S.items.ess||0,keep.ess);if(keep.enh)S.enh=keep.enh;S.lives=keep.lives;save();
-      setTimeout(()=>{if(S)toast(_L('화톳불이 꺼졌지만… 불씨 하나가 다시 타올랐어요. '+S.day+_T('일째 아침으로 돌아왔어요 (남은 목숨 ')+S.lives+_T('). 얻은 장비는 그대로예요'),'The bonfire went out... but an ember flared back to life. Back to the morning of day '+S.day+' (lives left: '+S.lives+'). Your gear is kept'),5200);},600);return;}}
+      emberFade();setTimeout(()=>{if(S)toast(_L('화톳불이 꺼졌지만… 불씨 하나가 다시 타올랐어요. '+S.day+_T('일째 아침으로 돌아왔어요 (남은 목숨 ')+S.lives+_T('). 얻은 장비는 그대로예요'),'The bonfire went out... but an ember flared back to life. Back to the morning of day '+S.day+' (lives left: '+S.lives+'). Your gear is kept'),5200);},600);return;}}
   running=false;
   try{localStorage.removeItem(SAVE_KEY);localStorage.removeItem(SAVE_KEY+'-am');}catch(_){}
   const emb=NET.role==='client'?0:S.day;if(emb){META.em+=emb;META.tot+=emb;saveMeta();}

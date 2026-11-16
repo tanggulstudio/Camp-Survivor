@@ -126,7 +126,10 @@ function dig(dg){
 }
 function hasForge(){for(const i of bIdx()){const b=S.bld[i];if(b&&b.t==='forge')return true;}return false}
 function resNear(i,type,r){const x0=i%W,y0=(i/W)|0;for(let y=y0-r;y<=y0+r;y++)for(let x=x0-r;x<=x0+r;x++){if(x<0||y<0||x>=W||y>=H)continue;if(S.res[idx(x,y)]===type)return true;}return false}
-function float(x,y,txt,col){if(!SET.dmg&&/^-?\d/.test(String(txt)))return;S.fx.push({k:'t',x,y,txt,col,t:0,life:1})}
+function float(x,y,txt,col){if(!SET.dmg&&/^-?\d/.test(String(txt)))return;
+  // stack new numbers above recent ones at the same spot so they don't pile into one blob
+  let n=0;for(const f of S.fx)if(f.k==='t'&&f.t<.35&&Math.abs(f.x0-x)<18&&Math.abs(f.y0-y)<18)n++;
+  const t=String(txt),small=/G$|^\+[\d.]+ ?G/.test(t);S.fx.push({k:'t',x:x+(n%2?7:-7)*(n>0?1:0),y:y-n*11,x0:x,y0:y,txt,col,t:0,life:1,sm:small})}
 function burst(x,y,col,n){for(let k=0;k<n;k++){const a=Math.random()*Math.PI*2,v=30+Math.random()*90;S.fx.push({k:'p',x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,col,t:0,life:.4+Math.random()*.4});}}
 let toastTimer=0;
 function toast(msg,ms){const el=document.getElementById('toast');try{const so=document.getElementById('ovShop'),sm=document.getElementById('shopMsg');if(so&&sm&&!so.hidden){sm.textContent='✓ '+msg;sm.hidden=false;sm.classList.remove('pop');void sm.offsetWidth;sm.classList.add('pop');}}catch(_){}if(el.classList.contains('on')&&performance.now()-toastAt<1500){if(el.textContent!==msg&&!toastQ.some(q=>q[0]===msg)){toastQ.push([msg,ms]);if(toastQ.length>3)toastQ.shift();clearTimeout(toastTimer);toastTimer=setTimeout(toastNext,Math.max(0,toastAt+1500-performance.now()));}return;}
