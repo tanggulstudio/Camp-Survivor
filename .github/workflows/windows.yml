@@ -3,7 +3,7 @@ name: Build Windows app
 on:
   push:
     branches: [main]
-    paths: ['index.html', 'desktop/**', '.github/workflows/windows.yml']
+    paths: ['index.html', 'js/**', 'desktop/**', '.github/workflows/windows.yml']
   workflow_dispatch:
 
 jobs:
