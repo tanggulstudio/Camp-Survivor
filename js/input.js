@@ -225,6 +225,7 @@ TOOLS.forEach(t=>{
   const b=document.createElement('button');b.className='tool';b.id='tool-'+t;
   b.innerHTML=ICON[t]+'<span class="nm">'+(B[t]?B[t].n:TOOL_NAME[t])+'</span><span class="ct"></span>';
   b.addEventListener('click',()=>selectTool(tool===t?null:t));
+  b.addEventListener('pointerenter',e=>{if(e.pointerType==='mouse'){bInfo.hover=t;try{bInfo();}catch(_){}}});b.addEventListener('pointerleave',()=>{bInfo.hover=null;try{bInfo();}catch(_){}});
   toolEls[t]=b;
 });
 BCATS.forEach((c,k)=>{const b=document.createElement('button');b.className='bcat';b.id='bcat-'+c.id;b.setAttribute('role','tab');b.textContent=c.n;b.addEventListener('click',()=>setBcat(k));document.getElementById('bcats').appendChild(b);});
@@ -233,7 +234,7 @@ function setBcat(k){bcat=(k+BCATS.length)%BCATS.length;bar.innerHTML='';bList().
   BCATS.forEach((c,j)=>{const e=document.getElementById('bcat-'+c.id);e.classList.toggle('on',j===bcat);e.setAttribute('aria-selected',j===bcat);});bar.scrollLeft=0;}
 function setBuild(on){buildOpen=on;document.body.classList.toggle('bopen',on);document.getElementById('tray').hidden=!on;document.getElementById('btnBuild').classList.toggle('on',on);if(!on)selectTool(null);else refreshBar();}
 setBcat(0);
-function selectTool(t){mvFrom=-1;if(t==='move'&&tool!=='move'&&typeof toast==='function'&&typeof S!=='undefined'&&S)toast(_L('옮길 건물을 누른 다음, 놓을 자리를 눌러 주세요','Tap a building, then tap where it should go'),2600);tool=t;if(t&&typeof S!=='undefined'&&S&&S.newB&&S.newB[t]){delete S.newB[t];if(toolEls[t])toolEls[t].classList.remove('isnew');}if(typeof S!=='undefined'&&S)S.mSel=null;for(const k in toolEls)toolEls[k].classList.toggle('sel',k===t);if(t){const c=BCATS.findIndex(c=>c.t.includes(t));if(c>=0&&c!==bcat)setBcat(c);for(const k in toolEls)toolEls[k].classList.toggle('sel',k===t);if(!buildOpen)setBuild(true);}}
+function selectTool(t){mvFrom=-1;if(t==='move'&&tool!=='move'&&typeof toast==='function'&&typeof S!=='undefined'&&S)toast(_L('옮길 건물을 누른 다음, 놓을 자리를 눌러 주세요','Tap a building, then tap where it should go'),2600);tool=t;if(t&&typeof S!=='undefined'&&S&&S.newB&&S.newB[t]){delete S.newB[t];if(toolEls[t])toolEls[t].classList.remove('isnew');}if(typeof S!=='undefined'&&S)S.mSel=null;for(const k in toolEls)toolEls[k].classList.toggle('sel',k===t);if(t){const c=BCATS.findIndex(c=>c.t.includes(t));if(c>=0&&c!==bcat)setBcat(c);for(const k in toolEls)toolEls[k].classList.toggle('sel',k===t);if(!buildOpen)setBuild(true);};try{bInfo();}catch(_){}}
 function costText(c){const a=[];for(const k in c)if(c[k])a.push(nameOf(k)+' '+c[k]);return a.join(' · ')||_T('무료')}
 function refreshBar(){
   for(const t of TOOLS){

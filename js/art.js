@@ -668,6 +668,7 @@ function draw(now){
   }
   for(const f of S.fx){
     const a=1-f.t/f.life;
+    if(f.k==='corpse'){const u=f.t/f.life;ctx.save();ctx.globalAlpha=Math.max(0,1-u);ctx.translate(f.x,f.y);const sc=1+u*.35;ctx.scale(sc,Math.max(.1,1-u*.9));ctx.translate(-f.x,-f.y);try{drawEnemy(f.e,performance.now());}catch(_){}ctx.restore();continue;}
     if(f.k==='lvl'){// level up: expanding golden ring, rays and a big label that pops
       const pr=f.t/f.life,e2=1-Math.pow(1-Math.min(1,pr*1.6),3);ctx.globalAlpha=Math.max(0,1-pr);
       ctx.strokeStyle='#ffd27a';ctx.lineWidth=4*(1-pr)+1;ctx.beginPath();ctx.ellipse(f.x,f.y+8,10+34*e2,5+15*e2,0,0,Math.PI*2);ctx.stroke();
@@ -737,6 +738,7 @@ function draw(now){
       ctx.shadowBlur=0;ctx.globalAlpha=1;}
   }
 
+  try{drawPaths(now);}catch(_){}
   try{drawPlan(now);}catch(_){}
   // dusk and dawn color grading (sky tint over the world, under the HUD)
   if(!inDg&&!S.tower){let tc=null,ta=0;if(S.phase==='day'){const dl=dayLen(),u=(S.t-(dl-30))/30;if(u>0){tc='255,120,50';ta=Math.min(1,u)*.32*(1-Math.max(0,(u-.7)/.3)*.4);}else if(S.t<7&&S.day>1){tc='255,170,190';ta=(1-S.t/7)*.3;}}
@@ -748,6 +750,7 @@ function draw(now){
     if(dg>0&&!p.dead){const pu=.5+.5*Math.sin(now/140);const g=ctx.createRadialGradient(vw/2,vh/2,Math.min(vw,vh)*.3,vw/2,vh/2,Math.max(vw,vh)*.75);g.addColorStop(0,'rgba(180,0,0,0)');g.addColorStop(1,'rgba(180,10,10,'+(.18+.3*dg)*(.6+.4*pu)+')');ctx.fillStyle=g;ctx.fillRect(0,0,vw,vh);if(!paused)sfx('heart');}}
   if(S.phase==='day'&&S.day%5===0&&S.t>dayLen()-35){const [kx,ky]=cCenter(CI);if(Math.hypot(kx-p.x,ky-p.y)>12*T)edgeArrow(kx,ky,'#ffa047',now,1.3);}
   try{planEdges(now);}catch(_){}
+  try{drawDanger(now);}catch(_){}
   if(S.lost)edgeArrow(S.lost.x,S.lost.y,'#e4c79a',now);
   for(const c of S.chests)if(!c.dg)edgeArrow(c.x,c.y,c.kind==='gold'?'#ffd23a':'rgba(232,201,138,.7)',now,c.kind==='gold'?1.2:.7);
   if(S.merchant)edgeArrow(S.merchant.x,S.merchant.y,'#8fd3ff',now);

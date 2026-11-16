@@ -20,7 +20,7 @@ function computeFlow(){
   for(let i=0;i<W*H;i++)if(dist[i]<Infinity){roadD[i]=0;rq[qt++]=i;}
   while(qh<qt){const i=rq[qh++],x=i%W,y=(i/W)|0;
     for(const n of [x>0?i-1:-1,x<W-1?i+1:-1,y>0?i-W:-1,y<H-1?i+W:-1]){if(n<0||S.res[n]||S.water[n]||townWall(n)||roadD[n]<=roadD[i]+1)continue;roadD[n]=roadD[i]+1;rq[qt++]=n;}}
-  flowDirty=false;
+  flowDirty=false;FLOWV++;
 }
 /* ---------- helpers ---------- */
 function solidCellP(cx,cy){

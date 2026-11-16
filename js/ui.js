@@ -62,7 +62,7 @@ function hud(){
   const pf=$('phaseFill');
   if(S.phase==='day'){
     const left=Math.max(0,Math.ceil(dayLen()-S.t));
-    $('phase').textContent=_T('낮 · 밤까지 ')+left+_T('초');pf.classList.remove('n');pf.style.width=(S.t/dayLen()*100)+'%';
+    $('phase').textContent=firstDayHold()?(matchMedia('(pointer:coarse)').matches?_L('낮 · 탑을 세우거나 밤 부르기','Day · Build a tower or call the night'):_L('낮 · 탑을 세우거나 밤 부르기(N)','Day · Build a tower or call the night (N)')):_T('낮 · 밤까지 ')+left+_T('초');pf.classList.remove('n');pf.style.width=(S.t/dayLen()*100)+'%';
   }else{
     const n=S.enemies.filter(e=>!e.wild&&!e.lair).length+S.spawnQ.length;
     $('phase').textContent=_T('밤 · 남은 적 ')+n;pf.classList.add('n');pf.style.width=Math.min(100,S.nightT/60*100)+'%';
@@ -360,6 +360,8 @@ $('helpX').addEventListener('click',()=>closeHelp());
 $('btnHook').addEventListener('click',hook);
 $('btnTradeClose').addEventListener('click',()=>{$('ovTrade').hidden=true;S.trading=false;});
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!paused&&S.phase!=='dawn')togglePause();});
+// desktop app: alt-tab away pauses the game too
+window.addEventListener('blur',()=>{if(window.desktop&&running&&!paused&&S.phase!=='dawn'&&!NET.role)togglePause();});
 /* ---------- loop ---------- */
 let last=performance.now();
 /* ---------- settings ---------- */
@@ -439,7 +441,7 @@ function frame(now){
   const dt=Math.min(.05,(now-last)/1000);last=now;
   try{gpPoll(dt);}catch(e){}
   if(S){
-    if(running&&!paused&&S.phase!=='dawn'&&!S.trading&&!S.menu)update(dt);
+    if(running&&!paused&&S.phase!=='dawn'&&!S.trading&&!S.menu&&now>=HSTOP)update(dt);
     draw(now);
     hudT-=dt;if(hudT<=0){hudT=.1;hud();if(running){mapT-=.1;if(mapT<=0){mapT=.5;rebuildMap();}drawMini();}}
   }

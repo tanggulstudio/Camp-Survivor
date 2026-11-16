@@ -62,7 +62,8 @@ function planEdges(now){const L=sideSummary();if(!L.length)return;if(S.phase==='
 function planMini(g,sx,sy,k,px,dp){const L=sideSummary();for(const o of L){const [wx,wy]=sidePos(o.sd);let x=(wx/T-sx)*k,y=(wy/T-sy)*k;x=Math.max(5*dp,Math.min(px-5*dp,x));y=Math.max(5*dp,Math.min(px-5*dp,y));
   g.fillStyle=o.boss?'#ffcf5a':'#ff5a46';g.strokeStyle='#2a1410';g.lineWidth=dp;g.beginPath();g.moveTo(x,y-5*dp);g.lineTo(x+4.5*dp,y+4*dp);g.lineTo(x-4.5*dp,y+4*dp);g.closePath();g.fill();g.stroke();}}
 function planLine(){const L=sideSummary();if(!L.length)return '';const tot=L.reduce((a,o)=>a+o.n,0);
-  return (S.phase==='night'?_L('남은 습격 ','Still coming ')+tot:_L('오늘 밤 ','Tonight ')+tot+_L('마리 · ',' foes · ')+L.map(o=>sideName(o.sd)).join('·'));}
+  const bk=5-S.day%5,bt=S.phase==='day'&&bk<5&&!S.peace?' · 👑 '+L3('보스까지 '+bk+'일','boss in '+bk+'d','距首领 '+bk+'天'):'';
+  return (S.phase==='night'?_L('남은 습격 ','Still coming ')+tot:_L('오늘 밤 ','Tonight ')+tot+_L('마리 · ',' foes · ')+L.map(o=>sideName(o.sd)).join('·')+bt);}
 /* ---------- night log and the dawn report ---------- */
 function nightLogStart(){S.nl={k:0,g:0,cd:0,lost:0,tw:{},t:{},day:S.day};}
 function nlKill(gv){if(S.nl&&S.phase==='night'){S.nl.k++;S.nl.g+=gv||0;}}
@@ -103,3 +104,74 @@ async function resultShot(){sfx('shutter');const W2=1200,H2=630,c=document.creat
 /* ---------- big phase title ("Night 7") ---------- */
 function phaseTitle(big,small,boss){let d=$('phaseT');if(!d){d=document.createElement('div');d.id='phaseT';d.setAttribute('aria-hidden','true');$('game').appendChild(d);}
   d.className=boss?'boss':'';d.innerHTML='<b>'+big+'</b>'+(small?'<small>'+small+'</small>':'');void d.offsetWidth;d.classList.add('on');clearTimeout(phaseTitle.t);phaseTitle.t=setTimeout(()=>d.classList.remove('on'),2600);}
+/* ---------- first day: the sun waits until there is a tower or the player calls the night ---------- */
+const TOWER_T=['tower','ballista','catapult','magic','venom','prism'];
+function hasTower(){for(const i of bIdx()){const b=S.bld[i];if(b&&TOWER_T.includes(b.t))return true;}return false;}
+function firstDayHold(){return S.day===1&&!S.peace&&!NC()&&!S.tower&&S.t>=dayLen()-20&&!hasTower();}
+/* ---------- where tonight's enemies will walk: follow the flow field from each banner to the bonfire ---------- */
+let FLOWV=0;const PATHC={v:-1,k:'',p:[]};
+function planPaths(){const L=sideSummary();const key=L.map(o=>o.sd).join(',');if(PATHC.v===FLOWV&&PATHC.k===key)return PATHC.p;
+  const out=[];for(const o of L){const [wx,wy]=sidePos(o.sd);let i=idx(Math.floor(wx/T),Math.floor(wy/T));
+    if(!(dist[i]<Infinity)){let best=-1,bd=1e9;const x0=i%W,y0=(i/W)|0;for(let dy=-3;dy<=3;dy++)for(let dx=-3;dx<=3;dx++){const x=x0+dx,y=y0+dy;if(x<0||y<0||x>=W||y>=H)continue;const n=y*W+x;if(dist[n]<bd){bd=dist[n];best=n;}}if(best<0||bd>=1e9)continue;i=best;}
+    const pts=[i];for(let s=0;s<600&&dist[i]>0;s++){const x=i%W,y=(i/W)|0;let nx=-1,nd=dist[i];for(const n of [x>0?i-1:-1,x<W-1?i+1:-1,y>0?i-W:-1,y<H-1?i+W:-1])if(n>=0&&dist[n]<nd){nd=dist[n];nx=n;}if(nx<0)break;i=nx;pts.push(i);}
+    out.push({sd:o.sd,boss:o.boss,pts});}
+  PATHC.v=FLOWV;PATHC.k=key;PATHC.p=out;return out;}
+function drawPaths(now){if(!S||S.phase!=='day'||S.peace||S.tower||NC())return;const late=S.t>dayLen()-40;if(!buildOpen&&!late)return;
+  const ks=dpr*scale;ctx.setTransform(ks,0,0,ks,-camX*ks,-camY*ks);const a=buildOpen?.75:.4,off=(now/60)%16;
+  for(const P of planPaths()){if(P.pts.length<2)continue;ctx.beginPath();P.pts.forEach((i,k)=>{const x=(i%W+.5)*T,y=(((i/W)|0)+.5)*T;k?ctx.lineTo(x,y):ctx.moveTo(x,y);});
+    ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle='rgba(40,10,6,'+a*.5+')';ctx.lineWidth=7;ctx.setLineDash([]);ctx.stroke();
+    ctx.strokeStyle=(P.boss?'rgba(255,207,90,':'rgba(255,96,70,')+a+')';ctx.lineWidth=3.5;ctx.setLineDash([2,14]);ctx.lineDashOffset=-off;ctx.stroke();ctx.setLineDash([]);}
+}
+/* ---------- feel: hit-stop, death pop, danger cues ---------- */
+let HSTOP=0;function hitStop(ms){if(!SET.shake)return;HSTOP=Math.max(HSTOP,performance.now()+ms);}
+function corpseFx(e){if(e.lair||S.fx.length>260)return;S.fx.push({k:'corpse',e:Object.assign({},e,{hp:e.max,hurt:.3,moving:false,dead:false}),x:e.x,y:e.y,t:0,life:.32});}
+let CORE_HIT=0,CORE_WARN=0;
+function coreAlert(){CORE_HIT=performance.now();const [cx,cy]=cCenter(CI);if(S.p.dead||S.tower)return;const far=Math.hypot(S.p.x-cx,S.p.y-cy)>T*9;
+  if(far&&CORE_HIT-CORE_WARN>18000){CORE_WARN=CORE_HIT;toast(_L('🔥 화톳불이 공격받고 있어요! 돌아가서 지켜 주세요','🔥 The bonfire is under attack! Go back and defend it'),2600);}}
+function drawDanger(now){if(!S||!running)return;const p=S.p;
+  if(!p.dead&&p.max&&p.hp<p.max*.3){const k=1-p.hp/(p.max*.3),pu=.55+.45*Math.sin(now/(140+260*(1-k)));const g=ctx.createRadialGradient(vw/2,vh/2,Math.min(vw,vh)*.35,vw/2,vh/2,Math.max(vw,vh)*.72);g.addColorStop(0,'rgba(170,0,0,0)');g.addColorStop(1,'rgba(170,0,0,'+(.18+.32*k)*pu+')');ctx.fillStyle=g;ctx.fillRect(0,0,vw,vh);}
+  if(now-CORE_HIT<2200&&!S.tower){const [wx,wy]=cCenter(CI),sx=(wx-camX)*scale,sy=(wy-camY)*scale,m=40;if(sx<m||sy<m||sx>vw-m||sy>vh-m){
+    const cx=vw/2,cy=vh/2,an=Math.atan2(sy-cy,sx-cx);let ex=Math.max(m+30,Math.min(vw-m-30,sx)),ey=Math.max(m+20,Math.min(vh-m-100,sy));try{[ex,ey]=edgeSafe(ex,ey);}catch(_){}
+    const pu=.75+.25*Math.sin(now/110);ctx.save();ctx.globalAlpha=pu;ctx.font='bold 13px "Gowun Dodum",sans-serif';const txt='🔥 '+_L('화톳불!','Bonfire!'),tw=ctx.measureText(txt).width+20;
+    ctx.fillStyle='rgba(120,20,10,.92)';rrect(ctx,ex-tw/2,ey-12,tw,24,12);ctx.fill();ctx.strokeStyle='#ffcf9a';ctx.lineWidth=1.5;ctx.stroke();ctx.fillStyle='#fff3df';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(txt,ex,ey+1);
+    ctx.translate(ex+Math.cos(an)*(tw/2+9),ey+Math.sin(an)*16);ctx.rotate(an);ctx.fillStyle='#ff7a52';ctx.beginPath();ctx.moveTo(8,0);ctx.lineTo(-4,-7);ctx.lineTo(-4,7);ctx.closePath();ctx.fill();ctx.restore();}}
+}
+/* ---------- build info card: what the selected building does, its numbers and what is missing ---------- */
+function L3(ko,en,zh){return LANG==='ko'?ko:LANG==='zh'?zh:en}
+const BDESC={
+  wall:['값싼 나무 벽. 적의 길을 막거나 돌아가게 해요','Cheap wooden wall. Blocks or reroutes enemies','便宜的木墙。挡住或改变敌人的路线'],
+  swall:['튼튼한 돌 벽. 길목을 오래 버텨요','Sturdy stone wall that holds a choke point longer','坚固的石墙，能更久地守住要道'],
+  iwall:['가장 단단한 벽. 보스의 밤에 좋아요','The toughest wall, great for boss nights','最坚固的墙，适合首领之夜'],
+  door:['나와 주민은 지나가고 적은 막아요','Lets you and villagers through, stops enemies','你和村民可以通过，敌人会被挡住'],
+  spike:['밟고 지나가는 적에게 계속 피해를 줘요. 길 위에 깔아요','Hurts every enemy that walks over it. Lay it on the road','持续伤害踩过的敌人，铺在路上'],
+  scarecrow:['적의 눈길을 끌어 탑 앞에 붙잡아 둬요','Draws enemies in and holds them in front of your towers','吸引敌人，把它们拖在炮塔前'],
+  tower:['가장 가까운 적에게 화살을 쏴요. 첫 방어의 기본','Shoots arrows at the nearest enemy. Your first line of defense','向最近的敌人射箭，最基础的防御'],
+  ballista:['느리지만 한 발이 아주 아파요. 단단한 적에게 좋아요','Slow but each bolt hits hard. Good against tough enemies','射速慢但伤害高，适合对付硬皮敌人'],
+  catapult:['멀리 돌을 날려 무리를 한꺼번에 때려요','Lobs stones far and hits whole groups','远距离投石，一次打击一群敌人'],
+  magic:['번개가 적 사이를 튀어 여러 마리를 맞혀요','Lightning jumps between enemies, hitting several','闪电在敌人之间跳跃，击中多个目标'],
+  venom:['독 안개로 주변 적을 느리게 하고 계속 깎아요','Poison mist slows and wears down nearby enemies','毒雾让周围敌人减速并持续掉血'],
+  prism:['강한 광선이 터지며 주변까지 피해를 줘요','A powerful beam that bursts and hurts nearby enemies too','强力光束爆炸，同时伤害周围敌人'],
+  forge:['철 제품과 상위 건물을 만들 수 있게 해요','Unlocks iron gear and advanced buildings','解锁铁制装备和高级建筑'],
+  fire:['요리를 하고, 밤에 주변을 밝혀요','Cook here; it lights up the night around it','可以烹饪，夜晚照亮周围'],
+  torch:['밤에 주변을 밝혀요. 추위도 막아 줘요','Lights the night and keeps the cold away','夜晚照明，也能抵御寒冷'],
+  field:['씨앗을 심어 작물을 길러요. 물가 근처가 빨라요','Grow crops from seeds. Faster near water','播种种植作物，靠近水源长得更快'],
+  hut:['주민 두 명이 살 집. 마을 터에만 지어요','A home for two villagers. Village plots only','可住两位村民，只能建在村庄空地上'],
+  lumber:['주변 나무를 자동으로 베어 나무를 모아요','Automatically chops nearby trees for wood','自动砍伐附近的树木获得木头'],
+  quarry:['주변 바위를 자동으로 캐서 돌을 모아요','Automatically mines nearby rocks for stone','自动开采附近的岩石获得石头'],
+  mine:['주변 철광석을 자동으로 캐요','Automatically mines nearby iron ore','自动开采附近的铁矿'],
+  drill1:['붙어 있는 광석을 계속 캐요','Keeps mining the ore next to it','持续开采相邻的矿石'],
+  drill2:['더 빠르고, 금·코발트까지 캐요','Faster, and also mines gold and cobalt','更快，还能开采黄金和钴'],
+  drill3:['가장 빠르고, 보석까지 캐요','Fastest, and also mines gems','最快，还能开采宝石'],
+  collector:['주변에 떨어진 물건을 모아 둬요','Collects items dropped nearby','收集附近掉落的物品'],
+  repairer:['주변 건물을 천천히 고쳐요','Slowly repairs nearby buildings','慢慢修理附近的建筑'],
+  incub:['알을 넣으면 며칠 뒤 펫이 태어나요','Put an egg in and a pet hatches in a few days','放入蛋，几天后孵出宠物'],
+  healfire:['주변의 나와 주민을 치유해요','Heals you and villagers nearby','治疗附近的你和村民'],
+};
+function bInfo(){let el=$('binfo');const bp=document.querySelector('#tray .bpanel');if(!bp)return;if(!el){el=document.createElement('div');el.id='binfo';el.setAttribute('aria-live','polite');bp.insertBefore(el,bp.firstChild);}
+  const t=bInfo.hover||tool;if(!t||!B[t]){el.hidden=true;return;}const b=B[t],d=BDESC[t],ch=[];
+  if(b.atk){const a=b.atk;ch.push(L3('피해 ','DMG ','伤害 ')+a.dmg,L3('사거리 ','Range ','射程 ')+a.rng,L3('초당 ','Shots/s ','每秒 ')+(1/a.cd).toFixed(1));}
+  if(b.hp&&!b.deco)ch.push(L3('체력 ','HP ','生命 ')+b.hp);
+  if(b.prod)ch.push(L3(b.prod.every+'초마다 1개','1 every '+b.prod.every+'s','每'+b.prod.every+'秒 1个'));
+  const c=cost(t),cs=[];for(const k in c){if(!c[k])continue;const have=S[RK[k]]||0;cs.push('<span class="'+(have>=c[k]?'ok':'no')+'">'+nameOf(k)+' '+Math.min(have,c[k])+'/'+c[k]+'</span>');}
+  const lock=b.forge&&!forgeOn;
+  el.innerHTML='<b>'+b.n+'</b>'+(d?'<p>'+L3(d[0],d[1],d[2])+'</p>':b.d?'<p>'+b.d+'</p>':'')+(ch.length?'<div class="bch">'+ch.map(x=>'<i>'+x+'</i>').join('')+'</div>':'')+'<div class="bcost">'+(lock?'<span class="no">'+_T('대장간 필요')+'</span>':cs.join(''))+'</div>';el.hidden=false;}

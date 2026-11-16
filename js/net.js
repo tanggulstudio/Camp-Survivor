@@ -253,7 +253,7 @@ const GOLD={yeti:14,wisp:12,frost:1400,imp:9,magma:12,flame:800,goblin:2,wolf:2,
 function killEnemy(e){
   const rem=NH()&&netCredit(e);
   if(!rem){const gv=Math.round((GOLD[e.t]||1)*(1+S.day*.08));S.gold+=gv;nlKill(gv);float(e.x+10,e.y-26,'+'+gv+'G','#ffd23a');}
-  e.dead=true;sfx(KILL_SND[e.t]||'kill',e.x,e.y);smoke(e.x,e.y,e.lair?16:5);if(e.lair){shake(10);burst(e.x,e.y,'#ffe08a',30);}burst(e.x,e.y,'#9fc06a',8);if(!rem){S.kills++;codexKill(e.t);skXp(combatSkill(),Math.max(1,Math.round(ET[e.t].xp*.6)));}if(!rem)gainXp(ET[e.t].xp*(e.arena?1+(S.tower?S.tower.floor*.05:0):1));
+  e.dead=true;corpseFx(e);if(e.boss||e.lair)hitStop(220);else if(e.elite)hitStop(90);sfx(KILL_SND[e.t]||'kill',e.x,e.y);smoke(e.x,e.y,e.lair?16:5);if(e.lair){shake(10);burst(e.x,e.y,'#ffe08a',30);}burst(e.x,e.y,'#9fc06a',8);if(!rem){S.kills++;codexKill(e.t);skXp(combatSkill(),Math.max(1,Math.round(ET[e.t].xp*.6)));}if(!rem)gainXp(ET[e.t].xp*(e.arena?1+(S.tower?S.tower.floor*.05:0):1));
   if(e.dgBoss!=null||e.lmBoss!=null)specialBossDown(e);
   if(e.t==='chief'&&!e.wild&&!e.arena)S.restNext=1;
   if(e.arena){if(e.boss||e.elite)drop(e.x,e.y,'token',1);if(Math.random()<.04)drop(e.x,e.y,'token',1);return;}
@@ -315,7 +315,7 @@ function hurtPlayer(d){
 }
 function hurtCore(d){
   if(S.peace)return;
-  S.core.hp-=d;if(S.nl)S.nl.cd+=d;sfx('alarm');const [x,y]=cCenter(CI);float(x,y-24,'-'+Math.round(d),'#ffb27a');
+  S.core.hp-=d;if(S.nl)S.nl.cd+=d;coreAlert();sfx('alarm');const [x,y]=cCenter(CI);float(x,y-24,'-'+Math.round(d),'#ffb27a');
   if(S.core.hp<=0){S.core.hp=0;coreFall();}
 }
 function damageBld(i,d){

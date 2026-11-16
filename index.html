@@ -763,6 +763,7 @@ body.nodisp .panel h1,body.nodisp .panel h2,body.nodisp .day,body.nodisp .diffb 
 .overgrid div{background:rgba(120,90,50,.1);border-radius:12px;padding:8px 6px;text-align:center}
 .overgrid small{display:block;font-size:12px;color:var(--dim)}.overgrid b{font-family:var(--f-disp);font-weight:400;font-size:22px}
 @media (min-width:900px){#toast{top:14px}#dawnCard{top:66px}}
+@media (max-width:580px){body.bopen .tut{display:none}}
 @media (max-width:580px){#dawnCard{padding:10px 12px 9px}#dawnCard .dk{font-size:17px;margin-bottom:7px}#dawnCard .dg b{font-size:15px}#dawnCard .dg small{font-size:10px}#dawnCard .mvp,#dawnCard .emb,#dawnCard .nx{font-size:12px;margin-top:6px}}
 body:has(.overlay:not([hidden])) #dawnCard{display:none}
 @media (prefers-reduced-motion:reduce){#dawnCard{transition:none}#fallFx.on,#fallFx.on span{animation-duration:.01s}}
@@ -778,6 +779,12 @@ body:has(.overlay:not([hidden])) #dawnCard{display:none}
 #langMenu button[aria-checked=true]{font-weight:700;color:#a8541f}
 html[lang=zh-CN]{--f-disp:"Black Han Sans","PingFang SC","Microsoft YaHei","Noto Sans SC","Noto Sans CJK SC","Source Han Sans SC",system-ui,sans-serif;--f-body:"PingFang SC","Microsoft YaHei","Noto Sans SC","Noto Sans CJK SC","Source Han Sans SC","Gowun Dodum",system-ui,sans-serif}
 html[lang=zh-CN] .panel h1,html[lang=zh-CN] .panel h2,html[lang=zh-CN] .day,html[lang=zh-CN] .diffb b,html[lang=zh-CN] .regcard b,html[lang=zh-CN] .bossbar b,html[lang=zh-CN] .disc b,html[lang=zh-CN] .cardb b,html[lang=zh-CN] #emberFx span,html[lang=zh-CN] #phaseT b,html[lang=zh-CN] #fallFx span,html[lang=zh-CN] #dawnCard .dk,html[lang=zh-CN] #dawnCard .dg b,html[lang=zh-CN] .overgrid b{font-weight:800;letter-spacing:0}
+#binfo{padding:8px 10px 6px;border-bottom:1px solid var(--line);font-size:13px;line-height:1.4}
+#binfo b{font-size:15px}#binfo p{margin:2px 0 4px;color:var(--dim)}
+#binfo .bch,#binfo .bcost{display:flex;flex-wrap:wrap;gap:4px 10px}
+#binfo .bch i{font-style:normal;font-weight:700;color:#7a4a1c}
+#binfo .bcost span{font-weight:700}#binfo .bcost .ok{color:#3f7d3c}#binfo .bcost .no{color:#b23b2c}
+@media (max-width:580px){#binfo{font-size:12px;padding:6px 8px 4px}#binfo b{font-size:14px}}
 </style>
 </head>
 <body>
