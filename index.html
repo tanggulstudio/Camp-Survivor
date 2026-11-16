@@ -2011,6 +2011,17 @@ function readNote(q){if(q.got)return;q.got=1;S.notesF=S.notesF||[];const nid=q.i
   const t=_L(NOTES[nid][0],NOTES[nid][1]);toast('📜 '+t,6500);if(S.notesF.length===NOTES.length)toast(_L('모든 기록을 모았어요!','You collected every record!'),3000);if(S.notesF.length>=5&&STORY.records&&!(S.story||[]).includes('records'))storyLater('records');}
 /* region reveal card */
 function gainLife(src){S.lives=Math.min(5,(S.lives==null?3:S.lives)+1);sfx('achieve');toast(_L('불씨 결정을 얻었어요 ('+src+_T(')! 목숨 +1 · 지금 ')+S.lives+_T('개'),'You got an Ember Crystal ('+src+')! +1 life · now '+S.lives),3200);}
+const TEST_MODE=/[?&#]test\b/.test((location.search||'')+(location.hash||''));
+function testSkipRegion(){if(!S||!running||NC())return;const n=S.prog||0;
+  if(n<1){S.prog=1;openBarrier(7,_L('[테스트] 가시 장벽을 열었어요. 독안개 늪으로 이동해요','[Test] Thorn wall opened. Moving to the swamp'));}
+  else if(n<2){S.prog=2;openBarrier(8,_L('[테스트] 고대 봉인을 풀었어요. 수정 협곡으로 이동해요','[Test] Seal lifted. Moving to the canyon'));}
+  else if(n<3){S.prog=3;openBarrier(14,_L('[테스트] 용암 장벽을 식혔어요. 화산 지대로 이동해요','[Test] Lava wall cooled. Moving to the volcano'));}
+  else if(n<4){S.prog=4;S.warm=1;setTimeout(()=>{if(S)regionReveal(4);},800);toast(_L('[테스트] 서리 설원으로 이동해요','[Test] Moving to the frost plains'),3600);}
+  else{toast(_L('[테스트] 이미 마지막 지역까지 열려 있어요','[Test] Every region is already open'),2600);return;}
+  const RB=[[R1+2,R2-2],[R2+2,R3-2],[R3+3,R4-2],[R4+3,R5-2]][S.prog-1],c=RB&&openCell(RB[0],RB[1]);if(c){S.p.x=c[0];S.p.y=c[1];}
+  flowDirty=BLC=true;if(!$('ovPause').hidden)togglePause();
+}
+if(TEST_MODE)addEventListener('DOMContentLoaded',()=>{const row=document.querySelector('#ovPause .row:last-child');if(!row)return;const b=document.createElement('button');b.className='big';b.textContent=_L('다음 지역으로 (테스트)','Next region (test)');b.onclick=testSkipRegion;row.appendChild(b);});
 function regionReveal(rg){const R0=REGION[rg];if(!R0)return;const el=$('regCard');if(!el)return;
   const lmN=(S.lms||[]).filter(m=>m.reg===rg&&m.t!=='camp').length,dgN=(S.dgs||[]).filter(d=>d.rg===rg).length,cN=(S.lms||[]).filter(m=>m.reg===rg&&m.t==='camp').length;
   $('regT').textContent=R0.n;{const al=BIO.filter(b=>b.rg===rg&&b.n).map(b=>b.i+' '+b.n);$('regD').textContent=R0.d+(al.length?_L(' · 이곳의 생물군집: ',' · Biomes here: ')+al.join(', '):'');}$('regL').textContent=WV>1?_L('랜드마크 '+lmN+_T(' · 던전 ')+dgN+_T(' · 버려진 야영지 ')+cN+_T(' — 지도(M)에 ? 표시로 떠올랐어요'),'Landmarks '+lmN+' · Dungeons '+dgN+' · Abandoned camps '+cN+' — marked with ? on the map (M)'):'';
@@ -5286,8 +5297,9 @@ function drawBush(i,now){
   if(hash(i*31+11)>.72){ctx.fillStyle='#f2d9a4';for(let k=0;k<3;k++){const fx=x-5+k*5+sh,fy=y-9+(k%2)*2;ctx.beginPath();ctx.arc(fx,fy,1.2,0,7);ctx.fill();}}
 }
 function drawRock(i){
-  const [x,y]=cCenter(i),h=hash(i),rv=S.res[i],ore=rv===3||rv===9||rv>=11,ob=rv===15,em=rv===9,OC={3:'#d08a4a',9:'#4fd08a',11:'#ee9058',12:'#ffd23a',13:'#6a9aff',15:'#c080ff',17:'#e8fbff'}[rv],mi=rv===17,cny=regionOfCell(i)===2;
+  const [x,y]=cCenter(i),h=hash(i),rv=S.res[i],ore=rv===3||rv===9||rv>=11,ob=rv===15,em=rv===9,OC={3:'#c9d6de',9:'#4fd08a',11:'#ff9a5a',12:'#ffd23a',13:'#6a9aff',15:'#c080ff',17:'#e8fbff'}[rv],mi=rv===17,cny=regionOfCell(i)===2;
   ctx.fillStyle='rgba(0,0,0,.25)';ctx.beginPath();ctx.ellipse(x+2,y+9,13,5,0,0,Math.PI*2);ctx.fill();
+  if(ore){const g=.5+.5*Math.sin(performance.now()/700+i);ctx.fillStyle=OC;ctx.globalAlpha=.16+g*.12;ctx.beginPath();ctx.ellipse(x,y+3,19,13,0,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;}
   ctx.fillStyle=mi?'#5a8aa0':ob?'#1e1626':em?'#3e4a44':rv===13?'#363a4e':rv===12?'#55504a':ore?'#4d4644':cny?'#8a6e5e':'#7d868a';ctx.beginPath();
   for(let k=0;k<7;k++){const a=k/7*Math.PI*2,r=10+hash(i*7+k)*5;const px=x+Math.cos(a)*r,py=y+Math.sin(a)*r*.8;k?ctx.lineTo(px,py):ctx.moveTo(px,py);}
   ctx.closePath();ctx.fill();
@@ -5295,8 +5307,11 @@ function drawRock(i){
   if(ore){ctx.fillStyle=OC;for(let k=0;k<5;k++){ctx.beginPath();ctx.arc(x-7+hash(i*3+k)*14,y-6+hash(i*5+k)*11,1.8,0,Math.PI*2);ctx.fill();}ctx.fillStyle='#6a615d';ctx.beginPath();ctx.ellipse(x-3-h*2,y-4,5,3,-.4,0,Math.PI*2);ctx.fill();
     // Three tiny, deterministic facets make each ore type readable at a glance.
     const crystal=(cx,cy,w,hh,col,hi)=>{ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(cx-w*.5,cy+hh*.45);ctx.lineTo(cx-w*.22,cy-hh*.48);ctx.lineTo(cx+w*.12,cy-hh*.62);ctx.lineTo(cx+w*.5,cy+hh*.45);ctx.closePath();ctx.fill();ctx.fillStyle=hi;ctx.beginPath();ctx.moveTo(cx-w*.22,cy-hh*.48);ctx.lineTo(cx+w*.12,cy-hh*.62);ctx.lineTo(cx+w*.08,cy+hh*.35);ctx.closePath();ctx.fill();};
-    const facets=rv===3?['#c77b43','#f0bd78']:rv===9?['#398d65','#a8efb2']:rv===11?['#9b6250','#efb08a']:rv===12?['#b58a28','#ffe69a']:rv===13?['#526da8','#c4dcff']:rv===15?['#79549b','#d5a9f5']:['#548ca8','#d5f5ff'];
-    crystal(x-5,y+1,5,9,facets[0],facets[1]);crystal(x+1,y-3,6,12,facets[0],facets[1]);crystal(x+7,y+2,4,7,facets[0],facets[1]);
+    const facets=rv===3?['#7d8a94','#eef4f7']:rv===9?['#2f9a62','#b4f5c2']:rv===11?['#d0642a','#ffc08a']:rv===12?['#c8941e','#fff0a8']:rv===13?['#3f62b8','#cfe2ff']:rv===15?['#7a46b0','#e2b8ff']:['#4f9ac0','#effcff'];
+    const big=(cx,cy,w,hh)=>{ctx.strokeStyle='rgba(20,16,20,.55)';ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(cx-w*.5,cy+hh*.45);ctx.lineTo(cx-w*.22,cy-hh*.48);ctx.lineTo(cx+w*.12,cy-hh*.62);ctx.lineTo(cx+w*.5,cy+hh*.45);ctx.closePath();ctx.stroke();crystal(cx,cy,w,hh,facets[0],facets[1]);};
+    big(x-6,y+1,7,12);big(x+1,y-4,8.5,17);big(x+7.5,y+2,6,10);
+    if(rv===3){ctx.fillStyle='rgba(176,92,52,.55)';ctx.beginPath();ctx.ellipse(x-6,y+4,1.6,1,0,0,7);ctx.ellipse(x+8,y+5,1.4,.9,0,0,7);ctx.fill();}
+    {const t=(performance.now()/1000+hash(i*41)*7)%3.2;if(t<.5){const a2=Math.sin(t/.5*Math.PI),sx=x+1.6,sy=y-11;ctx.strokeStyle='rgba(255,255,255,'+a2+')';ctx.lineWidth=1.1;ctx.beginPath();ctx.moveTo(sx-3.4*a2,sy);ctx.lineTo(sx+3.4*a2,sy);ctx.moveTo(sx,sy-3.4*a2);ctx.lineTo(sx,sy+3.4*a2);ctx.stroke();}}
   }
   else{ctx.fillStyle='#a3abae';ctx.beginPath();ctx.ellipse(x-3-h*2,y-4,6,4,-.4,0,Math.PI*2);ctx.fill();}
   ctx.strokeStyle='rgba(255,244,218,.28)';ctx.lineWidth=.9;ctx.beginPath();ctx.moveTo(x-6-h*2,y-5);ctx.quadraticCurveTo(x-2-h*2,y-10,x+1-h*2,y-7);ctx.stroke();
