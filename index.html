@@ -652,6 +652,44 @@ button,.tool,.isl,.slot,.trade,.cardb{-webkit-tap-highlight-color:transparent}
   body.hudmini .btns .hbtn{font-size:10.5px;padding:4px 2px;white-space:normal;line-height:1.15;word-break:keep-all}
   body.hudmini .hudtog{transform:rotate(180deg);border-radius:10px 10px 0 0;border-top:1px solid var(--line);border-bottom:0}
 }
+
+/* HP / bonfire numbers next to their bars */
+.stats{grid-template-columns:auto 1fr auto}
+.stats .bn{font-size:11px;font-variant-numeric:tabular-nums;color:var(--ink);text-align:right;min-width:3.6em;white-space:nowrap}
+@media (max-width:580px){.stats{grid-template-columns:auto minmax(30px,1fr) auto}.stats .bn{font-size:10.5px;min-width:3.2em}
+  body.hudmini .stats{grid-template-columns:1fr auto}
+  /* long requirement lists wrap under the name instead of squeezing it */
+  .trade{flex-wrap:wrap}.trade>div{flex:1 1 55%;min-width:0}.trade>span{white-space:normal;text-align:right;max-width:48%}}
+/* have/need counts in bag lists */
+.trade span em{font-style:normal}.trade span em.lack{color:#b5523f;font-weight:600}.trade span em.ok{color:#4f7a45}
+/* the fold tab must never sit over an open window */
+body:has(.overlay:not([hidden])) .hudtog{display:none}
+
+/* Readability: the compare panel is opaque so the bag grid can't show through it, and leftover
+   dark-theme accent colours are darkened to read on the light parchment (>= 4.5:1). */
+.detail.dual{background:#f5efdf}
+.eqc{background:#fffaf0;border-color:rgba(76,91,66,.22)}
+.eqc.nw{background:#f6e8d2;border-color:rgba(199,123,67,.5)}
+.eqc .tag,.dtxt .tag{font-size:11.5px;font-weight:600}
+.eqc .tag.setc,.dtxt .tag.setc{color:#2b6e40}
+.eqc .tag.uniq,.dtxt .tag.uniq{color:#9a4f17}
+.eqc .tag.rare,.dtxt .tag.rare{color:#64479a}
+.eqc li span,.eqc .eql,.eqc p,.cmph{color:#4f5a4b}
+.eqc li i.up,.cmp i.up{color:#2f6e45}
+.eqc li i.dn,.cmp i.dn{color:#a3402f}
+.res .gold b{color:#8a5f14}
+.statline b{color:#7f5420}
+.tab{color:#4f5a4b}
+.trade span em.ok{color:#3d6a35}
+.trade:disabled span em.lack{color:#9c3f2c}
+.trade:disabled small{color:#55604f}
+@media (max-width:580px){.detail{box-shadow:0 -10px 24px rgba(40,30,20,.35);border-color:rgba(199,123,67,.5)}}
+
+.disc ul b{color:#2c63a0}
+/* name/level line gets the full width; the XP bar sits under it */
+.stats #lvl{grid-column:1/-1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stats .bar:has(#xpFill){grid-column:1/-1}
+.stats #lvl+.bar+.bn{display:none}
 </style>
 </head>
 <body>
@@ -668,9 +706,9 @@ button,.tool,.isl,.slot,.trade,.cardb{-webkit-tap-highlight-color:transparent}
       </div>
       <button type="button" class="hudtog" id="hudTog" aria-label="상단 정보 접기" aria-pressed="false">▴</button>
       <div class="card-hud stats">
-        <span class="lb" id="lvl">Lv 1</span><div class="bar"><i id="xpFill"></i></div>
-        <span class="lb">체력</span><div class="bar"><i id="hpFill"></i></div>
-        <span class="lb">화톳불</span><div class="bar"><i id="coreFill"></i></div>
+        <span class="lb" id="lvl">Lv 1</span><div class="bar"><i id="xpFill"></i></div><span class="bn"></span>
+        <span class="lb">체력</span><div class="bar"><i id="hpFill"></i></div><span class="bn" id="hpNum" aria-label="체력 수치"></span>
+        <span class="lb">화톳불</span><div class="bar"><i id="coreFill"></i></div><span class="bn" id="coreNum" aria-label="화톳불 수치"></span>
       </div>
     </div>
     <div class="right">
@@ -857,7 +895,7 @@ button,.tool,.isl,.slot,.trade,.cardb{-webkit-tap-highlight-color:transparent}
       <div id="travelBox" class="sec"></div>
       <div class="legend">
         <span><i style="background:#ffffff"></i>나</span><span><i style="background:#ffa047"></i>화톳불</span><span><i style="background:#ff5a4a"></i>몬스터</span><span><i style="background:#ff4a3a;border-radius:50%;box-shadow:0 0 0 2px #ff4a3a inset"></i>보스 둥지</span>
-        <span><i style="background:#ffd23a"></i>상자</span><span><i style="background:#ffe08a"></i>NPC·주민</span><span><i style="background:#ee9058"></i>구리</span><span><i style="background:#cd8c5a"></i>철</span><span><i style="background:#ffd23a"></i>금</span><span><i style="background:#5a8aff"></i>코발트</span><span><i style="background:#4fd08a"></i>에메랄드</span><span><i style="background:#9fe8ff"></i>다이아</span><span><i style="background:#c080ff"></i>흑요석</span><span><i style="background:#e8fbff"></i>미스릴</span><span><i style="background:#ffe8b0"></i>알 둥지</span><span><i style="background:#e65a28"></i>용암</span>
+        <span><i style="background:#ffd23a"></i>상자</span><span><i style="background:#ffe08a"></i>NPC·주민</span><span><i style="background:#ee9058"></i>구리</span><span><i style="background:#becbd4"></i>철</span><span><i style="background:#ffd23a"></i>금</span><span><i style="background:#5a8aff"></i>코발트</span><span><i style="background:#4fd08a"></i>에메랄드</span><span><i style="background:#9fe8ff"></i>다이아</span><span><i style="background:#c080ff"></i>흑요석</span><span><i style="background:#e8fbff"></i>미스릴</span><span><i style="background:#ffe8b0"></i>알 둥지</span><span><i style="background:#e65a28"></i>용암</span>
       </div>
     </div>
   </div>

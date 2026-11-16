@@ -59,15 +59,25 @@ function moveE(e,tx,ty,sp,dt){
 }
 function shot(x,y,a,sp,dmg,col,poison){S.shots.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:3.2,dmg,col,poison:poison||0});}
 function makeWild(t,x,y,hx,hy){makeEnemy(t,x,y);const e=S.enemies[S.enemies.length-1];e.wild=1;e.hx=hx==null?x:hx;e.hy=hy==null?y:hy;return e;}
+// Wild material monsters: each region and biome keeps a target population.
+// spawnWild() fills it every morning; topUpWild() refills a few at a time during play, out of the player's sight.
+function wildPlan(){const gk=n=>Math.round(n*(WV>1?2.4:1)),L=[];
+  if(S.prog>=1)L.push({ts:['toad'],n:gk(10),cell:()=>openCell(R1+2,R2-2)});
+  if(S.prog>=2)L.push({ts:['shard'],n:gk(9),cell:()=>openCell(R2+2,R3-2)});
+  if(S.prog>=3)L.push({ts:['magma','imp'],n:gk(11),cell:()=>openCell(R3+3,R4-2)});
+  if(S.prog>=4)L.push({ts:['yeti','wisp'],n:gk(12),cell:()=>openCell(R4+3,R5-2)});
+  for(const bk in BMON){const b=+bk;if(S.prog<BNEED[b]||(BNEED[b]===0&&S.day<2))continue;const C=bioCells(b);if(!C.length)continue;
+    L.push({ts:[BMON[b]],n:gk(6),cell:()=>{for(let t=0;t<30;t++){const i=C[(Math.random()*C.length)|0];if(S.res[i]||S.water[i]||S.bld[i]||(S.dng&&S.dng[i])||S.town[i]||(S.haz&&S.haz[i]))continue;return cCenter(i);}return null;}});}
+  return L;}
 function spawnWild(){
   S.enemies=S.enemies.filter(e=>!e.wild||e.arena);
-  const gk=n=>Math.round(n*(WV>1?2.4:1));
-  if(S.prog>=1)for(let k=0;k<gk(7);k++){const c=openCell(R1+2,R2-2);if(c)makeWild('toad',c[0],c[1]);}
-  if(S.prog>=2)for(let k=0;k<gk(6);k++){const c=openCell(R2+2,R3-2);if(c)makeWild('shard',c[0],c[1]);}
-  if(S.prog>=3)for(let k=0;k<gk(8);k++){const c=openCell(R3+3,R4-2);if(c)makeWild(k%2?'imp':'magma',c[0],c[1]);}
-  if(S.prog>=4)for(let k=0;k<gk(9);k++){const c=openCell(R4+3,R5-2);if(c)makeWild(k%2?'wisp':'yeti',c[0],c[1]);}
-  for(const bk in BMON){const b=+bk;if(S.prog<BNEED[b]||(BNEED[b]===0&&S.day<2))continue;const L=bioCells(b);if(!L.length)continue;
-    for(let k=0;k<gk(4);k++)for(let t=0;t<30;t++){const i=L[(Math.random()*L.length)|0];if(S.res[i]||S.water[i]||S.bld[i]||(S.dng&&S.dng[i])||S.town[i]||(S.haz&&S.haz[i]))continue;const [x,y]=cCenter(i);if(Math.hypot(x-S.p.x,y-S.p.y)<8*T)continue;makeWild(BMON[b],x,y);break;}}
+  for(const g of wildPlan())for(let k=0;k<g.n;k++){const c=g.cell();if(!c)continue;if(Math.hypot(c[0]-S.p.x,c[1]-S.p.y)<8*T)continue;makeWild(g.ts[k%g.ts.length],c[0],c[1]);}
+}
+function topUpWild(){if(!S||NC()||S.tower)return;let made=0;
+  const have={};for(const e of S.enemies)if(e.wild&&!e.arena&&!e.dead)have[e.t]=(have[e.t]||0)+1;
+  for(const g of wildPlan()){const cur=g.ts.reduce((n,t)=>n+(have[t]||0),0);let miss=g.n-cur;
+    for(let k=0;k<Math.min(miss,3)&&made<10;k++){let c=null;for(let t=0;t<8&&!c;t++){const q=g.cell();if(q&&Math.hypot(q[0]-S.p.x,q[1]-S.p.y)>=11*T)c=q;}if(!c)continue;
+      const t2=g.ts[(cur+k)%g.ts.length];makeWild(t2,c[0],c[1]);have[t2]=(have[t2]||0)+1;made++;}}
 }
 function bioCells(b){S._bc=S._bc||{};if(S._bc[b])return S._bc[b];const L=[];if(S.bio)for(let i=0;i<S.bio.length;i++)if(S.bio[i]===b)L.push(i);return S._bc[b]=L;}
 function wakeBoss(L){

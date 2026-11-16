@@ -207,6 +207,7 @@ function nearFire(){
   return false;
 }
 function needText(n){return Object.keys(n).map(k=>nameOf(k)+' '+n[k]).join(' · ')}
+function needHave(n){const a=[];for(const k in n)if(n[k]){const h=getAmt(k);a.push('<em class="'+(h>=n[k]?'ok':'lack')+'">'+nameOf(k)+' '+Math.floor(h)+'/'+n[k]+'</em>');}return a.join(' · ')||_T('무료')}
 function haveItems(n){for(const k in n)if(getAmt(k)<n[k])return false;return true}
 function openBag(){if(!running||paused||S.phase==='dawn'||S.trading)return;S.menu=true;renderBag();$('ovBag').hidden=false;}
 function closeBag(){S.menu=false;$('ovBag').hidden=true;}
@@ -281,20 +282,20 @@ function renderBag(){
       const D=TOOLS_EQ[k],cur=D.tiers[S.tools[k]],nx=D.tiers[S.tools[k]+1];
       if(!nx){h+=row('',true,cur.n,_T('최고 단계'),_T('완료'),toolIcon(k,S.tools[k]));continue;}
       const desc=D.pw+' '+Math.round(cur.p*10)+' → '+Math.round(nx.p*10)+(nx.note?' · '+nx.note:'')+(nx.forge?_T(' · 대장간'):'');
-      h+=row('tool:'+k,!afford(nx.r)||(nx.forge&&!fn),nx.n,desc,costText(nx.r),toolIcon(k,S.tools[k]+1));
+      h+=row('tool:'+k,!afford(nx.r)||(nx.forge&&!fn),nx.n,desc,needHave(nx.r),toolIcon(k,S.tools[k]+1));
     }
     h+=_T('</div></div><div class="sec"><h3>보스 소환물</h3><div class="trades">');
-    for(const id in SUMMON){const sm=SUMMON[id],have=S.items['sum_'+id]||0;h+=row('sum:'+id,!afford(sm.need),sm.n+(have?' ×'+have:''),sm.d,needText(sm.need),itemIcon('sum_'+id));}
+    for(const id in SUMMON){const sm=SUMMON[id],have=S.items['sum_'+id]||0;h+=row('sum:'+id,!afford(sm.need),sm.n+(have?' ×'+have:''),sm.d,needHave(sm.need),itemIcon('sum_'+id));}
     h+=_T('</div></div><div class="sec"><h3>장비 제작</h3><div class="trades">');
     h+='<div class="chips">'+[['all',_T('전체')],['sword',_T('검')],['bow',_T('활')],['staff',_T('지팡이')],['star',_T('표창')],['boom',_T('부메랑')],['lance',_T('장창')],['hammer',_T('망치')],['book',_T('마법서')],['armor',_T('머리·갑옷')],['hands',_T('장갑')],['feet',_T('신발')],['acc',_T('목걸이·장신구')]].map(([k,n])=>'<button class="chip'+(craftF===k?' on':'')+'" data-act="cf:'+k+'">'+n+'</button>').join('')+'</div>';
     for(const id of craftOrder()){const e=ITEMS[id];if(craftF!=='all'){const g=e.slot==='weapon'?(e.cls||'sword'):e.slot==='acc'||e.slot==='neck'?'acc':e.slot==='head'||e.slot==='body'?'armor':e.slot;if(g!==craftF)continue;}const own=owns(id);
-      h+=row('item:'+id,own||!afford(e.recipe)||(e.forge&&!fn),e.n,'['+SLOT_KIND[e.slot]+'] '+e.d+(e.forge?_T(' · 대장간'):''),own?_T('보유 중'):costText(e.recipe),itemIcon(id));}
+      h+=row('item:'+id,own||!afford(e.recipe)||(e.forge&&!fn),e.n,'['+SLOT_KIND[e.slot]+'] '+e.d+(e.forge?_T(' · 대장간'):''),own?_T('보유 중'):needHave(e.recipe),itemIcon(id));}
     h+='</div></div>';
   }else{
     const fire=nearFire();
     h+='<p>'+(fire?_T('불 앞이다. 재료가 있으면 요리할 수 있다.'):_T('모닥불이나 화톳불 근처에서만 요리할 수 있어요.'))+'</p>';
     h+=_T('<div class="sec"><h3>요리법</h3><div class="trades">');
-    for(const r of RECIPES)if(!r.shop)h+=row('cook:'+r.id,!fire||!haveItems(r.need),r.n,r.d,needText(r.need),itemIcon('d_'+r.id));
+    for(const r of RECIPES)if(!r.shop)h+=row('cook:'+r.id,!fire||!haveItems(r.need),r.n,r.d,needHave(r.need),itemIcon('d_'+r.id));
     h+=_T('</div></div><div class="sec"><h3>음식</h3><div class="trades">');
     const owned=RECIPES.filter(r=>it['d_'+r.id]>0);
     if(!owned.length)h+=_T('<p>아직 만든 음식이 없어요.</p>');

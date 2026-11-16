@@ -4,7 +4,7 @@
 const $=id=>document.getElementById(id);
 let hudT=0;
 let mapCv=null,mapCtx=null,mapT=0,seenT=0;
-const MAPC={18:[34,30,32],19:[90,78,64],1:[34,74,40],2:[125,134,138],3:[205,140,90],4:[70,120,56],5:[60,48,40],6:[180,140,240],7:[86,96,46],8:[70,100,150],9:[79,208,138],10:[159,232,255],11:[238,144,88],12:[255,210,58],13:[90,138,255],14:[230,90,40],15:[192,128,255],16:[190,225,240],17:[232,251,255]};
+const MAPC={18:[34,30,32],19:[90,78,64],1:[34,74,40],2:[125,134,138],3:[190,204,212],4:[70,120,56],5:[60,48,40],6:[180,140,240],7:[86,96,46],8:[70,100,150],9:[79,208,138],10:[159,232,255],11:[238,144,88],12:[255,210,58],13:[90,138,255],14:[230,90,40],15:[192,128,255],16:[190,225,240],17:[232,251,255]};
 const GRASSC=[[54,92,54],[44,66,48],[106,83,64],[58,48,46],[200,214,222]],BIOC={5:[78,124,58],6:[110,92,50],7:[48,52,72],8:[190,144,96],9:[78,74,72],10:[190,208,204]},BIOT={8:[132,128,60],9:[70,40,30],10:[150,190,190],2:[200,130,160],3:[176,92,44],4:[132,84,170],5:[74,130,64],6:[52,44,40],7:[34,78,62]};
 function mapColor(i){
   if(!S.seen[i])return [12,18,14];
@@ -72,6 +72,7 @@ function hud(){
   $('xpFill').style.width=(p.xp/Math.round(8*Math.pow(p.lvl,1.5))*100)+'%';
   $('hpFill').style.width=(p.hp/pMax()*100)+'%';
   $('coreFill').style.width=(S.core.hp/S.core.max*100)+'%';
+  {const hn=Math.max(0,Math.ceil(p.hp))+'/'+Math.round(pMax()),cn=Math.max(0,Math.ceil(S.core.hp))+'/'+Math.round(S.core.max);if($('hpNum').textContent!==hn)$('hpNum').textContent=hn;if($('coreNum').textContent!==cn)$('coreNum').textContent=cn;}
   $('btnNight').hidden=S.phase!=='day';
   const bo=S.enemies.find(e=>e.awak)||S.enemies.find(e=>e.lair||e.t==='chief');$('bossbar').hidden=!bo;if(bo){$('bossName').textContent=(bo.awak?_L('각성한 ','Awakened '):'')+BOSS_NAME[bo.t];$('bossFill').style.width=Math.max(0,bo.hp/bo.max*100)+'%';}
   $('btnHook').hidden=!(S.p.bite>0)||paused||S.menu||S.trading;

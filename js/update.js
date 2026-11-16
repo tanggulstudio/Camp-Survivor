@@ -167,7 +167,7 @@ function update(dt){
   if(!NC())for(const v of S.vill)updVillager(v,dt);
   S.picks=S.picks.filter(k=>!k.got);
   if(!NC()&&S.phase==='day'&&!S.tower){S.asT=(S.asT||60)-dt;if(S.asT<=0){S.asT=60;save();}}
-  updAllies(dt);updPet(dt);updHazard(dt);updCold(dt);S.achT=(S.achT||0)-dt;if(S.achT<=0){S.achT=1;checkAch();}if(S.p.chill>0)S.p.chill-=dt;S.gt+=dt;
+  updAllies(dt);updPet(dt);updHazard(dt);updCold(dt);S.achT=(S.achT||0)-dt;if(S.achT<=0){S.achT=1;checkAch();}if(!NC()){S.wildT=(S.wildT==null?15:S.wildT)-dt;if(S.wildT<=0){S.wildT=15;topUpWild();}}if(S.p.chill>0)S.p.chill-=dt;S.gt+=dt;
 
   // buildings
   S.scT=(S.scT||0)-dt;if(S.scT<=0){S.scT=1;S.scare=[];for(const i of bIdx()){const b=S.bld[i];if(b&&b.t==='scarecrow')S.scare.push(i);}}

@@ -291,7 +291,7 @@ const ITEMS={
 };
 const SLOT_KEYS=['weapon','head','body','hands','feet','neck','acc1','acc2','relic'];
 const SLOT_KIND={weapon:_T('무기'),head:_T('머리'),body:_T('갑옷'),hands:_T('장갑'),feet:_T('신발'),neck:_T('목걸이'),acc:_T('장신구'),relic:_T('유물')};
-const SLOT_COL={weapon:'#ff8a6a',head:'#7fb8ff',body:'#5fd0a0',hands:'#ffb347',feet:'#c9a27a',neck:'#ff8ad8',acc:'#c9a6ff',relic:'#ffd23a'};
+const SLOT_COL={weapon:'#b0432b',head:'#2c63a0',body:'#25744f',hands:'#93530c',feet:'#765535',neck:'#a3307a',acc:'#6a4a9c',relic:'#7d6200'};
 const SV=x=>'<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">'+x+'</svg>';
 const PLATE='<ellipse cx="12" cy="16.5" rx="10" ry="4.5" fill="#e8e4d8"/><ellipse cx="12" cy="15.5" rx="7" ry="2.6" fill="#cfc9b8"/>';
 const FISHP=(b,d)=>'<path d="M3 12c4-6 11-6 15 0-4 6-11 6-15 0z" fill="'+b+'"/><path d="M17 12l5-4v8z" fill="'+d+'"/><circle cx="7" cy="11" r="1.2" fill="#1a2a30"/>';
