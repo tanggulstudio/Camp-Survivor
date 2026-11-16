@@ -101,6 +101,20 @@ function save(){
   if(NC()){saveChar();return;}
   try{localStorage.setItem(SAVE_KEY,JSON.stringify(buildSave()));}catch(_){}
 }
+// Village photo: the current view (no HUD) with a small caption, shared on phones or saved as a PNG.
+async function villagePhoto(){if(!running||!S)return;const src=$('cv');const w=src.width,h=src.height,u=Math.max(1,Math.min(w,h)/420);
+  const title='🔥 '+_L('캠프 서바이버','Camp Survivor')+' · '+_L(S.day+'일째',('Day '+S.day))+(S.pname?' · '+S.pname:''),url=/^https?:$/.test(location.protocol)?location.host+location.pathname.replace(/index\.html$/,''):'';
+  const fs=Math.round(17*u),fs2=Math.round(12*u),pad=Math.round(14*u),mc=document.createElement('canvas').getContext('2d');
+  mc.font='700 '+fs+'px "Gowun Dodum",sans-serif';const tw=mc.measureText(title).width;mc.font=fs2+'px "Gowun Dodum",sans-serif';const uw=mc.measureText(url).width;
+  const one=tw+uw+pad*3<w,band=one?Math.round(fs*2.4):Math.round(fs*1.6+fs2*1.6+pad);
+  const c=document.createElement('canvas');c.width=w;c.height=h+band;const g=c.getContext('2d');g.drawImage(src,0,0);
+  g.fillStyle='#f6f0df';g.fillRect(0,h,w,band);g.fillStyle='#c77b43';g.fillRect(0,h,w,Math.max(2,Math.round(2*u)));
+  g.textBaseline='middle';g.font='700 '+fs+'px "Gowun Dodum",sans-serif';g.fillStyle='#344538';g.fillText(title,pad,one?h+band/2:h+pad*.6+fs*.7);
+  g.font=fs2+'px "Gowun Dodum",sans-serif';g.fillStyle='#626e5e';if(one){g.textAlign='right';g.fillText(url,w-pad,h+band/2);}else g.fillText(url,pad,h+band-pad*.6-fs2*.6);
+  const name='camp-survivor-day'+S.day+'.png';
+  const blob=await new Promise(r=>c.toBlob(r,'image/png'));if(!blob){toast(_L('사진을 만들지 못했어요','Could not take the photo'),2200);return;}
+  try{const f=new File([blob],name,{type:'image/png'});if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:_L('캠프 서바이버','Camp Survivor'),text:_L('내 캠프 '+S.day+'일째!','My camp, day '+S.day+'!')});return;}}catch(e){if(e&&e.name==='AbortError')return;}
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1500);toast(_L('마을 사진을 저장했어요','Saved a photo of your camp'),2400);}
 function buildSave(){
   {
     const bl=[];forB((b,i)=>bl.push([i,b.t,Math.round(b.hp),b.max,+(b.g||0).toFixed(2),b.seeded?1:0,b.lv||1,b.crop||0]));
@@ -269,6 +283,8 @@ document.addEventListener('click',e=>{if(e.target.closest('button'))sfx('ui');})
 $('consentEss').addEventListener('click',()=>setConsent(false));
 document.querySelector('.card-hud.res').addEventListener('click',e=>{const sp=e.target.closest('span[title]');if(!sp||!S)return;const ic=sp.querySelector('[data-icon]');const k=ic&&ic.dataset.icon;if(!k||k==='g'){toast(_T('금화 · 몬스터를 잡거나 재료를 팔면 모여요. 상점에서 쓰는 돈이에요'),3200);return;}toast(resInfo(k)+(MAT_DESC[k]?' — '+MAT_DESC[k]:''),4200);});
 $('disc').addEventListener('click',()=>{$('disc').hidden=true;});
+$('tutT').addEventListener('click',()=>{if($('tutBox').classList.contains('goals'))toggleGoalMini();});
+$('btnShot').addEventListener('click',villagePhoto);
 {const hud=document.querySelector('.hud'),setB=()=>{const r=hud.getBoundingClientRect(),g=$('game').getBoundingClientRect();document.documentElement.style.setProperty('--hudb',Math.round(r.bottom-g.top)+'px');};
   try{new ResizeObserver(setB).observe(hud);}catch(_){addEventListener('resize',setB);}setB();
   const tg=$('hudTog'),apply=on=>{document.body.classList.toggle('hudmini',on);tg.setAttribute('aria-pressed',on?'true':'false');tg.setAttribute('aria-label',on?_L('상단 정보 펼치기','Expand top bar'):_L('상단 정보 접기','Collapse top bar'));setTimeout(setB,0);};

@@ -180,9 +180,12 @@ const TUT=[
 ];
 function tutStep(){return S&&S.tut!=null&&S.tut<TUT.length?TUT[S.tut]:null}
 function tutCheck(){const st=tutStep();if(!st||!running||NC())return;let ok=false;try{ok=st.c();}catch(_){}if(ok){S.tut++;sfx('achieve');S.gold+=10;const nx=tutStep();toast(nx?_T('좋아요! 금화 +10 · 다음: ')+nx.t:_T('튜토리얼 끝! 이제 마음껏 살아남아 봐요. 막히면 일시정지 → 게임 방법을 봐요'),3600);renderTut();}}
-function renderTut(){const el=$('tutBox');if(!el)return;const st=tutStep();
-  if(!st){el.hidden=!running||S.goalOff||S.tower||NC();if(el.hidden)return;const gs=nextGoals();if(!gs.length){el.hidden=true;return;}$('tutT').textContent=_T('다음 목표');$('tutD').innerHTML=gs.map(g=>'<span class="gl"><b>'+g.t+'</b><small>'+g.d+'</small>'+(g.p!=null?'<i class="gp"><i style="width:'+Math.round(g.p*100)+'%"></i></i>':'')+'</span>').join('');$('tutSkip').textContent=_T('목표 숨기기');return;}
-  el.hidden=!running;$('tutSkip').textContent=_T('튜토리얼 건너뛰기');$('tutT').textContent=(S.tut+1)+' / '+TUT.length+' · '+st.t;$('tutD').textContent=st.d;}
+// Goal box can fold to one line (just the first goal and its progress). Phones start folded.
+let GOALMINI=null;function goalMini(){if(GOALMINI==null){let v=null;try{v=localStorage.getItem('cs-goalmini');}catch(_){}GOALMINI=v==null?matchMedia('(max-width:580px)').matches:v==='1';document.body.classList.toggle('goalmini',GOALMINI);}return GOALMINI}
+function toggleGoalMini(){GOALMINI=!goalMini();try{localStorage.setItem('cs-goalmini',GOALMINI?'1':'0');}catch(_){}document.body.classList.toggle('goalmini',GOALMINI);renderTut();}
+function renderTut(){goalMini();const el=$('tutBox');if(!el)return;const st=tutStep();
+  if(!st){el.hidden=!running||S.goalOff||S.tower||NC();if(el.hidden)return;const gs=nextGoals();if(!gs.length){el.hidden=true;return;}el.classList.add('goals');$('tutT').textContent=_T('다음 목표')+(goalMini()?' ▸':' ▾');$('tutD').innerHTML=gs.map(g=>'<span class="gl"><b>'+g.t+'</b><small>'+g.d+'</small>'+(g.p!=null?'<i class="gp"><i style="width:'+Math.round(g.p*100)+'%"></i></i>':'')+'</span>').join('');$('tutSkip').textContent=_T('목표 숨기기');return;}
+  el.classList.remove('goals');el.hidden=!running;$('tutSkip').textContent=_T('튜토리얼 건너뛰기');$('tutT').textContent=(S.tut+1)+' / '+TUT.length+' · '+st.t;$('tutD').textContent=st.d;}
 function tutArrow(now){const st=tutStep();if(!st||!st.arrow||S.p.dead)return;const p=S.p,cx=Math.floor(p.x/T),cy=Math.floor(p.y/T);let best=-1,bd=1e9;
   for(let dy=-14;dy<=14;dy++)for(let dx=-14;dx<=14;dx++){const x=cx+dx,y=cy+dy;if(x<0||y<0||x>=W||y>=H)continue;const v=S.res[idx(x,y)];if(st.arrow===1?v===1:(v===2)){const d=dx*dx+dy*dy;if(d<bd){bd=d;best=idx(x,y);}}}
   if(best<0)return;const [tx,ty]=cCenter(best),a=Math.atan2(ty-p.y,tx-p.x),dist=Math.hypot(tx-p.x,ty-p.y);if(dist<T*1.5){ctx.strokeStyle='rgba(255,224,138,'+(.6+Math.sin(now/150)*.3)+')';ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(tx,ty,T*.7,0,Math.PI*2);ctx.stroke();return;}

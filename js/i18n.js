@@ -7,4 +7,5 @@ function i18nDom(){document.documentElement.lang=LANG;for(const b of document.qu
   for(const n of ns){const t=n.nodeValue,k=t.trim();if(k&&EN[k]!=null&&!(n.parentNode&&/^(SCRIPT|STYLE)$/.test(n.parentNode.nodeName)))n.nodeValue=t.replace(k,EN[k]);}
   for(const el of document.querySelectorAll('[aria-label],[title],[placeholder]'))for(const a of ['aria-label','title','placeholder']){const v=el.getAttribute(a);if(v&&EN[v]!=null)el.setAttribute(a,EN[v]);}
   if(EN[document.title])document.title=EN[document.title];}
+if(EN)Object.assign(EN,{"📸 마을 사진":"📸 Camp photo"});
 try{i18nDom();}catch(_){}

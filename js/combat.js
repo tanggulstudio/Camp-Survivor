@@ -533,8 +533,13 @@ const ACH=[
   {id:'awak1',n:_L('각성한 자','Awakened'),d:_L('각성한 보스를 처음 쓰러뜨린다','Defeat your first awakened boss'),c:()=>(S.awakK||0)>=1,r:{token:5}},
   {id:'awak5',n:_L('끝없는 밤의 주인','Lord of Endless Night'),d:_L('각성한 보스 5마리를 쓰러뜨린다','Defeat 5 awakened bosses'),c:()=>(S.awakK||0)>=5,r:{token:15,sunstone:1}},
   {id:'d100',n:_L('백 일의 불꽃','Hundred-Day Flame'),d:_L('100일째 아침을 맞는다','Reach the morning of day 100'),c:()=>S.day>=100,r:{g:3000,token:20}},
+  {id:'cdx25',n:_L('수집가의 첫걸음','First Collector'),d:_L('도감 25% 채우기','Fill 25% of the codex'),c:()=>codexCount().pct>=.25,r:{g:150}},
+  {id:'cdx50',n:_L('부지런한 기록가','Diligent Recorder'),d:_L('도감 50% 채우기','Fill 50% of the codex'),c:()=>codexCount().pct>=.5,r:{g:400,token:3}},
+  {id:'cdx75',n:_L('숲의 백과사전','Forest Encyclopedia'),d:_L('도감 75% 채우기','Fill 75% of the codex'),c:()=>codexCount().pct>=.75,r:{g:900,token:6}},
+  {id:'cdx100',n:_L('모든 것을 본 자','Seen It All'),d:_L('도감 100% 채우기','Fill the whole codex'),c:()=>codexCount().pct>=1,r:{g:2500,token:12,sunstone:1}},
   {id:'sun8',n:_T('긴 낮'),d:_T('태양의 제단에 태양석 8개를 바친다'),c:()=>(S.sunOff||0)>=8,r:{g:800}},
 ];
+const CODEX_GOALS=[{p:25,r:{g:150}},{p:50,r:{g:400,token:3}},{p:75,r:{g:900,token:6}},{p:100,r:{g:2500,token:12,sunstone:1}}];
 function checkAch(){if(!S.ach)S.ach={};for(const a of ACH){if(S.ach[a.id])continue;let ok=false;try{ok=a.c();}catch(_){}if(!ok)continue;S.ach[a.id]=1;sfx('achieve');metaAdd(2);try{if(window.desktop&&window.desktop.achieve)window.desktop.achieve(a.id);}catch(_){}
   const r=a.r||{};if(r.g)S.gold+=r.g;if(r.token)S.items.token=(S.items.token||0)+r.token;if(r.sunstone)S.items.sunstone=(S.items.sunstone||0)+r.sunstone;
   toast(_T('업적 달성 · ')+a.n+_T(' — 보상 ')+achReward(r),3600);return;}}
@@ -566,16 +571,54 @@ function monPortrait(t){if(PORTRAIT[t])return PORTRAIT[t];const E=ET[t];if(!E)re
   try{ctx=g;g.scale(2,2);const r=E.r,sc=Math.min(1.7,24/(r*1.35));g.translate(sz/2,sz/2+r*sc*.15);g.scale(sc,sc);drawEnemy({t,x:0,y:0,px:0,py:0,face:0,hp:1,max:1,m:1,id:7,dir:1,walk:0,cd:0,hurt:0},1000);}catch(e){}finally{ctx=keep;}
   return PORTRAIT[t]=c.toDataURL();}
 let cdxTab='mon',cdxSel=null;
+// Where to look for things you have not found yet (shown in the codex instead of a bare "???").
+const RG_NAME=()=>REGION.map(r=>r.n);
+function monHint(t){const R=RG_NAME();
+  const raid=['goblin','wolf','boar','archer'],reg={toad:1,shard:2,imp:3,magma:3,yeti:4,wisp:4},lair={hydra:1,golem:2,flame:3,frost:4};
+  if(raid.includes(t))return _L('밤이 되면 마을을 습격해요','Raids the camp at night');
+  if(t==='burrower')return _L('밤 습격 때 땅속에서 불쑥 나타나요','Bursts out of the ground during night raids');
+  if(t==='chief')return _L('밤 습격 때 고블린 무리를 이끌고 와요','Leads the goblins on a night raid');
+  if(t==='bat')return _L('던전 동굴 안에 살아요','Lives in dungeon caves');
+  if(t==='mimic')return _L('수상한 상자를 열면 튀어나와요 · 도전의 탑 높은 층에도 있어요','Jumps out of suspicious chests · also on high tower floors');
+  if(t==='abyss')return _L('숨겨진 봉인 너머에서 기다려요 · 고대 열쇠의 비밀을 풀어 보세요','Waits beyond a hidden seal · follow the ancient keys');
+  if(reg[t]!=null)return _L(R[reg[t]]+'에 살아요','Lives in '+R[reg[t]]);
+  if(lair[t]!=null)return _L(R[lair[t]]+'의 둥지에서 잠들어 있어요 · 소환물로 깨워요',"Sleeps in a lair in "+R[lair[t]]+' · wake it with a summoning item');
+  for(const b in BMON)if(BMON[b]===t)return _L(BIO[b].n+' 생물군집에 살아요','Lives in the '+BIO[b].n+' biome');
+  return _L('탐험하다 보면 만날 거예요','You will meet it out there');}
+function matHint(k){const MD={slime:'toad',dust:'shard',horn:'imp',fur:'yeti'};
+  for(const m in BDROP)if(BDROP[m]===k)return _L(MON_NAME[m]+'에게서, 또는 그 생물군집의 나무에서 얻어요','From '+MON_NAME[m]+'s, or the trees of its biome');
+  if(MD[k])return _L(MON_NAME[MD[k]]+'(을)를 쓰러뜨리면 얻어요','Dropped by '+MON_NAME[MD[k]]);
+  if(k==='mush')return _L('버섯 숲의 큰 버섯을 캐면 얻어요','Harvest the giant mushrooms of the Mushroom Grove');
+  if(CROPS[k])return _L('밭에 씨앗을 심어 길러요','Grow it in a field');
+  if(k.slice(0,3)==='sd_'||k==='seed')return _L('잡화점에서 사거나 덤불에서 얻어요','Buy at the general store or find in bushes');
+  if(['fish','trout','koi','eel','salmon','catfish'].includes(k))return _L('물가에서 낚시로 잡아요','Catch it by fishing');
+  if(k==='meat'||k==='leather')return _L('들짐승을 사냥하면 얻어요','Hunt wild animals');
+  if(k==='berry')return _L('붉은 열매 덤불에서 따요','Pick from berry bushes');
+  if(k.slice(0,4)==='egg_')return _L('둥지나 몬스터에게서 드물게 얻어요','Rarely from nests and monsters');
+  if(k.slice(0,4)==='sum_')return _L('가방 → 제작 → 보스 소환물에서 만들어요','Craft it: Bag → Craft → Boss summons');
+  return _L('탐험·상자·의뢰에서 얻을 수 있어요','From exploring, chests and requests');}
+function eqHint(it){if(it.boss)return _L('보스를 쓰러뜨리면 얻어요','Dropped by a boss');if(it.recipe)return _L('제작으로 만들 수 있어요'+(it.forge?' · 대장간 근처':''),'Craftable'+(it.forge?' · near a forge':''));if(it.drop)return _L('몬스터나 상자에서 드물게 얻어요','A rare drop from monsters and chests');return _L('상점·보물고·탑 보상에서 찾아보세요','Look in shops, the vault and tower rewards');}
+const SIL=h=>'<span class="sil">'+h+'</span>';
+// Overall codex completion (used by the collection achievements and shown at the top of the codex)
+function codexCount(){const D=S.disc||{},C=S.codex||{},CR=S.codexR||{};let got=0,all=0;
+  for(const t in MON_NAME){all++;if((C[t]||0)>0||(CR[t]||0)>0)got++;}
+  for(const k in ITEMS){const it=ITEMS[k];if(!it||!it.n||!it.slot)continue;all++;if(D[k]||owns(k))got++;}
+  for(const k in ITEM_NAME){if(k.slice(0,2)==='d_')continue;all++;if(D[k])got++;}
+  for(const r of RECIPES){all++;if(D['d_'+r.id])got++;}
+  const RS=S.regSeen||{};for(let rg=0;rg<5;rg++){all++;if(rg===0||RS[rg]||(S.prog||0)>=rg)got++;}
+  for(let b=5;b<BIO.length;b++){all++;if((S.bioSeen||{})[b])got++;}
+  return {got,all,pct:all?got/all:0};}
 function codexHtml(){discScan();const D=S.disc||{},Q='<span class="cdq">?</span>';let h='<div class="chips sm">'+[['mon',_L('몬스터','Monsters')],['eq',_L('장비','Gear')],['mat',_L('재료','Materials')],['food',_L('음식','Food')],['bio',_L('지역·생물군집','Regions & biomes')]].map(([k,n])=>'<button class="chip'+(cdxTab===k?' on':'')+'" data-act="cdt:'+k+'">'+n+'</button>').join('')+'</div>';
   let L=[];
-  if(cdxTab==='mon'){for(const t in MON_NAME){const n=(S.codex||{})[t]||0,r=(S.codexR||{})[t]||0,known=n>0||r>0,boss=!!BOSS_NAME[t];L.push({k:t,known,name:MON_NAME[t],ic:known?'<img src="'+monPortrait(t)+'" alt="">':Q,tag:boss?_L('보스','Boss'):'',
-    det:known?(_L('처치 ','Defeated ')+n+(boss?'':(r<3?_L(' · 다음 목표 '+CODEX_M[r]+'마리',' · next goal '+CODEX_M[r]):_L(' · 도감 완성',' · complete'))+_L(' · 주는 피해 +'+r*5+'%',' · damage +'+r*5+'%')+' · '+'★'.repeat(r)+'☆'.repeat(3-r))+'<br>'+_L('체력 ','HP ')+ET[t].hp+_L(' · 공격 ',' · ATK ')+ET[t].dmg):_L('아직 쓰러뜨린 적이 없어요','Not defeated yet')});}}
-  else if(cdxTab==='eq'){for(const k in ITEMS){const it=ITEMS[k];if(!it||!it.n||!it.slot)continue;const known=!!D[k]||owns(k);L.push({k,known,name:it.n,ic:known?itemIcon(k):Q,tag:SLOT_LABEL[it.slot]||'',det:known?(it.d||''):_L((SLOT_LABEL[it.slot]||'')+' · 아직 손에 넣지 못했어요',(SLOT_LABEL[it.slot]||'')+' · not found yet')});}}
-  else if(cdxTab==='mat'){for(const k in ITEM_NAME){if(k.slice(0,2)==='d_')continue;const known=!!D[k];L.push({k,known,name:ITEM_NAME[k],ic:known?itemIcon(k):Q,tag:'',det:known?_L('가지고 있는 개수 ','You have ')+(S.items[k]||0):_L('아직 얻은 적이 없어요','Not found yet')});}}
-  else if(cdxTab==='food'){for(const r of RECIPES){const k='d_'+r.id,known=!!D[k];L.push({k,known,name:r.n,ic:known?itemIcon(k):Q,tag:'',det:known?(r.d||'')+'<br>'+_L('재료: ','Ingredients: ')+Object.entries(r.need).map(([a,b])=>nameOf(a)+' '+b).join(', '):_L('아직 만들어 본 적이 없어요','Not cooked yet')});}}
+  if(cdxTab==='mon'){for(const t in MON_NAME){const n=(S.codex||{})[t]||0,r=(S.codexR||{})[t]||0,known=n>0||r>0,boss=!!BOSS_NAME[t];L.push({k:t,known,name:MON_NAME[t],ic:known?'<img src="'+monPortrait(t)+'" alt="">':SIL('<img src="'+monPortrait(t)+'" alt="">'),tag:boss?_L('보스','Boss'):'',
+    det:known?(_L('처치 ','Defeated ')+n+(boss?'':(r<3?_L(' · 다음 목표 '+CODEX_M[r]+'마리',' · next goal '+CODEX_M[r]):_L(' · 도감 완성',' · complete'))+_L(' · 주는 피해 +'+r*5+'%',' · damage +'+r*5+'%')+' · '+'★'.repeat(r)+'☆'.repeat(3-r))+'<br>'+_L('체력 ','HP ')+ET[t].hp+_L(' · 공격 ',' · ATK ')+ET[t].dmg):'<b class="hint">'+_L('어디서 만날까? ','Where? ')+'</b>'+monHint(t)});}}
+  else if(cdxTab==='eq'){for(const k in ITEMS){const it=ITEMS[k];if(!it||!it.n||!it.slot)continue;const known=!!D[k]||owns(k);L.push({k,known,name:it.n,ic:known?itemIcon(k):SIL(itemIcon(k)),tag:SLOT_LABEL[it.slot]||'',det:known?(it.d||''):'<b class="hint">'+_L('어디서 얻을까? ','Where? ')+'</b>'+eqHint(it)});}}
+  else if(cdxTab==='mat'){for(const k in ITEM_NAME){if(k.slice(0,2)==='d_')continue;const known=!!D[k];L.push({k,known,name:ITEM_NAME[k],ic:known?itemIcon(k):SIL(itemIcon(k)),tag:'',det:known?_L('가지고 있는 개수 ','You have ')+(S.items[k]||0)+'<br><small class="hint">'+matHint(k)+'</small>':'<b class="hint">'+_L('어디서 얻을까? ','Where? ')+'</b>'+matHint(k)});}}
+  else if(cdxTab==='food'){for(const r of RECIPES){const k='d_'+r.id,known=!!D[k];L.push({k,known,name:r.n,ic:known?itemIcon(k):SIL(itemIcon(k)),tag:'',det:(known?(r.d||'')+'<br>':'<b class="hint">'+_L('아직 만들어 본 적이 없어요 · ','Not cooked yet · ')+'</b>')+_L('재료: ','Ingredients: ')+(Object.entries(r.need).map(([a,b])=>nameOf(a)+' '+b).join(', ')||_L('상점에서 사요','Buy at a shop'))});}}
   else{const RS=S.regSeen||{};for(let rg=0;rg<5;rg++){const known=rg===0||!!RS[rg]||(S.prog||0)>=rg;L.push({k:'rg'+rg,known,name:REGION[rg].n,ic:known?'<span class="cdb" style="background:'+['#5a8a4a','#4a6050','#b0704a','#8a3a2a','#c8dce8'][rg]+'"></span>':Q,tag:_L('지역','Region'),det:known?REGION[rg].d:_L('아직 가 보지 못한 지역이에요','Not visited yet')});}
     for(let b=5;b<BIO.length;b++){const known=!!(S.bioSeen||{})[b];L.push({k:'b'+b,known,name:BIO[b].n,ic:known?'<span class="cdb" style="font-size:24px">'+BIO[b].i+'</span>':Q,tag:REGION[BIO[b].rg].n,det:known?BIO[b].d:_L(REGION[BIO[b].rg].n+' 어딘가에 숨어 있어요','Hidden somewhere in '+REGION[BIO[b].rg].n)});}}
   const got=L.filter(x=>x.known).length,sel=L.find(x=>x.k===cdxSel)||null;
+  {const cc=codexCount(),pc=Math.floor(cc.pct*100),nx=CODEX_GOALS.find(g=>pc<g.p);h+='<div class="cdtot"><b>'+_L('도감 완성도 ','Codex ')+pc+'%</b><i class="gp"><i style="width:'+pc+'%"></i></i><small>'+(nx?_L(nx.p+'%가 되면 보상: ','At '+nx.p+'%: ')+achReward(nx.r):_L('도감을 모두 채웠어요!','Codex complete!'))+'</small></div>';}
   h+='<p>'+_L('발견 <b>'+got+' / '+L.length+'</b>','Found <b>'+got+' / '+L.length+'</b>')+(cdxTab==='mon'?_L(' · 몬스터를 25·100·300마리 잡을 때마다 그 몬스터에게 주는 피해가 5%씩 늘고 보상을 받아요',' · Every 25 / 100 / 300 kills of a monster adds 5% damage against it and gives a reward'):'')+'</p>';
   h+='<div class="cdd">'+(sel?'<div class="cdi">'+sel.ic+'</div><div><b>'+(sel.known?sel.name:'???')+'</b>'+(sel.tag?'<small class="cdtag">'+sel.tag+'</small>':'')+'<p>'+sel.det+'</p></div>':'<p>'+_L('칸을 누르면 자세한 정보가 나와요. 아직 모르는 것은 ?로 보여요.','Tap a card for details. Things you have not found yet show as ?.')+'</p>')+'</div>';
   h+='<div class="cdg">'+L.map(x=>'<button type="button" class="cdc'+(x.known?'':' unk')+(x.k===cdxSel?' sel':'')+'" data-act="cdx:'+x.k+'"><span class="cdi">'+x.ic+'</span><span class="cdn">'+(x.known?x.name:'???')+'</span></button>').join('')+'</div>';
