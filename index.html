@@ -1342,6 +1342,10 @@ Object.assign(IC,{honey:'<path d="M7 8h10v10a3 3 0 0 1-3 3h-4a3 3 0 0 1-3-3z" fi
   recall:'<rect x="5" y="5" width="14" height="14" rx="2" fill="#e8d8a8"/><rect x="3" y="3.5" width="18" height="3" rx="1.5" fill="#a06a3c"/><rect x="3" y="17.5" width="18" height="3" rx="1.5" fill="#a06a3c"/><path d="M12 8.5l3 3-3 3-3-3z" fill="#ff8a3a"/>',
   charm6:'<circle cx="12" cy="13" r="8" fill="#22301f" stroke="#ffd27a" stroke-width="1.4"/><path d="M12 3v3" stroke="#ffd27a" stroke-width="1.4"/><g><circle cx="12" cy="9" r="1.7" fill="#f2b630"/><circle cx="15.5" cy="11" r="1.7" fill="#e0703a"/><circle cx="15.5" cy="15" r="1.7" fill="#c9a6ff"/><circle cx="12" cy="17" r="1.7" fill="#ff6a9a"/><circle cx="8.5" cy="15" r="1.7" fill="#8a7a70"/><circle cx="8.5" cy="11" r="1.7" fill="#e8a040"/></g>'});
 ITEMS.charm6={n:_L('여섯 계절의 부적','Charm of Six Seasons'),slot:'acc',atk:6,hp:40,spd:.05,d:_L('공격력 +6 · 최대 체력 +40 · 이동 속도 +5%','ATK +6 · Max HP +40 · Move speed +5%'),recipe:{honey:4,maple:4,spore:4,cactus:4,char:4,resin:4}};
+Object.assign(ITEM_NAME,{mush:_L('버섯','Mushroom')});Object.assign(ITEM_COL,{mush:'#e0806a'});
+Object.assign(IC,{mush:'<path d="M4 12a8 7 0 0 1 16 0z" fill="#d0584a"/><circle cx="9" cy="8.5" r="1.4" fill="#fbe9d8"/><circle cx="14.5" cy="7.5" r="1.1" fill="#fbe9d8"/><circle cx="16.5" cy="10.5" r=".9" fill="#fbe9d8"/><path d="M9.5 12h5l.7 7a1.5 1.5 0 0 1-1.5 1.6h-3.4a1.5 1.5 0 0 1-1.5-1.6z" fill="#efe2c8"/>'});
+ITEMS.mushcap={n:_L('버섯 갓 모자','Mushroom Cap Hat'),slot:'head',def:4,hp:30,regen:.6,d:_L('방어 4 · 최대 체력 +30 · 체력 재생 +0.6/초','DEF 4 · Max HP +30 · HP regen +0.6/s'),recipe:{mush:8,spore:2}};
+Object.assign(DISH,{mushgrill:DISH.meat,mushsoup:DISH.hearty,mushskewer:DISH.meat});
 Object.assign(DISH,{pancake:DISH.bread,mapletea:DISH.stew,sporesoup:DISH.hearty,cactusjuice:DISH.pie,charskewer:DISH.meat,resintea:DISH.stew});
 const DISH_ALIAS={csoup:'carrot',bakepot:'potato',scake:'strawberry',cpie:'cherry',ajuice:'apple',pporridge:'pumpkin',wmelon:'melon',eelgrill:'eel',salmon:'salmon',catstew:'catfish'};
 function itemIcon(k){if(k.slice(0,2)==='d_'&&DISH_ALIAS[k.slice(2)])return itemIcon(DISH_ALIAS[k.slice(2)]);
@@ -1412,6 +1416,9 @@ const RECIPES=[
   {id:'cactusjuice',n:_L('선인장 주스','Cactus Juice'),need:{cactus:2},d:_L('체력 70 회복, 다음 아침까지 체력이 계속 차올라요','Restore 70 HP, regenerate HP until morning'),hp:70,buff:'pie'},
   {id:'charskewer',n:_L('숯불 꼬치','Charcoal Skewers'),need:{char:1,meat:1},d:_L('체력 65 회복, 다음 아침까지 공격력 +5 · 방어 +3','Restore 65 HP, +5 ATK · +3 DEF until morning'),hp:65,buff:'feast'},
   {id:'resintea',n:_L('송진 차','Resin Tea'),need:{resin:2,berry:1},d:_L('체력 50 회복, 다음 아침까지 설원 추위를 타지 않아요','Restore 50 HP, immune to the frost cold until morning'),hp:50,buff:'resin'},
+  {id:'mushgrill',n:_L('버섯 구이','Grilled Mushrooms'),need:{mush:2},d:_L('체력 45 회복','Restore 45 HP'),hp:45},
+  {id:'mushsoup',n:_L('버섯 크림 수프','Creamy Mushroom Soup'),need:{mush:2,wheat:1},d:_L('체력 60 회복, 다음 아침까지 체력이 계속 차올라요','Restore 60 HP, regenerate HP until morning'),hp:60,buff:'pie'},
+  {id:'mushskewer',n:_L('버섯 고기 꼬치','Mushroom Meat Skewers'),need:{mush:2,meat:1},d:_L('체력 70 회복, 다음 아침까지 공격력 +5 · 방어 +3','Restore 70 HP, +5 ATK · +3 DEF until morning'),hp:70,buff:'feast'},
   {id:'bomb',n:_T('폭탄'),need:{s:6,w:3},d:_T('X키(또는 폭탄 버튼)로 던져요. 주변 적에게 큰 피해를 주고 나무·바위·광석도 한 번에 부숴요'),throw:1},
 ];
 const BUFF_NAME={resin:_L('송진 차','Resin tea'),bread:_T('빵'),feast:_T('고기 파이'),hearty:_T('든든한 스튜'),pie:_T('베리 파이'),stew:_T('매운탕'),steak:_T('스테이크'),lunch:_T('도시락')};
@@ -2369,6 +2376,8 @@ const heapD=[],heapI=[];
 function hpush(d,i){heapD.push(d);heapI.push(i);let k=heapD.length-1;while(k>0){const p=(k-1)>>1;if(heapD[p]<=heapD[k])break;[heapD[p],heapD[k]]=[heapD[k],heapD[p]];[heapI[p],heapI[k]]=[heapI[k],heapI[p]];k=p;}}
 function hpop(){const d=heapD[0],i=heapI[0];const ld=heapD.pop(),li=heapI.pop();if(heapD.length){heapD[0]=ld;heapI[0]=li;let k=0;for(;;){const l=k*2+1,r=l+1;let m=k;if(l<heapD.length&&heapD[l]<heapD[m])m=l;if(r<heapD.length&&heapD[r]<heapD[m])m=r;if(m===k)break;[heapD[m],heapD[k]]=[heapD[k],heapD[m]];[heapI[m],heapI[k]]=[heapI[k],heapI[m]];k=m;}}return [d,i]}
 function cellCost(i){if(i===CI)return 1;const b=S.bld[i];return b&&B[b.t].solid?400:1}
+// The fixed town wall can't be broken or removed, so monsters path around it to the gates instead of hammering it.
+function townWall(i){const b=S.bld[i];return !!b&&b.t==='twall'}
 function computeFlow(){
   dist.fill(Infinity);heapD.length=0;heapI.length=0;
   dist[CI]=0;hpush(0,CI);
@@ -2376,12 +2385,12 @@ function computeFlow(){
     const [d,i]=hpop();if(d>dist[i])continue;
     const x=i%W,y=(i/W)|0,c=cellCost(i);
     const nb=[x>0?i-1:-1,x<W-1?i+1:-1,y>0?i-W:-1,y<H-1?i+W:-1];
-    for(const n of nb){if(n<0||S.water[n]||S.res[n]||!(S.road[n]||S.town[n])||S.npcAt[n]>=0)continue;const nd=d+c;if(nd<dist[n]){dist[n]=nd;hpush(nd,n);}}
+    for(const n of nb){if(n<0||S.water[n]||S.res[n]||!(S.road[n]||S.town[n])||S.npcAt[n]>=0||townWall(n))continue;const nd=d+c;if(nd<dist[n]){dist[n]=nd;hpush(nd,n);}}
   }
   roadD.fill(1e9);let qh=0,qt=0;
   for(let i=0;i<W*H;i++)if(dist[i]<Infinity){roadD[i]=0;rq[qt++]=i;}
   while(qh<qt){const i=rq[qh++],x=i%W,y=(i/W)|0;
-    for(const n of [x>0?i-1:-1,x<W-1?i+1:-1,y>0?i-W:-1,y<H-1?i+W:-1]){if(n<0||S.res[n]||S.water[n]||roadD[n]<=roadD[i]+1)continue;roadD[n]=roadD[i]+1;rq[qt++]=n;}}
+    for(const n of [x>0?i-1:-1,x<W-1?i+1:-1,y>0?i-W:-1,y<H-1?i+W:-1]){if(n<0||S.res[n]||S.water[n]||townWall(n)||roadD[n]<=roadD[i]+1)continue;roadD[n]=roadD[i]+1;rq[qt++]=n;}}
   flowDirty=false;
 }
 
@@ -2752,7 +2761,7 @@ function eat(r){
 }
 let incubSel=-1,stashSel=-1,villSel=-1;
 const SUN_MAX=8,SUN_ADD=15;
-const SHOPS_INIT=()=>{SHOPS.shop.buy.push({k:'recall',n:1,g:20});SHOPS.shop.sell.push({k:'honey',n:2,g:8},{k:'maple',n:2,g:8},{k:'spore',n:2,g:10},{k:'cactus',n:2,g:11},{k:'char',n:2,g:13},{k:'resin',n:2,g:14});};
+const SHOPS_INIT=()=>{SHOPS.shop.buy.push({k:'recall',n:1,g:20});SHOPS.shop.sell.push({k:'honey',n:2,g:8},{k:'maple',n:2,g:8},{k:'spore',n:2,g:10},{k:'mush',n:3,g:9},{k:'cactus',n:2,g:11},{k:'char',n:2,g:13},{k:'resin',n:2,g:14});};
 const SHOPS={
   altar:{t:_T('태양의 제단'),line:_T('"태양석을 바치면 해가 조금 더 오래 머문다."')},
   stash:{t:_T('보관함'),line:_T('"가방에 다 못 넣는 장비는 여기 두자."')},
@@ -4282,11 +4291,12 @@ function take(i,who){
   if(who==='p'){const [sx,sy]=cCenter(i);sfx(S.res[i]===1||S.res[i]===4?'chop':'mine',sx,sy);}
   const amt=S.mods.resMult+(S.event&&S.event.id==='harvest'?1:0),ty=S.res[i],isTree=ty===1,[x,y]=cCenter(i);
   if(ty===4){if(Math.random()<.25){S.items.seed++;if(who==='p')float(x,y-26,_T('+1 씨앗'),'#bfe3a8');}S.items.berry+=amt;if(who==='p')float(x,y-12,'+'+amt+_T(' 베리'),'#ff8a96');burst(x,y,'#d0414a',4);S.rhp[i]--;if(S.rhp[i]<=0){S.res[i]=0;flowDirty=BLC=true;}return;}
-  const key=['','w','s','i','','s','c','','','e','d','u','a','o','','b','','m'][ty];
-  S[RK[key]]+=amt;
+  const key=['','w','s','i','','s','c','','','e','d','u','a','o','','b','','m'][ty],shroom=isTree&&bioOf(i)===7;
+  if(shroom){addAmt('mush',amt);if(who==='p'){float(x,y-12,'+'+amt+' '+nameOf('mush'),colorOf('mush'));if(Math.random()<.25){addAmt('spore',1);float(x,y-26,'+1 '+nameOf('spore'),colorOf('spore'));}}}
+  else{S[RK[key]]+=amt;
   if(who==='p')float(x,y-12,'+'+amt+' '+RN[key],RC[key]);
-  if(isTree&&who==='p'){const bm=BTREE[bioOf(i)];if(bm&&Math.random()<.12){addAmt(bm,1);float(x,y-26,'+1 '+nameOf(bm),colorOf(bm));}}
-  burst(x,y,isTree?'#6fa255':ty===3?'#c0784a':ty===6?'#b48cf0':ty===9?'#4fd08a':ty===10?'#9fe8ff':ty===11?'#e08a50':ty===12?'#ffd23a':ty===13?'#5a8aff':ty===5?'#6b5a4c':'#9aa3a8',3);
+  if(isTree&&who==='p'){const bm=BTREE[bioOf(i)];if(bm&&Math.random()<.12){addAmt(bm,1);float(x,y-26,'+1 '+nameOf(bm),colorOf(bm));}}}
+  burst(x,y,shroom?'#e0806a':isTree?'#6fa255':ty===3?'#c0784a':ty===6?'#b48cf0':ty===9?'#4fd08a':ty===10?'#9fe8ff':ty===11?'#e08a50':ty===12?'#ffd23a':ty===13?'#5a8aff':ty===5?'#6b5a4c':'#9aa3a8',3);
   S.rhp[i]--;
   if(S.rhp[i]<=0){S.res[i]=0;flowDirty=BLC=true;burst(x,y,isTree?'#7a5230':'#80888c',8);}
 }
