@@ -614,24 +614,18 @@ function setupDay(){
       const [px,py]=cCenter(i);S.lost={x:px,y:py};toast(_T('숲 어딘가에서 누가 도와달라고 외치고 있어'));break;
     }
   }
+  planNight();
 }
 function startNight(){
   if(NC()){netSend({night:1});toast(_T('호스트에게 밤을 부르자고 알렸어요'),1600);return;}
   if(S.phase!=='day')return;
   if(S.tower){toast(_T('탑 안에서는 밤을 부를 수 없어요'),1600);return;}
   if(S.peace){S.phase='night';S.nightT=0;sfx('night');S.spawnQ=[];S.surge=null;S.nightEv=null;S.strT=0;S.strPull=0;S.strMsg=0;S.strMsg2=0;if(S.merchant)S.merchant=null;toast(_L('평화로운 밤이에요. 별을 보며 잠깐 쉬어 가요','A peaceful night. Rest a while under the stars'),3000);return;}
-  S.phase='night';S.nightT=0;sfx('night');S.strT=0;S.strPull=0;S.strMsg=0;S.strMsg2=0;
+  S.phase='night';S.nightT=0;sfx('night');S.strT=0;S.strPull=0;S.strMsg=0;S.strMsg2=0;nightLogStart();
   const d=S.day,howl=d%7===0;
   const n=Math.round((5+d*2.6)*dif().cnt*S.mods.enemy*(S.event&&S.event.id==='blood'?1.5:1));
   if(S.merchant){S.merchant=null;}
-  const q=[];
-  for(let k=0;k<n;k++){
-    const r=Math.random();let t='goblin';
-    if(d>=2&&r<(howl?.7:.28))t='wolf';else if(d>=3&&r>.8)t='boar';
-    else if(d>=4&&r>.66)t='archer';else if(d>=6&&r>.58)t='burrower';
-    {const r2=Math.random();if(S.prog>=4&&r2<.06)t=r2<.03?'yeti':'wisp';else if(S.prog>=3&&r2<.12)t=r2<.09?'magma':'imp';else if(S.prog>=2&&r2<.18)t='shard';else if(S.prog>=1&&r2<.24)t='toad';}
-    q.push(t);
-  }
+  const q=planQueue(n);// rolled this morning so the banners told the truth
   const win=Math.min(38,12+n*1.1);
   S.spawnQ=q.map((t,k)=>({t,at:k/q.length*win,side:S.sides[k%S.sides.length]}));
   if(d%5===0){S.spawnQ.push({t:'chief',at:win*.5,side:S.sides[0],boss:1});if(d>=10){S.spawnQ.push({t:'wolf',at:win*.5+.6,side:S.sides[0],el:1},{t:'wolf',at:win*.5+1.2,side:S.sides[0],el:1});}if(d>=20)S.spawnQ.push({t:'boar',at:win*.5+1.8,side:S.sides[0],el:1});S.spawnQ.sort((a,b)=>a.at-b.at);toast(_T('땅이 쿵쿵 울려… 고블린 족장이 오고 있어!'),3200);}
@@ -644,6 +638,7 @@ function startNight(){
   if(S.nightEv==='elite')for(const q2 of S.spawnQ)if(!q2.boss&&Math.random()<.22)q2.el=1;
   if(S.nightEv==='bats'){for(let k=0;k<Math.round(n*.6);k++)S.spawnQ.push({t:'bat',at:Math.random()*win,side:(Math.random()*4)|0});S.spawnQ.sort((a,b)=>a.at-b.at);}
   if(S.nightEv)setTimeout(()=>{if(S&&S.phase==='night')toast(NIGHTEV[S.nightEv].n+' · '+NIGHTEV[S.nightEv].d,3800);},1800);
+  try{phaseTitle(_L(d+'일째 밤','Night '+d),d%5===0?_L('보스의 밤','Boss night'):S.nightEv&&NIGHTEV[S.nightEv]?NIGHTEV[S.nightEv].n:planLine(),d%5===0);}catch(_){}
   if(S.hiddenDone&&d%5===0){const t=AWAK[(S.awakK||0)%AWAK.length];S.spawnQ.push({t,at:win*.55,side:S.sides[0],awak:1});S.spawnQ.sort((a,b)=>a.at-b.at);setTimeout(()=>{if(S&&S.phase==='night')toast(_L('⚠ 각성한 '+(BOSS_NAME[t]||'')+'이(가) 깨어났어요! 캠프를 지켜요','⚠ The awakened '+(BOSS_NAME[t]||'')+' has risen! Defend the camp'),4200);},3600);}
 }
 function spawnEnemy(t,side){
@@ -664,10 +659,11 @@ function makeEnemy(t,x,y){
   S.enemies.push({t,x,y,hp:E.hp*hpM,max:E.hp*hpM,m:dmM,cd:Math.random(),spd:E.spd*(.9+Math.random()*.2),face:0,hurt:0});
 }
 function dawn(){
-  sfx('dawn');S.day++;S.nightEv=null;if(S.day>=100&&!S.peaceOK){S.peaceOK=1;setTimeout(()=>{if(S)toast(_L('100일을 지켜 냈어요! 이제 일시정지 메뉴에서 평화 모드를 켤 수 있어요. 습격 걱정 없이 마을을 꾸미며 지내 보세요','You held out for 100 days! You can now turn on Peace Mode from the pause menu and decorate your village without raids'),7000);},5000);}{const eb=S.peace?0:1+Math.floor(S.day/5);metaAdd(eb);if(S.day>(META.best||0)){META.best=S.day;saveMeta();}}nestDawn();hatchDawn();for(const L of S.lairs)if(L.state==='dead'&&L.resp&&S.day>=L.resp){L.state='sleep';L.resp=0;}S.buffs={};S.earrows=[];
+  sfx('dawn');S.day++;S.nightEv=null;if(S.day>=100&&!S.peaceOK){S.peaceOK=1;setTimeout(()=>{if(S)toast(_L('100일을 지켜 냈어요! 이제 일시정지 메뉴에서 평화 모드를 켤 수 있어요. 습격 걱정 없이 마을을 꾸미며 지내 보세요','You held out for 100 days! You can now turn on Peace Mode from the pause menu and decorate your village without raids'),7000);},5000);}const eb=S.peace?0:1+Math.floor(S.day/5);{metaAdd(eb);if(S.day>(META.best||0)){META.best=S.day;saveMeta();}}nestDawn();hatchDawn();for(const L of S.lairs)if(L.state==='dead'&&L.resp&&S.day>=L.resp){L.state='sleep';L.resp=0;}S.buffs={};S.earrows=[];
   S.phase='dawn';
   let huts=0;forB(b=>{if(b.t==='hut')huts++;});
   let extra='';if(huts&&S.vill.length<Math.min(14,4+huts*2)){addVillager();extra=_T(' 오두막에 새 주민이 들어왔다.');}
   beginDay(_L('휴, 살아남았어! '+S.day+_T('일째 아침.'),'Phew, we survived! Day '+S.day+' morning.')+extra);
+  try{dawnReport(eb);}catch(_){}
 }
 function beginDay(msg){setupDay();save();if(!NC())try{localStorage.setItem(SAVE_KEY+'-am',localStorage.getItem(SAVE_KEY)||'');}catch(_){}if(S.day===2&&!(S.story||[]).includes('dawn2'))storyLater('dawn2');if(S.day===3&&!(S.story||[]).includes('day3'))storyLater('day3');if(S.day===12&&!(S.story||[]).includes('dream'))storyLater('dream');toast(S.day===1?_T('일단 가방(I) → 제작에서 나무 도끼랑 곡괭이부터 만들어 보자. 밤이 오기 전에 건설(B)로 벽도 세워 두고!'):(msg||'')+(S.event?_T(' 오늘의 사건 · ')+S.event.n+': '+S.event.d:_T(' 오늘은 조용한 하루가 될 것 같아')),4000);}

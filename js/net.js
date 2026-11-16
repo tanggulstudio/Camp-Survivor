@@ -246,13 +246,13 @@ function hitEnemy(e,d){
   hitEnemyRaw(e,d);
 }
 function hitEnemyRaw(e,d){
-  sfx('hit',e.x,e.y);d*=codexMul(e.t);e.lastHit=S.gt;e.hp-=d;e.hurt=.12;float(e.x,e.y-14,Math.round(d),'#ffe6b8');
+  sfx('hit',e.x,e.y);d*=codexMul(e.t);nlTower(Math.min(d,Math.max(0,e.hp)));e.lastHit=S.gt;e.hp-=d;e.hurt=.12;float(e.x,e.y-14,Math.round(d),'#ffe6b8');
   if(e.hp<=0&&!e.dead)killEnemy(e);
 }
 const GOLD={yeti:14,wisp:12,frost:1400,imp:9,magma:12,flame:800,goblin:2,wolf:2,boar:4,archer:3,burrower:4,toad:3,shard:6,mimic:25,chief:40,hydra:150,golem:300,abyss:500};
 function killEnemy(e){
   const rem=NH()&&netCredit(e);
-  if(!rem){const gv=Math.round((GOLD[e.t]||1)*(1+S.day*.08));S.gold+=gv;float(e.x+10,e.y-26,'+'+gv+'G','#ffd23a');}
+  if(!rem){const gv=Math.round((GOLD[e.t]||1)*(1+S.day*.08));S.gold+=gv;nlKill(gv);float(e.x+10,e.y-26,'+'+gv+'G','#ffd23a');}
   e.dead=true;sfx(KILL_SND[e.t]||'kill',e.x,e.y);smoke(e.x,e.y,e.lair?16:5);if(e.lair){shake(10);burst(e.x,e.y,'#ffe08a',30);}burst(e.x,e.y,'#9fc06a',8);if(!rem){S.kills++;codexKill(e.t);skXp(combatSkill(),Math.max(1,Math.round(ET[e.t].xp*.6)));}if(!rem)gainXp(ET[e.t].xp*(e.arena?1+(S.tower?S.tower.floor*.05:0):1));
   if(e.dgBoss!=null||e.lmBoss!=null)specialBossDown(e);
   if(e.t==='chief'&&!e.wild&&!e.arena)S.restNext=1;
@@ -315,10 +315,10 @@ function hurtPlayer(d){
 }
 function hurtCore(d){
   if(S.peace)return;
-  S.core.hp-=d;sfx('alarm');const [x,y]=cCenter(CI);float(x,y-24,'-'+Math.round(d),'#ffb27a');
-  if(S.core.hp<=0){S.core.hp=0;gameOver();}
+  S.core.hp-=d;if(S.nl)S.nl.cd+=d;sfx('alarm');const [x,y]=cCenter(CI);float(x,y-24,'-'+Math.round(d),'#ffb27a');
+  if(S.core.hp<=0){S.core.hp=0;coreFall();}
 }
 function damageBld(i,d){
   const b=S.bld[i];if(!b)return;b.hp-=d;b.hurt=.12;{const [hx,hy]=cCenter(i);sfx('thud',hx,hy);}
-  if(b.hp<=0){const [x,y]=cCenter(i);burst(x,y,b.t==='swall'?'#9aa3a8':'#a06a3c',10);S.bld[i]=null;flowDirty=BLC=true;}
+  if(b.hp<=0){const [x,y]=cCenter(i);burst(x,y,b.t==='swall'?'#9aa3a8':'#a06a3c',10);if(S.nl&&!B[b.t].deco)S.nl.lost++;S.bld[i]=null;flowDirty=BLC=true;}
 }

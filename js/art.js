@@ -701,20 +701,21 @@ function draw(now){
   // lighting
   let dark=0;
   const inDg=dgCell(cellAt(p.x,p.y))>=0;
-  if(S.phase==='night')dark=.6;
-  else if(S.phase==='day'){const dl=dayLen(),s=dl-14;if(S.t>s)dark=Math.min(.6,(S.t-s)/14*.6);}
+  const NDK=S.peace?.6:.76;// deeper, bluer night so lights carry the scene
+  if(S.phase==='night')dark=NDK;
+  else if(S.phase==='day'){const dl=dayLen(),s=dl-14;if(S.t>s)dark=Math.min(NDK,(S.t-s)/14*NDK);}
   if(S.phase==='night'&&S.nightEv==='fog'&&!inDg)dark=Math.min(.84,dark+.12);
   if(inDg)dark=Math.max(dark,.72);
   {const kk=1-Math.exp(-fdt*(Math.abs(dark-(draw.dk||0))>.5?2.2:4));draw.dk=(draw.dk==null?dark:draw.dk+(dark-draw.dk)*kk);dark=draw.dk;}
   if(dark>.01){
     lctx.setTransform(1,0,0,1,0,0);lctx.globalCompositeOperation='source-over';
     lctx.clearRect(0,0,lightCv.width,lightCv.height);
-    lctx.fillStyle=(S.event&&S.event.id==='blood'?'rgba(34,4,10,':S.nightEv==='fog'&&S.phase==='night'?'rgba(30,34,44,':'rgba(23,33,46,')+dark+')';lctx.fillRect(0,0,lightCv.width,lightCv.height);
+    lctx.fillStyle=(S.event&&S.event.id==='blood'?'rgba(34,4,10,':S.nightEv==='fog'&&S.phase==='night'?'rgba(30,34,44,':'rgba(12,20,46,')+dark+')';lctx.fillRect(0,0,lightCv.width,lightCv.height);
     lctx.globalCompositeOperation='destination-out';
     const k=dpr*scale,fl=1+Math.sin(now/120)*.04+Math.sin(now/73)*.03;
     const L=(wx,wy,r,s)=>{const sx=(wx-camX)*k,sy=(wy-camY)*k,R=r*k;if(sx<-R||sy<-R||sx>lightCv.width+R||sy>lightCv.height+R)return;
       const g=lctx.createRadialGradient(sx,sy,0,sx,sy,R);g.addColorStop(0,'rgba(0,0,0,'+s+')');g.addColorStop(.55,'rgba(0,0,0,'+s*.7+')');g.addColorStop(1,'rgba(0,0,0,0)');lctx.fillStyle=g;lctx.beginPath();lctx.arc(sx,sy,R,0,Math.PI*2);lctx.fill();};
-    const [kx,ky]=cCenter(CI);L(kx,ky,T*6.5*fl,1);
+    const [kx,ky]=cCenter(CI);L(kx,ky,T*5.6*fl,1);
     if(!p.dead)L(p.x,p.y,T*(isEq('lamp')?4.8:3.2)*(inDg?1.45:1)*(S.nightEv==='fog'&&S.phase==='night'?.78:1),.9);
     for(const bc of S.beacons||[])if(bc.lit)L(bc.x,bc.y-8,T*3.6*fl,1);
     if(inDg){const d=S.dgs[dgCell(cellAt(p.x,p.y))];if(d)for(const o of d.rooms)L((o.x+o.w/2)*T,(o.y+o.h/2)*T,T*1.6*fl,.55);for(const c of S.chests)if(c.dg)L(c.x,c.y,T*1.2,.6);dgDecoEach((i,x,y)=>L(x,y,T*1.4,.6));}
@@ -725,21 +726,28 @@ function draw(now){
     ctx.setTransform(1,0,0,1,0,0);ctx.drawImage(lightCv,0,0);
     // warm glow
     ctx.globalCompositeOperation='lighter';
-    const G=(wx,wy,r,al)=>{const sx=(wx-camX)*scale,sy=(wy-camY)*scale,R=r*scale;const g=ctx.createRadialGradient(sx*dpr,sy*dpr,0,sx*dpr,sy*dpr,R*dpr);g.addColorStop(0,'rgba(255,150,60,'+al+')');g.addColorStop(1,'rgba(255,150,60,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(sx*dpr,sy*dpr,R*dpr,0,Math.PI*2);ctx.fill();};
-    G(kx,ky,T*4*fl,.22*dark);
-    for(const i of bIdx()){const b=S.bld[i];if(b&&(b.t==='fire'||b.t==='torch')){const [x,y]=cCenter(i);G(x,y,T*(b.t==='fire'?2.6:1.8)*fl,.18*dark);}}
+    const G=(wx,wy,r,al,c)=>{c=c||'255,150,60';const sx=(wx-camX)*scale,sy=(wy-camY)*scale,R=r*scale;if(sx<-R||sy<-R||sx>vw+R||sy>vh+R)return;const g=ctx.createRadialGradient(sx*dpr,sy*dpr,0,sx*dpr,sy*dpr,R*dpr);g.addColorStop(0,'rgba('+c+','+al+')');g.addColorStop(1,'rgba('+c+',0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(sx*dpr,sy*dpr,R*dpr,0,Math.PI*2);ctx.fill();};
+    G(kx,ky,T*4.6*fl,.34*dark);
+    for(const i of bIdx()){const b=S.bld[i];if(!b)continue;const [x,y]=cCenter(i);if(b.t==='fire'||b.t==='torch')G(x,y,T*(b.t==='fire'?2.8:2)*fl,.26*dark);else if(b.t==='forge')G(x,y,T*2*fl,.2*dark);else if(b.t==='magic'||b.t==='rune')G(x,y-10,T*1.8,.2*dark,'150,110,255');else if(b.t==='crystal'||b.t==='prism')G(x,y-10,T*1.8,.18*dark,'110,220,255');else if(b.t==='venom')G(x,y-8,T*1.6,.16*dark,'140,255,120');else if(b.t==='lamp')G(x,y-18,T*2.2,.22*dark,'255,210,120');}
+    for(const bc of S.beacons||[])if(bc.lit)G(bc.x,bc.y-8,T*2.6*fl,.26*dark);
+    if(!p.dead&&!inDg)G(p.x,p.y-6,T*1.6,.12*dark,'255,200,130');
     ctx.globalCompositeOperation='source-over';
     if(dark>.4){const ks=dpr*scale;ctx.setTransform(ks,0,0,ks,-camX*ks,-camY*ks);for(const e of S.enemies){if(e.dead||e.burrow)continue;const r=ET[e.t].r,bl=(Math.sin(now/300+e.x)>.96)?.2:1,fx=Math.cos(e.face||0)*r*.35,ey=e.y-r*.35;
       ctx.globalAlpha=dark*.9*bl;ctx.fillStyle=e.lair?'#ffb03a':'#ff3a2a';ctx.shadowColor=ctx.fillStyle;ctx.shadowBlur=8;for(const s2 of [-1,1]){ctx.beginPath();ctx.arc(e.x+fx+s2*r*.22,ey,Math.max(1.6,r*.09),0,7);ctx.fill();}}
       ctx.shadowBlur=0;ctx.globalAlpha=1;}
   }
 
+  try{drawPlan(now);}catch(_){}
+  // dusk and dawn color grading (sky tint over the world, under the HUD)
+  if(!inDg&&!S.tower){let tc=null,ta=0;if(S.phase==='day'){const dl=dayLen(),u=(S.t-(dl-30))/30;if(u>0){tc='255,120,50';ta=Math.min(1,u)*.32*(1-Math.max(0,(u-.7)/.3)*.4);}else if(S.t<7&&S.day>1){tc='255,170,190';ta=(1-S.t/7)*.3;}}
+    if(ta>.01){ctx.setTransform(1,0,0,1,0,0);ctx.globalCompositeOperation='soft-light';ctx.fillStyle='rgba('+tc+','+ta*2+')';ctx.fillRect(0,0,vw*dpr,vh*dpr);ctx.globalCompositeOperation='source-over';}}
   // screen space
   ctx.setTransform(dpr,0,0,dpr,0,0);
   if(S.phase==='night'){const es=S.enemies.filter(e=>!e.dead&&!e.wild&&!e.lair&&!e.burrow).sort((a,b)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y)).slice(0,6);const big=!S.spawnQ.length&&es.length<=6;for(const e of es)edgeArrow(e.x,e.y,'#ff5a4a',now,big?1.1:.6);
     const cr=S.core.hp/S.core.max,pr=p.hp/pMax(),dg=Math.max(cr<.4?(.4-cr)/.4:0,pr<.35?(.35-pr)/.35:0);
     if(dg>0&&!p.dead){const pu=.5+.5*Math.sin(now/140);const g=ctx.createRadialGradient(vw/2,vh/2,Math.min(vw,vh)*.3,vw/2,vh/2,Math.max(vw,vh)*.75);g.addColorStop(0,'rgba(180,0,0,0)');g.addColorStop(1,'rgba(180,10,10,'+(.18+.3*dg)*(.6+.4*pu)+')');ctx.fillStyle=g;ctx.fillRect(0,0,vw,vh);if(!paused)sfx('heart');}}
   if(S.phase==='day'&&S.day%5===0&&S.t>dayLen()-35){const [kx,ky]=cCenter(CI);if(Math.hypot(kx-p.x,ky-p.y)>12*T)edgeArrow(kx,ky,'#ffa047',now,1.3);}
+  try{planEdges(now);}catch(_){}
   if(S.lost)edgeArrow(S.lost.x,S.lost.y,'#e4c79a',now);
   for(const c of S.chests)if(!c.dg)edgeArrow(c.x,c.y,c.kind==='gold'?'#ffd23a':'rgba(232,201,138,.7)',now,c.kind==='gold'?1.2:.7);
   if(S.merchant)edgeArrow(S.merchant.x,S.merchant.y,'#8fd3ff',now);
@@ -764,7 +772,7 @@ function edgeArrow(wx,wy,col,now,sz){sz=sz||1;
   const sx=(wx-camX)*scale,sy=(wy-camY)*scale,m=40;
   if(sx>m&&sy>m+90&&sx<vw-m&&sy<vh-m-80)return;
   const cx=vw/2,cy=vh/2,a=Math.atan2(sy-cy,sx-cx);
-  const ex=Math.max(m,Math.min(vw-m,sx)),ey=Math.max(m+100,Math.min(vh-m-90,sy));
+  let ex=Math.max(m,Math.min(vw-m,sx)),ey=Math.max(m+100,Math.min(vh-m-90,sy));try{[ex,ey]=edgeSafe(ex,ey);}catch(_){}
   ctx.save();ctx.translate(ex,ey);ctx.rotate(a);ctx.scale(sz,sz);ctx.globalAlpha=.75+Math.sin(now/200)*.25;
   ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(14,0);ctx.lineTo(-8,-10);ctx.lineTo(-3,0);ctx.lineTo(-8,10);ctx.closePath();ctx.fill();ctx.restore();ctx.globalAlpha=1;
 }
@@ -1912,7 +1920,7 @@ function drawMini(){
   g.setTransform(1,0,0,1,0,0);g.fillStyle='#0b120e';g.fillRect(0,0,px,px);
   const V=40,p=S.p;const sx=Math.max(0,Math.min(W-V,p.x/T-V/2)),sy=Math.max(0,Math.min(H-V,p.y/T-V/2)),k=px/V;
   g.imageSmoothingEnabled=false;if(mapCv)g.drawImage(mapCv,sx,sy,V,V,0,0,px,px);
-  mapMarkers(g,sx,sy,k,dp*.9);
+  mapMarkers(g,sx,sy,k,dp*.9);try{planMini(g,sx,sy,k,px,dp);}catch(_){}
   if(S.phase==='night'){const rem=S.enemies.filter(e=>!e.dead&&!e.wild&&!e.lair&&!e.burrow);if(rem.length&&rem.length<=8){const pu=.6+.4*Math.sin(performance.now()/200);
     for(const e of rem){let x=(e.x/T-sx)*k,y=(e.y/T-sy)*k;const out=x<0||y<0||x>px||y>px;x=Math.max(4*dp,Math.min(px-4*dp,x));y=Math.max(4*dp,Math.min(px-4*dp,y));g.fillStyle='rgba(255,70,60,'+pu+')';g.beginPath();g.arc(x,y,(out?2.5:3.5)*dp,0,7);g.fill();g.strokeStyle='#fff';g.lineWidth=dp;g.stroke();}}}
 }
@@ -1925,6 +1933,7 @@ function drawBig(){
   g.imageSmoothingEnabled=false;if(mapCv)g.drawImage(mapCv,0,0,W,H,0,0,px,px);
   const k=px/W;
   g.font=Math.round(12*dp)+'px "Gowun Dodum",sans-serif';g.textAlign='center';
+  try{planMini(g,0,0,k,px,dp);}catch(_){}
   if(S.phase==='night'){const rem=S.enemies.filter(e=>!e.dead&&!e.wild&&!e.lair&&!e.burrow);if(rem.length<=8)for(const e of rem){g.fillStyle='#ff463c';g.beginPath();g.arc(e.x/T*k,e.y/T*k,4*dp,0,7);g.fill();g.strokeStyle='#fff';g.lineWidth=dp;g.stroke();}}
   REGION.forEach((r,n)=>{const rad=[R1-5,R1+6,R2+5,R3+6,R4+6][n]||0;const y=(CY-rad)*k,x=CX*k;if(n&&!S.seen.some((v,i)=>v&&regionOfCell(i)===n))return;
     g.fillStyle='rgba(0,0,0,.55)';g.fillText(r.n,x+1*dp,y+1*dp);g.fillStyle='#f0eedf';g.fillText(r.n,x,y);});

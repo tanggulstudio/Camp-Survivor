@@ -738,6 +738,46 @@ body.goalmini .tut.goals .gl b{font-size:12.5px}
 /* when the display font is unavailable, keep headings bold rather than thin */
 body.nodisp .panel h1,body.nodisp .panel h2,body.nodisp .day,body.nodisp .diffb b,body.nodisp .regcard b,body.nodisp .bossbar b,body.nodisp .disc b,body.nodisp .cardb b,body.nodisp #emberFx span{font-weight:800;letter-spacing:-.02em}
 @media (prefers-reduced-motion:reduce){.overlay:not([hidden]),.overlay:not([hidden])>.panel,.res .bump,.card-hud.pulse,#toast.on,#ovStart .embers i{animation:none!important}.big,.hbtn,.chip,.tab,.diffb,.trade,.isl,.cdc{transition:none}#emberFx.on{animation-duration:1.2s}}
+
+/* ---- overhaul: tonight line, dawn report, bonfire-out moment, results grid ---- */
+.tonight{margin-top:3px;font-size:11.5px;color:#ff9a82;font-weight:700;letter-spacing:.01em}
+.tonight::before{content:"⚑ ";color:#e0503c}
+#dawnCard{position:absolute;left:50%;top:calc(var(--hudb,150px) + 56px);transform:translate(-50%,-12px);min-width:min(360px,calc(100% - 32px));max-width:min(440px,calc(100% - 32px));background:var(--panel-solid,#f6efe0);color:var(--ink);border:1px solid var(--line);border-top:4px solid #e08a3a;border-radius:16px;padding:14px 18px 12px;box-shadow:0 14px 40px rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:opacity .35s,transform .35s;z-index:6;cursor:pointer}
+#dawnCard.on{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+#dawnCard .dk{margin:0 0 10px;font-family:var(--f-disp);font-size:21px;color:#b0562a;padding-right:24px}
+#dawnCard .dx{position:absolute;right:8px;top:6px;border:0;background:none;font-size:20px;color:var(--dim);cursor:pointer}
+#dawnCard .dg{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+#dawnCard .dg div{background:rgba(120,90,50,.09);border-radius:10px;padding:6px 4px;text-align:center}
+#dawnCard .dg small{display:block;font-size:11px;color:var(--dim)}
+#dawnCard .dg b{font-size:18px;font-family:var(--f-disp);font-weight:400}
+#dawnCard .dg b.g{color:#a8741a}#dawnCard .dg b.bad{color:#b23b2c}#dawnCard .dg b.ok{color:#3f7d3c}
+#dawnCard .mvp,#dawnCard .emb,#dawnCard .nx{margin:8px 0 0;font-size:13px}
+#dawnCard .mvp small{color:var(--dim)}#dawnCard .nx{color:#a5402e;font-weight:700}
+#fallFx{position:absolute;inset:0;pointer-events:none;opacity:0;z-index:8;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 50%,rgba(40,10,0,.15),rgba(5,3,2,.9) 70%)}
+#fallFx span{font-family:var(--f-disp);font-size:clamp(34px,7vw,64px);color:#ffcf9a;text-shadow:0 0 24px rgba(255,120,40,.7),0 2px 0 #3a1a08;opacity:0;letter-spacing:.04em}
+#fallFx.on{animation:fallIn 2.2s ease-in forwards}#fallFx.on span{animation:fallTxt 2.2s ease-out forwards}
+#fallFx.out{animation:none;opacity:0;transition:opacity .6s}
+@keyframes fallIn{0%{opacity:0}35%{opacity:.85}100%{opacity:1}}
+@keyframes fallTxt{0%{opacity:0;transform:scale(1.15)}30%{opacity:1;transform:scale(1)}80%{opacity:1}100%{opacity:.9}}
+.overgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;margin:12px 0 4px}
+.overgrid div{background:rgba(120,90,50,.1);border-radius:12px;padding:8px 6px;text-align:center}
+.overgrid small{display:block;font-size:12px;color:var(--dim)}.overgrid b{font-family:var(--f-disp);font-weight:400;font-size:22px}
+@media (min-width:900px){#toast{top:14px}#dawnCard{top:66px}}
+@media (max-width:580px){#dawnCard{padding:10px 12px 9px}#dawnCard .dk{font-size:17px;margin-bottom:7px}#dawnCard .dg b{font-size:15px}#dawnCard .dg small{font-size:10px}#dawnCard .mvp,#dawnCard .emb,#dawnCard .nx{font-size:12px;margin-top:6px}}
+body:has(.overlay:not([hidden])) #dawnCard{display:none}
+@media (prefers-reduced-motion:reduce){#dawnCard{transition:none}#fallFx.on,#fallFx.on span{animation-duration:.01s}}
+#phaseT{position:absolute;left:50%;top:30%;transform:translate(-50%,-50%) scale(.92);text-align:center;pointer-events:none;opacity:0;z-index:5;transition:opacity .45s,transform .6s}
+#phaseT.on{opacity:1;transform:translate(-50%,-50%) scale(1)}
+#phaseT b{display:block;font-family:var(--f-disp);font-weight:400;font-size:clamp(40px,8vw,76px);color:#e9f0ff;text-shadow:0 0 28px rgba(80,120,255,.55),0 3px 0 #0b1430;letter-spacing:.03em;white-space:nowrap}
+#phaseT.boss b{color:#ffd8a0;text-shadow:0 0 28px rgba(255,90,40,.6),0 3px 0 #3a0f06}
+#phaseT small{display:inline-block;margin-top:6px;font-size:15px;font-weight:700;color:#ffd9cc;background:rgba(20,12,24,.55);padding:4px 12px;border-radius:999px}
+@media (prefers-reduced-motion:reduce){#phaseT{transition:none}}
+#langMenu{position:fixed;z-index:60;display:flex;flex-direction:column;min-width:150px;background:var(--panel-solid,#f6efe0);border:1px solid var(--line);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.3);padding:4px}
+#langMenu button{border:0;background:none;text-align:left;padding:9px 12px;border-radius:8px;font-size:15px;cursor:pointer;color:var(--ink)}
+#langMenu button:hover,#langMenu button:focus-visible{background:rgba(199,123,67,.15)}
+#langMenu button[aria-checked=true]{font-weight:700;color:#a8541f}
+html[lang=zh-CN]{--f-disp:"Black Han Sans","PingFang SC","Microsoft YaHei","Noto Sans SC","Noto Sans CJK SC","Source Han Sans SC",system-ui,sans-serif;--f-body:"PingFang SC","Microsoft YaHei","Noto Sans SC","Noto Sans CJK SC","Source Han Sans SC","Gowun Dodum",system-ui,sans-serif}
+html[lang=zh-CN] .panel h1,html[lang=zh-CN] .panel h2,html[lang=zh-CN] .day,html[lang=zh-CN] .diffb b,html[lang=zh-CN] .regcard b,html[lang=zh-CN] .bossbar b,html[lang=zh-CN] .disc b,html[lang=zh-CN] .cardb b,html[lang=zh-CN] #emberFx span,html[lang=zh-CN] #phaseT b,html[lang=zh-CN] #fallFx span,html[lang=zh-CN] #dawnCard .dk,html[lang=zh-CN] #dawnCard .dg b,html[lang=zh-CN] .overgrid b{font-weight:800;letter-spacing:0}
 </style>
 </head>
 <body>
@@ -750,6 +790,7 @@ body.nodisp .panel h1,body.nodisp .panel h2,body.nodisp .day,body.nodisp .diffb 
         <div class="dayrow"><span class="day" id="day">1일째</span><span class="phase" id="phase">낮</span></div>
         <div class="bar"><i id="phaseFill"></i></div>
         <div class="ev calm" id="ev">평온한 날</div>
+        <div class="tonight" id="tonight" hidden></div>
         <div class="bf" id="bf" hidden></div>
       </div>
       <button type="button" class="hudtog" id="hudTog" aria-label="상단 정보 접기" aria-pressed="false">▴</button>
@@ -961,7 +1002,8 @@ body.nodisp .panel h1,body.nodisp .panel h2,body.nodisp .day,body.nodisp .diffb 
     <div class="panel">
       <h2>화톳불이 꺼졌다</h2>
       <p class="sum" id="overSum"></p>
-      <div class="row"><button class="big pri" id="btnRetry">다시 시작</button></div>
+      <div class="overgrid" id="overGrid"></div>
+      <div class="row"><button class="big pri" id="btnRetry">다시 시작</button><button class="big" id="btnResShot">📸 결과 카드</button></div>
     </div>
   </div>
 
@@ -986,6 +1028,7 @@ body.nodisp .panel h1,body.nodisp .panel h2,body.nodisp .day,body.nodisp .diffb 
   </div>
 </div>
 
+<script src="js/zh.js"></script>
 <script src="js/i18n.js"></script>
 <script src="js/data.js"></script>
 <script src="js/art.js"></script>
@@ -995,6 +1038,7 @@ body.nodisp .panel h1,body.nodisp .panel h2,body.nodisp .day,body.nodisp .diffb 
 <script src="js/net.js"></script>
 <script src="js/input.js"></script>
 <script src="js/update.js"></script>
+<script src="js/rounds.js"></script>
 <script src="js/ui.js"></script>
 </body>
 </html>

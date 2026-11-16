@@ -186,14 +186,15 @@ function update(dt){
       b.ang=Math.atan2(tg.y-y,tg.x-x);b.cd=A.cd*(1-(lv-1)*.1);
       if(A.kind!=='chain')sfx({arrow:'arrow',bolt:'bolt',venom:'venom',blast:'launch'}[A.kind]||'shoot',x,y);
       if(A.kind==='chain'){
-        const pts=[[x,y-22]],hitSet=new Set();let cur=tg;
+        const pts=[[x,y-22]],hitSet=new Set();let cur=tg;HIT_SRC=i;
         for(let k=0;k<3&&cur;k++){
           hitSet.add(cur);pts.push([cur.x,cur.y]);hitEnemy(cur,dmg*(1-k*.2));
           let nx=null,nd=2.6*T;for(const e of S.enemies){if(e.dead||e.burrow||hitSet.has(e))continue;const d=Math.hypot(e.x-cur.x,e.y-cur.y);if(d<nd){nd=d;nx=e;}}
           cur=nx;
         }
+        HIT_SRC=null;
         S.fx.push({k:'l',pts,t:0,life:.22});
-      }else S.arrows.push({x,y:y-12,e:tg,dmg,heavy:A.kind==='bolt',kind:A.kind});
+      }else S.arrows.push({x,y:y-12,e:tg,dmg,heavy:A.kind==='bolt',kind:A.kind,src:i});
     }else if(D.prod){
       if(S.phase!=='day')continue;
       b.pt=(b.pt||0)+dt*S.mods.prod*(1+((b.lv||1)-1)*.5);
@@ -229,7 +230,7 @@ function update(dt){
   for(const a of S.arrows){
     if(a.e.dead){a.gone=true;continue;}
     const dx=a.e.x-a.x,dy=a.e.y-a.y,d=Math.hypot(dx,dy);
-    if(d<10){if(arrowHit(a)!=='keep')a.gone=true;continue;}
+    if(d<10){HIT_SRC=a.src==null?null:a.src;const ah=arrowHit(a);HIT_SRC=null;if(ah!=='keep')a.gone=true;continue;}
     const sp=a.sp||(a.heavy?520:430);a.x+=dx/d*sp*dt;a.y+=dy/d*sp*dt;a.a=Math.atan2(dy,dx);
   }
   S.arrows=S.arrows.filter(a=>!a.gone);

@@ -77,6 +77,7 @@ function hud(){
   const bo=S.enemies.find(e=>e.awak)||S.enemies.find(e=>e.lair||e.t==='chief');$('bossbar').hidden=!bo;if(bo){$('bossName').textContent=(bo.awak?_L('각성한 ','Awakened '):'')+BOSS_NAME[bo.t];$('bossFill').style.width=Math.max(0,bo.hp/bo.max*100)+'%';}
   $('btnHook').hidden=!(S.p.bite>0)||paused||S.menu||S.trading;
   const bk=Object.keys(S.buffs);const bfEl=$('bf');bfEl.hidden=!bk.length;bfEl.textContent=_T('먹은 음식 · ')+bk.map(k=>BUFF_NAME[k]).join(', ');
+  {const tl=$('tonight');if(tl){const v=planLine();if(tl.textContent!==v)tl.textContent=v;tl.hidden=!v;}}
   const evEl=$('ev');const bn=S.day%5===0&&S.phase!=='night'&&!S.peace;evEl.textContent=(bn?_L('⚠ 보스의 밤','⚠ Boss night')+(S.event?' · ':''):'')+(S.event?S.event.n:bn?'':_T('평온한 날'));evEl.className='ev'+(bn||(S.event&&S.event.bad)?' bad':S.event?'':' calm');if(S.phase==='night'&&S.nightEv&&NIGHTEV[S.nightEv]){evEl.textContent=NIGHTEV[S.nightEv].n;evEl.className='ev bad';}else if(S.peace){evEl.textContent='🕊 '+_L('평화 모드','Peace Mode')+(S.event?' · '+S.event.n:'');evEl.className='ev calm';}else if(bn&&S.hiddenDone){evEl.textContent=_L('⚠ 각성한 보스의 밤','⚠ Awakened boss night')+(S.event?' · '+S.event.n:'');}
   refreshBar();
 }
@@ -231,6 +232,7 @@ function gameOver(){
   try{localStorage.removeItem(SAVE_KEY);localStorage.removeItem(SAVE_KEY+'-am');}catch(_){}
   const emb=NET.role==='client'?0:S.day;if(emb){META.em+=emb;META.tot+=emb;saveMeta();}
   $('overSum').textContent=_L(S.day+_T('일째 밤에 무너졌다'),'Fell on night '+S.day)+(emb?_L(' · 불씨 +'+emb+' (모은 불씨 '+META.em+')',' · Embers +'+emb+' (total '+META.em+')'):'')+_T(' · 처치 ')+S.kills+_T(' · 레벨 ')+S.p.lvl+_T(' · 주민 ')+S.vill.length+_T('명');
+  try{renderOver();}catch(_){}
   $('ovOver').hidden=false;
 }
 function togglePause(){if(!running||S.phase==='dawn'||S.trading||S.menu)return;if($('pnameP'))$('pnameP').value=S.pname||'';if($('pauseDiff'))$('pauseDiff').textContent=_T('난이도: ')+dif().n+(S.mut&&S.mut.length?_L(' · 규칙: ',' · Rules: ')+S.mut.map(id=>(MUTS.find(m=>m.id===id)||{}).n).join(', '):'');renderSet();
@@ -285,6 +287,7 @@ $('bkLoad').addEventListener('click',async()=>{let o;try{o=await bkDecode($('bkC
   if(!bkArm&&readSave()){bkArm=true;$('bkLoad').textContent=_T('정말 불러올까요? (지금 저장은 덮어써져요)');$('bkMsg').textContent=_T('한 번 더 누르면 이 코드로 바꿔요');return;}
   try{localStorage.setItem(SAVE_KEY,JSON.stringify(o));}catch(_){}$('ovBk').hidden=true;$('ovPause').hidden=true;paused=false;loadGame(o);toast(_T('백업에서 불러왔어요. 이어서 해 봐요!'),2600);});
 $('btnRetry').addEventListener('click',newGame);
+$('btnResShot').addEventListener('click',()=>{resultShot().catch(()=>{});});
 $('btnNight').addEventListener('click',()=>{if(running&&!paused)startNight();});
 $('btnPause').addEventListener('click',togglePause);
 $('btnResume').addEventListener('click',togglePause);
