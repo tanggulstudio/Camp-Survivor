@@ -16,6 +16,7 @@ function update(dt){
     if(S.day%5===0&&!S.peace&&!S.bossWarn&&S.t>dayLen()-35){S.bossWarn=1;sfx('horn');shake(3);toast(_L('⚠ 보스의 밤이 다가와요! 캠프로 돌아와 벽과 탑을 정비하고 체력을 채워 두세요','⚠ The boss night is coming! Return to camp, repair walls and towers, and heal up'),5000);}
     if(!S.warned&&S.t>dayLen()-15){S.warned=true;if(!S.peace)toast(_T('해가 지고 있어! ')+S.sides.map(s=>SIDE_NAME[s]).join('·')+_T('쪽에서 발소리가 들려'),3200);}
     if(firstDayHold())S.t=dayLen()-20;
+    prepCheck();
     if(S.t>=dayLen())startNight();
     S.core.hp=Math.min(S.core.max,S.core.hp+2*dt);
     S.regrowT+=dt;
@@ -184,7 +185,7 @@ function update(dt){
       for(const e of S.enemies){if(e.dead||e.burrow)continue;const d=Math.hypot(e.x-x,e.y-y);if(d<td){td=d;tg=e;}}
       if(!tg)continue;
       const dmg=A.dmg*S.mods.towerDmg*(1+(S.day-1)*.05)*(1+(lv-1)*.45);
-      b.ang=Math.atan2(tg.y-y,tg.x-x);b.cd=A.cd*(1-(lv-1)*.1);
+      b.ang=Math.atan2(tg.y-y,tg.x-x);b.cd=A.cd*(1-(lv-1)*.1)*towerHelp(x,y);
       if(A.kind!=='chain')sfx({arrow:'arrow',bolt:'bolt',venom:'venom',blast:'launch'}[A.kind]||'shoot',x,y);
       if(A.kind==='chain'){
         const pts=[[x,y-22]],hitSet=new Set();let cur=tg;HIT_SRC=i;
@@ -366,7 +367,7 @@ function hitEnemyDot(e,d){e.hp-=d;if(e.hp<=0&&!e.dead)killEnemy(e);}
 function updVillager(v,dt){
   const sp=70;let tx,ty;villTalk(v,dt);
   if(villFight(v,dt))return;
-  if(v.tr==='handy'&&S.phase==='day'){v.rT=(v.rT||0)-dt;if(v.rT<=0){v.rT=3;const cx=Math.floor(v.x/T),cy=Math.floor(v.y/T);for(let yy=cy-3;yy<=cy+3;yy++)for(let xx=cx-3;xx<=cx+3;xx++){if(xx<0||yy<0||xx>=W||yy>=H)continue;const b=S.bld[idx(xx,yy)];if(b&&b.hp<b.max){b.hp=Math.min(b.max,b.hp+Math.max(8,b.max*.04));const [bx,by]=cCenter(idx(xx,yy));burst(bx,by,'#7fe8aa',3);yy=1e9;break;}}}}
+  if(v.tr==='handy'&&!v.hid){v.rT=(v.rT||0)-dt;if(v.rT<=0){v.rT=S.phase==='day'?3:5;const cx=Math.floor(v.x/T),cy=Math.floor(v.y/T);for(let yy=cy-3;yy<=cy+3;yy++)for(let xx=cx-3;xx<=cx+3;xx++){if(xx<0||yy<0||xx>=W||yy>=H)continue;const b=S.bld[idx(xx,yy)];if(b&&b.hp<b.max){b.hp=Math.min(b.max,b.hp+Math.max(8,b.max*.04));const [bx,by]=cCenter(idx(xx,yy));burst(bx,by,'#7fe8aa',3);yy=1e9;break;}}}}
   if(S.phase!=='day'&&v.tr==='timid'&&v.home>=0){[tx,ty]=cCenter(v.home);ty+=T*.6;v.ti=-1;v.hid=Math.hypot(tx-v.x,ty-v.y)<T*.5;}
   else if(S.phase!=='day'){v.hid=0;
     const [kx,ky]=cCenter(CI);const a=S.vill.indexOf(v)/Math.max(1,S.vill.length)*Math.PI*2;

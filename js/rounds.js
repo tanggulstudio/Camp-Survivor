@@ -186,3 +186,38 @@ function lifeGoal(){if(!S||S.tower||NC()||(S.tut!=null&&S.tut<TUT.length))return
   ];
   for(const [dd,ok,t,dsc,pf] of G){if(d<dd)return null;let done=false;try{done=ok();}catch(_){}if(!done)return {t,d:dsc,p:pf?pf():null,life:1};}
   return null;}
+/* ---------- village life helps the night ---------- */
+// What each villager does once the sun goes down, shown as a glyph over their head and in the night-prep card.
+const VNIGHT={brave:['⚔','앞장서서 싸워요','Fights up front','冲在前面战斗'],handy:['🔧','밤에도 벽을 고쳐요','Repairs walls at night too','夜里也会修墙'],timid:['🏠','집에 숨어요','Hides at home','躲在家里'],
+  diligent:['🏹','근처 탑에 화살을 날라 더 빨리 쏴요','Carries arrows so nearby towers shoot faster','给附近的塔运箭，射得更快'],cheerful:['📣','곁의 주민을 북돋아 더 세게 싸워요','Cheers nearby villagers to hit harder','鼓舞身边的村民更用力战斗'],
+  angler:['🐟','밤마다 생선구이를 챙겨 줘요','Hands you grilled fish each night','每晚给你一份烤鱼'],farmer:['🍞','밤마다 빵을 챙겨 줘요','Hands you fresh bread each night','每晚给你一份面包']};
+const VNIGHT_SAY={brave:['괴물은 제가 막을게요!','Leave the monsters to me!','怪物交给我！'],handy:['벽은 제가 붙잡고 있을게요','I\'ll hold the walls together','墙就交给我来撑住'],timid:['저, 저는 집에 있을게요…','I-I\'ll stay inside…','我、我待在家里……'],
+  diligent:['화살 날라 드릴게요!','I\'ll keep the arrows coming!','我来运箭！'],cheerful:['다들 힘내요! 화톳불을 지켜요!','Chin up, everyone! Guard the fire!','大家加油！守住篝火！'],angler:['야식으로 생선 구워 왔어요','Grilled some fish for tonight','烤了鱼当夜宵'],farmer:['빵 구워 왔어요, 든든하게 드세요','Baked bread, eat up','烤了面包，多吃点']};
+const VSHORT={brave:['싸움','fight','战斗'],handy:['수리','repair','修理'],timid:['숨음','hide','躲藏'],diligent:['화살 운반','arrows','运箭'],cheerful:['응원','cheer','鼓舞'],angler:['생선 야식','fish snack','烤鱼夜宵'],farmer:['빵 야식','bread snack','面包夜宵']};
+function josa(w,a,b){const c=(w||'').charCodeAt(w.length-1);return c>=0xAC00&&c<=0xD7A3&&(c-0xAC00)%28!==0?a:b}
+function vNight(v){const n=VNIGHT[v.tr];return n?n[0]:''}
+function nightVillagers(){if(!S||S.peace)return;const gave={};
+  const sp=S.vill.filter(v=>VNIGHT_SAY[v.tr]).sort(()=>Math.random()-.5).slice(0,3);sp.forEach((v,k)=>setTimeout(()=>{if(!S||S.phase!=='night')return;const s=VNIGHT_SAY[v.tr];v.say=L3(s[0],s[1],s[2]);v.sayL=3.4;v.sayT=40;},2600+k*1700));
+  for(const v of S.vill){
+    if((v.tr==='angler'||v.tr==='farmer')&&!gave[v.tr]){gave[v.tr]=1;const k=v.tr==='angler'?'d_grill':'d_bread';S.items[k]=(S.items[k]||0)+1;
+      const dn=(RECIPES.find(r=>'d_'+r.id===k)||{}).n||'';setTimeout(()=>{try{toast(L3(v.name+josa(v.name,'이','가')+' '+dn+josa(dn,'을','를')+' 챙겨 줬어요 · 가방 → 요리에서 먹어요',v.name+' packed you '+dn+' · eat it from Bag → Cook',v.name+' 给你准备了'+dn+' · 在背包 → 烹饪中食用'),2600);}catch(_){}},1800+(v.tr==='farmer'?2800:0));}}}
+function towerHelp(x,y){if(S.phase!=='night')return 1;for(const v of S.vill)if(v.tr==='diligent'&&!v.dead&&Math.hypot(v.x-x,v.y-y)<4*T)return .85;return 1;}
+function cheerMul(v){if(S.phase!=='night')return 1;for(const o of S.vill)if(o!==v&&o.tr==='cheerful'&&Math.hypot(o.x-v.x,o.y-v.y)<4*T)return 1.2;return 1;}
+/* ---------- night prep card at sunset ---------- */
+let PREP_DAY=-1;
+function activeMeals(){const out=[];for(const k in S.buffs||{}){if(!S.buffs[k])continue;const r=RECIPES.find(r=>r.id===k||r.buff===k);if(r&&!out.includes(r.n))out.push(r.n);}return out;}
+function bagMeals(){return Object.keys(S.items).filter(k=>k.startsWith('d_')&&k!=='d_bomb'&&S.items[k]>0).length}
+function prepCheck(){if(!S||S.phase!=='day'||S.peace||S.tower||NC()||PREP_DAY===S.day)return;if(S.t<dayLen()-40||firstDayHold())return;PREP_DAY=S.day;showPrep();}
+function showPrep(){let walls=0,hurt=0,tw=0;forB(b=>{const t=b.t;if(t==='wall'||t==='swall'||t==='iwall'||t==='door'){walls++;if(b.hp<b.max*.6)hurt++;}if(TOWER_T.includes(t))tw++;});
+  const ms=activeMeals(),bm=bagMeals(),vc={};for(const v of S.vill){const g=vNight(v);if(g)vc[g]=(vc[g]||0)+1;}
+  const L=sideSummary(),tot=L.reduce((a,o)=>a+o.n,0);
+  const row=(ic,txt,bad)=>'<li'+(bad?' class="bad"':'')+'><b>'+ic+'</b><span>'+txt+'</span></li>';
+  let h='<button type="button" class="dx" aria-label="'+L3('닫기','Close','关闭')+'">×</button><p class="dk">🌙 '+L3('밤 준비','Night prep','夜晚准备')+'</p><ul>';
+  h+=row('⚑',L3('오늘 밤 '+tot+'마리 · ','Tonight '+tot+' foes · ','今晚 '+tot+' 只 · ')+L.map(o=>sideName(o.sd)+(o.boss?' 👑':'')).join('·'));
+  h+=ms.length?row('🍲',L3('먹은 요리: ','Eaten: ','已吃：')+ms.join(', ')):bm?row('🍲',L3('가방에 요리가 '+bm+'가지 있어요. 지금 먹어 두면 아침까지 효과가 가요','You have '+bm+' dish(es). Eat now and the effect lasts till morning','背包里有 '+bm+' 种料理。现在吃，效果持续到早晨'),1):row('🍲',L3('불 곁에서 요리하면 밤에 더 강해져요','Cook by a fire to get stronger for the night','在火边烹饪，夜里会更强'),1);
+  h+=row('🏹',L3('탑 '+tw+'개','Towers: '+tw,'塔 '+tw+' 座'),tw<Math.min(6,1+S.day/2));
+  if(walls)h+=row('🧱',hurt?L3('금 간 벽 '+hurt+'개 · 건설 → 관리 → 수리','Cracked walls: '+hurt+' · Build → Manage → Repair','破损的墙 '+hurt+' 段 · 建造 → 管理 → 修理'):L3('벽 '+walls+'개 모두 튼튼해요','All '+walls+' walls are solid','全部 '+walls+' 段墙都很坚固'),hurt>0);
+  {const tc={};for(const v of S.vill)if(VSHORT[v.tr])tc[v.tr]=(tc[v.tr]||0)+1;const ks=Object.keys(tc);if(ks.length)h+=row('👥',L3('주민 '+S.vill.length+'명','Villagers: '+S.vill.length,'村民 '+S.vill.length+' 人')+'<small>'+ks.map(k=>VNIGHT[k][0]+' '+L3(VSHORT[k][0],VSHORT[k][1],VSHORT[k][2])+(tc[k]>1?' ×'+tc[k]:'')).join(' · ')+'</small>');}
+  h+='</ul>';
+  let d=$('prepCard');if(!d){d=document.createElement('div');d.id='prepCard';d.setAttribute('role','status');$('game').appendChild(d);d.addEventListener('click',()=>d.classList.remove('on'));}
+  d.innerHTML=h;d.classList.remove('on');void d.offsetWidth;d.classList.add('on');sfx('discover');clearTimeout(showPrep.t);showPrep.t=setTimeout(()=>d.classList.remove('on'),11000);}

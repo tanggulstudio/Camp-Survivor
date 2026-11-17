@@ -480,7 +480,7 @@ function renderShop(){
     S.bounty.list.forEach((b,i)=>{const pg=bountyProg(b),ok=pg>=b.n;h+=shopRow('bty:'+i,b.done||!ok,bountyText(b),b.done?_T('완료한 의뢰'):_T('진행 ')+pg+' / '+b.n+(b.ty==='deliver'?_T(' · 받기를 누르면 납품'):''),b.done?_T('완료'):ok?_T('받기'):_T('진행 중'),b.ty==='deliver'?itemIcon(b.k):'');});
     h+=_T('</div></div><div class="sec"><h3>주민 장비 · 장비를 주면 밤에 더 세게 싸워요</h3><div class="trades">');
     if(!S.vill.length)h+=_T('<p>아직 주민이 없어요. 숲에서 길 잃은 주민을 구하거나 아래에서 일꾼을 고용해요.</p>');
-    S.vill.forEach((v,i)=>{const tr=VTRAIT[v.tr]||{n:'',d:''};h+=shopRow('vsel:'+i,false,v.name+' · '+tr.n+_T(' · 공격력 ')+Math.round(villAtk(v)),tr.d+_T(' · 집: ')+(v.home>=0?_T('있어요'):_T('없어요 (마을 터에 오두막을 지어 주세요)'))+_T(' · 무기: ')+(v.w?itemName(v.w):_T('없음'))+_T(' · 갑옷: ')+(v.a?itemName(v.a):_T('없음')),villSel===i?_T('닫기'):_T('장비 주기'),'');
+    S.vill.forEach((v,i)=>{const tr=VTRAIT[v.tr]||{n:'',d:''};h+=shopRow('vsel:'+i,false,v.name+' · '+tr.n+_T(' · 공격력 ')+Math.round(villAtk(v)),tr.d+(VNIGHT[v.tr]?' · '+L3('밤엔 ','At night: ','夜晚：')+L3(VNIGHT[v.tr][1],VNIGHT[v.tr][2],VNIGHT[v.tr][3]):'')+_T(' · 집: ')+(v.home>=0?_T('있어요'):_T('없어요 (마을 터에 오두막을 지어 주세요)'))+_T(' · 무기: ')+(v.w?itemName(v.w):_T('없음'))+_T(' · 갑옷: ')+(v.a?itemName(v.a):_T('없음')),villSel===i?_T('닫기'):_T('장비 주기'),'');
       if(villSel===i){const pool=S.inv.map((id,k)=>({id,k})).filter(q=>ITEMS[q.id].slot==='weapon'||ITEMS[q.id].slot==='body');
         if(v.w)h+=shopRow('vback:'+i+':w',false,_T('무기 돌려받기'),itemName(v.w),_T('가방으로'),'');if(v.a)h+=shopRow('vback:'+i+':a',false,_T('갑옷 돌려받기'),itemName(v.a),_T('가방으로'),'');
         if(!pool.length)h+=_T('<p>가방에 줄 수 있는 무기나 갑옷이 없어요.</p>');for(const q of pool)h+=shopRow('vgive:'+i+':'+q.k,false,'['+SLOT_KIND[ITEMS[q.id].slot]+'] '+itemName(q.id),ITEMS[q.id].d,_T('주기'),itemIcon(q.id));}});
@@ -579,7 +579,7 @@ function addVillager(d){
   const [x,y]=cCenter(freeCellNear(CI));const k=S.vill.length;
   S.vill.push({x,y,ti:-1,gT:0,face:0,name:(d&&d.n)||VNAMES[k%VNAMES.length],w:(d&&d.w)||null,a:(d&&d.a)||null,cd:0,col:k%VCOL.length,tr:(d&&d.tr)||VTR_KEYS[(Math.random()*VTR_KEYS.length)|0],home:-1});
 }
-function villAtk(v){const w=v.w&&ITEMS[v.w];const a=v.a&&ITEMS[v.a];return (v.tr==='brave'?1.5:1)*(4+S.day*.4)+(w?(w.atk||0)*.6:0)+(a?(a.def||0)*.3+(a.hp||0)*.02:0)}
+function villAtk(v){const w=v.w&&ITEMS[v.w];const a=v.a&&ITEMS[v.a];return cheerMul(v)*(v.tr==='brave'?1.5:1)*(4+S.day*.4)+(w?(w.atk||0)*.6:0)+(a?(a.def||0)*.3+(a.hp||0)*.02:0)}
 function villFight(v,dt){v.cd-=dt;if(v.tr==='timid'&&S.phase!=='day'&&v.home>=0)return false;const [kx,ky]=cCenter(CI);let tg=null,td=4.5*T;for(const e of S.enemies){if(e.dead||e.burrow||e.arena)continue;if(e.wild&&!e.lair&&Math.hypot(e.x-v.x,e.y-v.y)>3*T)continue;const d=Math.hypot(e.x-v.x,e.y-v.y);if(d<td&&Math.hypot(e.x-kx,e.y-ky)<9*T){td=d;tg=e;}}
   if(!tg)return false;const w=v.w&&ITEMS[v.w],rng=w&&(w.cls==='bow'||w.cls==='staff'||w.cls==='star')?4*T:T*.9;v.face=Math.atan2(tg.y-v.y,tg.x-v.x);v.moving=false;
   if(td>rng){const dx=tg.x-v.x,dy=tg.y-v.y,d=Math.hypot(dx,dy);v.x+=dx/d*Math.min(85*dt,d);v.y+=dy/d*Math.min(85*dt,d);v.moving=true;return true;}
@@ -621,7 +621,7 @@ function startNight(){
   if(S.phase!=='day')return;
   if(S.tower){toast(_T('탑 안에서는 밤을 부를 수 없어요'),1600);return;}
   if(S.peace){S.phase='night';S.nightT=0;sfx('night');S.spawnQ=[];S.surge=null;S.nightEv=null;S.strT=0;S.strPull=0;S.strMsg=0;S.strMsg2=0;if(S.merchant)S.merchant=null;toast(_L('평화로운 밤이에요. 별을 보며 잠깐 쉬어 가요','A peaceful night. Rest a while under the stars'),3000);return;}
-  S.phase='night';S.nightT=0;sfx('night');S.strT=0;S.strPull=0;S.strMsg=0;S.strMsg2=0;nightLogStart();
+  S.phase='night';S.nightT=0;sfx('night');S.strT=0;S.strPull=0;S.strMsg=0;S.strMsg2=0;nightLogStart();try{nightVillagers();$('prepCard')&&$('prepCard').classList.remove('on');}catch(_){}
   const d=S.day,howl=d%7===0;
   const n=Math.round((5+d*2.6)*dif().cnt*S.mods.enemy*(S.event&&S.event.id==='blood'?1.5:1));
   if(S.merchant){S.merchant=null;}
