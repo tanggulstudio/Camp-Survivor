@@ -6,7 +6,7 @@
 ## 1. 앱 등록과 App ID
 1. partner.steamgames.com 에서 Steamworks 가입, Steam Direct 등록비(앱 하나당 100달러) 결제
 2. 정식판 앱을 만들면 **App ID**(숫자)가 나와요
-3. 앱 관리 화면에서 **체험판(Demo) 앱**을 따로 만들어요. 체험판도 자기 App ID를 받아요
+3. 앱 관리 화면에서 **체험판(Demo) 앱**을 따로 만들어요(추가 등록비 없음). 체험판도 자기 App ID를 받아요
 4. 정식판 상점 주소(`https://store.steampowered.com/app/<App ID>/...`)를 Claude에게 알려 주면
    `js/rounds.js`의 `STORE_URL`(체험판의 "스팀에서 찜하기" 버튼)을 채워요
 
@@ -72,7 +72,7 @@
 | ACH_SUN8 | 긴 낮 | Long Day | Offer 8 sunstones at the Altar of the Sun |
 ## 5. 스팀 덱
 - 컨트롤러 조작과 버튼 안내가 이미 있어요. 출시 전 "Steam Deck 호환성 검토"를 신청해요
-- 앱 관리 → Steam 입력에서 "게임패드 템플릿: 게임 자체 지원"으로 두면 돼요
+- 앱 관리의 Steam 입력 설정에서 게임이 컨트롤러를 직접 지원한다고 표시해 두면 돼요
 
 ## 6. 친구와 함께하기 (나중 단계)
 지금은 PeerJS(무료 공개 연결 서버)로 방 코드를 주고받아요. 출시 후 사람이 몰리면 공개 서버가 불안정할 수 있어서,
