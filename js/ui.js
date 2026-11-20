@@ -335,7 +335,7 @@ $('btnConsentOpen').addEventListener('click',openConsent);
 $('btnDataDel').addEventListener('click',()=>{$('delBox').hidden=false;$('delNo').focus();});
 $('delNo').addEventListener('click',()=>{$('delBox').hidden=true;$('btnDataDel').focus();});
 $('delYes').addEventListener('click',deleteMyData);
-{const c=readConsent();if(c)applyConsent(c);else openConsent();}
+if(DESK)loadFonts();else{const c=readConsent();if(c)applyConsent(c);else openConsent();}
 $('storyNext').addEventListener('click',storyNext);
 $('storyPrev').addEventListener('click',()=>{if(storyPg>0){storyPg--;renderStory();}});
 $('storySkip').addEventListener('click',closeStory);
@@ -365,7 +365,7 @@ window.addEventListener('blur',()=>{if(window.desktop&&running&&!paused&&S.phase
 /* ---------- loop ---------- */
 let last=performance.now();
 /* ---------- settings ---------- */
-const SET=(()=>{const d={ui:1,shake:1,dmg:1,vib:1,grid:1,amb:1,step:1};try{const o=JSON.parse(localStorage.getItem('cs-set-v1')||'{}');return Object.assign(d,o);}catch(_){return d}})();
+const SET=(()=>{const d={ui:innerHeight>=1350?1.3:innerHeight>=980?1.15:1,shake:1,dmg:1,vib:1,grid:1,amb:1,step:1};try{const o=JSON.parse(localStorage.getItem('cs-set-v1')||'{}');return Object.assign(d,o);}catch(_){return d}})();
 function saveSet(){try{localStorage.setItem('cs-set-v1',JSON.stringify(SET));}catch(_){}}
 function applySet(){document.documentElement.style.setProperty('--uiz',String(SET.ui||1));}
 function isFs(){return !!document.fullscreenElement}

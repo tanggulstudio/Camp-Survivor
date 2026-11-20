@@ -26,6 +26,13 @@ const ROOT = path.join(__dirname, '..'), APP = path.join(__dirname, 'app');
   const pj = 'https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js';
   swap(pj, 'peerjs.min.js', 'peerjs url');
 
+  // Steam demo build (node prepare.js --demo): stops at the first region's boss and points to the full game.
+  if (process.argv.includes('--demo')) {
+    const first = '<script src="js/zh.js"></script>';
+    if (!html.includes(first)) throw new Error('demo hook not found');
+    html = html.replace(first, '<script>window.CS_DEMO=1</script>\n' + first);
+    console.log('demo build');
+  }
   fs.writeFileSync(path.join(APP, 'index.html'), html);
   for (const f in js) fs.writeFileSync(path.join(APP, 'js', f), js[f]);
   console.log('app ready');

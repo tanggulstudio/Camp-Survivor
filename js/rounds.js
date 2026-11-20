@@ -221,3 +221,23 @@ function showPrep(){let walls=0,hurt=0,tw=0;forB(b=>{const t=b.t;if(t==='wall'||
   h+='</ul>';
   let d=$('prepCard');if(!d){d=document.createElement('div');d.id='prepCard';d.setAttribute('role','status');$('game').appendChild(d);d.addEventListener('click',()=>d.classList.remove('on'));}
   d.innerHTML=h;d.classList.remove('on');void d.offsetWidth;d.classList.add('on');sfx('discover');clearTimeout(showPrep.t);showPrep.t=setTimeout(()=>d.classList.remove('on'),11000);}
+/* ---------- title screen extras: settings, credits, version ---------- */
+const GAME_VER='1.0.0';
+const AUXHOME={};
+function openAux(id){const ov=$(id);if(!ov)return;if(id==='ovSet'){const slot=ov.querySelector('.slot');for(const el of [document.querySelector('#ovPause .audio'),$('setBox')]){if(!el)continue;if(!AUXHOME[el.className+el.id])AUXHOME[el.className+el.id]=[el.parentNode,el.nextSibling];slot.appendChild(el);}try{renderSet();auUI&&auUI();}catch(_){}}
+  $('ovStart').hidden=true;ov.hidden=false;const b=ov.querySelector('button');if(b)setTimeout(()=>b.focus(),0);}
+function closeAux(id){const ov=$(id);if(!ov)return;ov.hidden=true;if(id==='ovDemo'&&S)S.menu=false;if(id==='ovSet'){for(const k in AUXHOME){const [par,nx]=AUXHOME[k];const el=k.indexOf('setBox')>=0?$('setBox'):document.querySelector('#ovSet .audio');if(el)par.insertBefore(el,nx&&nx.parentNode===par?nx:null);}}
+  if(!running)$('ovStart').hidden=false;}
+document.addEventListener('click',e=>{const c=e.target.closest&&e.target.closest('[data-close]');if(c)closeAux(c.dataset.close);});
+document.getElementById('btnSetStart').addEventListener('click',()=>openAux('ovSet'));document.getElementById('btnCredits').addEventListener('click',()=>openAux('ovCredits'));
+document.getElementById('verTag').textContent='v'+GAME_VER+(window.CS_DEMO?' · '+L3('체험판','Demo','试玩版'):'');
+/* ---------- Steam demo: the first region is free, the rest is the full game ---------- */
+// Fill in the full game's Steam store address once the store page exists.
+const STORE_URL='https://store.steampowered.com/app/0/Camp_Survivor/';
+function demoEnd(){if(!window.CS_DEMO||NC())return;if(document.querySelector('.overlay:not([hidden])')||S.menu||S.trading){setTimeout(demoEnd,600);return;}let ov=$('ovDemo');if(!ov){ov=document.createElement('div');ov.className='overlay';ov.id='ovDemo';document.body.appendChild(ov);}
+  ov.innerHTML='<div class="panel demo"><h2>'+L3('체험판은 여기까지예요','That\'s the end of the demo','试玩版到此结束')+'</h2>'
+   +'<p>'+L3('고블린 대장을 쓰러뜨렸어요! 가시 장벽 너머에는 정식판에서 만날 수 있는 땅이 기다려요.','You beat the Goblin Chief! Beyond the thorn wall, the full game is waiting.','你击败了哥布林酋长！荆棘屏障之外，正式版的土地在等着你。')+'</p>'
+   +'<ul><li>'+L3('🗺️ 독안개 늪 · 수정 협곡 · 화산 · 서리 설원, 지역 4곳 더','🗺️ 4 more regions: swamp, canyon, volcano, frost plains','🗺️ 再加 4 个地区：沼泽、峡谷、火山、霜原')+'</li><li>'+L3('👑 보스 5마리와 숨겨진 심연의 군주','👑 5 more bosses and a hidden Abyss Lord','👑 5 个首领与隐藏的深渊领主')+'</li><li>'+L3('🗼 도전의 탑 · 고대 보물고 · 이야기의 끝','🗼 Tower of Trials, Ancient Vault and the rest of the story','🗼 挑战之塔、古代宝库与故事结局')+'</li><li>'+L3('💾 체험판 진행은 정식판으로 이어져요','💾 Your demo save carries over to the full game','💾 试玩版存档可继承到正式版')+'</li></ul>'
+   +'<div class="row"><button class="big pri" id="demoWish">'+L3('⭐ 스팀에서 찜하기','⭐ Wishlist on Steam','⭐ 在 Steam 上添加愿望单')+'</button><button class="big" data-close="ovDemo">'+L3('이 지역에서 계속하기','Keep playing here','继续在这里玩')+'</button></div></div>';
+  ov.hidden=false;S.menu=true;sfx('achieve');$('demoWish').addEventListener('click',()=>{window.open(STORE_URL,'_blank');});
+}

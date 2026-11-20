@@ -266,7 +266,7 @@ function killEnemy(e){
   if(Math.random()<accP)dropAcc(e.x,e.y,e.t==='wolf'?'fang':null);
   if(e.t==='chief'&&S.prog<1)setTimeout(()=>{if(S)toast(_T('마을의 무너진 탑 터에 탑이 다시 솟아올랐어! 꼭대기가 안 보일 만큼 높아'),4200);},5200);
   if(e.t==='chief'){drop(e.x,e.y,'egg_wolf',1);if(!S.chiefSun){S.chiefSun=1;drop(e.x,e.y,'sunstone',1);}if(!(S.story||[]).includes('chief'))storyLater('chief');}
-  if(e.t==='chief'){if(!owns('crown'))drop(e.x,e.y,'eq:crown',1);else dropAcc(e.x,e.y);relicDrop('chief',e.x,e.y);if(S.prog<1){S.prog=1;openBarrier(7,_T('가시 장벽이 시들었다! 숲 바깥 독안개 늪으로 가는 길이 열렸다'));}}
+  if(e.t==='chief'){if(!owns('crown'))drop(e.x,e.y,'eq:crown',1);else dropAcc(e.x,e.y);relicDrop('chief',e.x,e.y);if(S.prog<1&&window.CS_DEMO){setTimeout(demoEnd,2600);}else if(S.prog<1){S.prog=1;openBarrier(7,_T('가시 장벽이 시들었다! 숲 바깥 독안개 늪으로 가는 길이 열렸다'));}}
   if(e.t==='toad'&&Math.random()<.15)drop(e.x,e.y,'o',1);
   if(e.t==='imp'&&Math.random()<.08)drop(e.x,e.y,'b',1);
   {const md={toad:['slime',.35],shard:['dust',.35],imp:['horn',.3],magma:['horn',.3],yeti:['fur',.3],wisp:['fur',.3]}[e.t];if(md&&Math.random()<md[1])drop(e.x,e.y,md[0],1);}

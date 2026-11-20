@@ -23,11 +23,11 @@ window.addEventListener('keydown',e=>{
   if(e.repeat)return;{const tg=e.target&&e.target.tagName;if((tg==='INPUT'||tg==='TEXTAREA')&&e.key!=='Escape')return;}
   const k=e.key.toLowerCase();keys[k]=true;touchUI=false;
   if(!$('ovStory').hidden){if(k==='enter'||k===' '||k==='arrowright'||k==='f'){e.preventDefault&&e.preventDefault();storyNext();}else if(k==='arrowleft'&&storyPg>0){storyPg--;renderStory();}else if(k==='escape')closeStory();return;}
-  if(!running)return;
+  if(!running){if(k==='escape')closeTopOverlay();return;}
   if(k>='1'&&k<='9'){const L=bList(),t=L[+k-1];if(!buildOpen)setBuild(true);if(t)selectTool(tool===t?null:t);}
   else if(k==='b'){setBuild(!buildOpen);}
   else if(k==='q'||k==='e'){if(!buildOpen)setBuild(true);selectTool(null);setBcat(bcat+(k==='e'?1:-1));}
-  else if(k==='escape'){if(!closeTopOverlay()){if(tool)selectTool(null);else if(buildOpen)setBuild(false);}}
+  else if(k==='escape'){if(!closeTopOverlay()){if(tool)selectTool(null);else if(buildOpen)setBuild(false);else if(running&&!paused)togglePause();}}
   else if(k==='n')startNight();
   else if(k==='r')castW(0);
   else if(k==='t')castW(1);

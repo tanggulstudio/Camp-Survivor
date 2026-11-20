@@ -532,6 +532,7 @@ function shopAct(act,arg){
   renderShop();
 }
 function closeTopOverlay(){
+  for(const id of ['ovSet','ovCredits','ovDemo'])if($(id)&&!$(id).hidden){closeAux(id);return true;}
   if(!$('ovBk').hidden){closeBk();return true;}
   if(!$('ovNet').hidden){closeNet();return true;}
   if(!$('ovDiff').hidden){$('ovDiff').hidden=true;$('ovStart').hidden=false;return true;}

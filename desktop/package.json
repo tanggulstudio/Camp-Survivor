@@ -21,9 +21,29 @@
     "productName": "Camp Survivor",
     "executableName": "CampSurvivor",
     "copyright": "© tanggulstudio",
-    "directories": { "output": "dist" },
-    "files": ["main.js", "preload.js", "app/**/*"],
-    "win": { "target": ["dir", "portable"], "icon": "icon.png" },
-    "portable": { "artifactName": "CampSurvivor-portable.exe" }
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "app/**/*"
+    ],
+    "win": {
+      "target": [
+        "dir",
+        "portable"
+      ],
+      "icon": "icon.png"
+    },
+    "portable": {
+      "artifactName": "CampSurvivor-portable.exe"
+    },
+    "asarUnpack": [
+      "node_modules/steamworks.js/**"
+    ]
+  },
+  "dependencies": {
+    "steamworks.js": "^0.4.0"
   }
 }

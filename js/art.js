@@ -585,6 +585,7 @@ function draw(now){
   const fdt=Math.min(.05,Math.max(0,(now-(draw.lt||now))/1000));draw.lt=now;
   if(draw.cx==null||Math.hypot(tcx-draw.cx,tcy-draw.cy)>T*10){draw.cx=tcx;draw.cy=tcy;}else{const kk=1-Math.exp(-fdt*9);draw.cx+=(tcx-draw.cx)*kk;draw.cy+=(tcy-draw.cy)*kk;}
   camX=draw.cx;camY=draw.cy;
+  if(!running){camX+=Math.sin(now/9000)*T*3;camY+=Math.cos(now/12000)*T*1.6;}// slow drift behind the title screen
   if(S.shake>0){camX+=(Math.random()-.5)*S.shake;camY+=(Math.random()-.5)*S.shake;}
   ctx.setTransform(dpr*scale,0,0,dpr*scale,-camX*dpr*scale,-camY*dpr*scale);
 

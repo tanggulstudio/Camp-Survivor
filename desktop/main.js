@@ -1,9 +1,50 @@
 // Camp Survivor desktop shell (Steam / Windows)
 const { app, BrowserWindow, Menu, shell, ipcMain, session } = require('electron');
 const path = require('path');
+const fs = require('fs');
 
 app.setName('Camp Survivor');
+// The full game and the demo share one save folder, so a demo run carries over to the full game.
+app.setPath('userData', path.join(app.getPath('appData'), 'Camp Survivor'));
 let win;
+
+// ---- Steam (steamworks.js) ----
+// Starts only when an App ID is known: steam_appid.txt next to the exe (Steam adds the ID itself
+// when the game is launched from the Steam client) or the STEAM_APP_ID variable. Must run before the window exists.
+let steam = null;
+try {
+  const idFile = [path.join(process.cwd(), 'steam_appid.txt'), path.join(path.dirname(process.execPath), 'steam_appid.txt')].find(f => fs.existsSync(f));
+  const appId = Number(process.env.STEAM_APP_ID || process.env.SteamAppId || (idFile ? fs.readFileSync(idFile, 'utf8').trim() : 0));
+  if (appId) steam = require('steamworks.js').init(appId);
+} catch (e) { steam = null; }
+
+// ---- save files for Steam Cloud ----
+// The game keeps its saves in localStorage; every write is mirrored to %APPDATA%/Camp Survivor/saves/<key>.json.
+// In Steamworks, Auto-Cloud syncs that folder. On start the files are loaded back into the game.
+const SAVE_DIR = path.join(app.getPath('userData'), 'saves');
+const okKey = k => typeof k === 'string' && /^[a-z0-9_-]{1,48}$/i.test(k);
+ipcMain.on('cs-store', (e, k, v) => {
+  if (!okKey(k)) return;
+  try {
+    fs.mkdirSync(SAVE_DIR, { recursive: true });
+    const f = path.join(SAVE_DIR, k + '.json');
+    if (v == null) { fs.rmSync(f, { force: true }); return; }
+    const tmp = f + '.tmp';
+    fs.writeFileSync(tmp, String(v));
+    fs.renameSync(tmp, f);
+  } catch (_) {}
+});
+ipcMain.on('cs-store-load', e => {
+  const out = {};
+  try {
+    for (const n of fs.readdirSync(SAVE_DIR)) {
+      if (!n.endsWith('.json')) continue;
+      const k = n.slice(0, -5);
+      if (okKey(k)) out[k] = fs.readFileSync(path.join(SAVE_DIR, n), 'utf8');
+    }
+  } catch (_) {}
+  e.returnValue = out;
+});
 
 function createWindow() {
   win = new BrowserWindow({
@@ -16,14 +57,13 @@ function createWindow() {
   win.once('ready-to-show', () => { win.maximize(); win.show(); });
   win.loadFile(path.join(__dirname, 'app', 'index.html'));
 
-  // Links (privacy policy etc.) open in the player's normal browser.
-  win.webContents.setWindowOpenHandler(({ url }) => {
+  // Links (store page, privacy policy) open in the Steam overlay when available, otherwise the normal browser.
+  const openUrl = url => {
+    try { if (steam && steam.overlay && /^https:\/\/store\.steampowered\.com\//.test(url)) { steam.overlay.activateToWebPage(url); return; } } catch (_) {}
     if (/^https?:\/\//.test(url)) shell.openExternal(url);
-    return { action: 'deny' };
-  });
-  win.webContents.on('will-navigate', (e, url) => {
-    if (!url.startsWith('file://')) { e.preventDefault(); if (/^https?:\/\//.test(url)) shell.openExternal(url); }
-  });
+  };
+  win.webContents.setWindowOpenHandler(({ url }) => { openUrl(url); return { action: 'deny' }; });
+  win.webContents.on('will-navigate', (e, url) => { if (!url.startsWith('file://')) { e.preventDefault(); openUrl(url); } });
   // F11 / Alt+Enter: toggle fullscreen
   win.webContents.on('before-input-event', (e, input) => {
     if (input.type !== 'keyDown') return;
@@ -31,26 +71,20 @@ function createWindow() {
   });
 }
 
-// Steam achievements: active only once the Steam App ID exists (steam_appid.txt next to the exe)
-// and the steamworks.js package is installed. Until then this quietly does nothing.
-let steam = null;
-try {
-  const fs = require('fs');
-  const idFile = [path.join(process.cwd(), 'steam_appid.txt'), path.join(path.dirname(process.execPath), 'steam_appid.txt')].find(f => fs.existsSync(f));
-  const appId = Number(process.env.STEAM_APP_ID || (idFile ? fs.readFileSync(idFile, 'utf8').trim() : 0));
-  if (appId) steam = require('steamworks.js').init(appId);
-} catch (e) { steam = null; }
 ipcMain.on('cs-ach', (e, id) => {
   try { if (steam && /^[a-z0-9_]{1,32}$/i.test(id)) steam.achievement.activate('ACH_' + id.toUpperCase()); } catch (_) {}
 });
-
 ipcMain.on('cs-quit', () => app.quit());
 ipcMain.on('cs-fullscreen', () => { if (win) win.setFullScreen(!win.isFullScreen()); });
+ipcMain.on('cs-steam', e => { e.returnValue = !!steam; });
 
 app.whenReady().then(() => {
-  // Let the game's procedural music start without an extra click.
   session.defaultSession.setPermissionRequestHandler((wc, perm, cb) => cb(false));
   createWindow();
 });
+// Let the game's procedural music start without an extra click.
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
 app.on('window-all-closed', () => app.quit());
+
+// Steam overlay (Shift+Tab) has to be enabled at the very end of main.js.
+if (steam) { try { require('steamworks.js').electronEnableSteamOverlay(); } catch (_) {} }

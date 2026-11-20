@@ -801,6 +801,32 @@ html[lang=zh-CN] .panel h1,html[lang=zh-CN] .panel h2,html[lang=zh-CN] .day,html
 @media (min-width:900px){#prepCard{top:250px}}
 @media (max-width:580px){#prepCard{right:auto;left:50%;transform:translate(-50%,-10px);padding:10px 12px 8px}#prepCard.on{transform:translate(-50%,0)}#prepCard li{font-size:12px}}
 body:has(.overlay:not([hidden])) #prepCard{display:none}
+/* ---- desktop (Steam) build: a game title screen instead of a web card ---- */
+.ver{position:absolute;right:14px;bottom:10px;font-size:11px;color:var(--dim);opacity:.8}
+body:has(#ovStart:not([hidden])) .hud,body:has(#ovStart:not([hidden])) .tut,body:has(#ovStart:not([hidden])) #toast{visibility:hidden}
+html.desk .legal,html.desk #btnBkStart,html.desk .consent,html.desk #btnDataDel,html.desk #btnConsentOpen{display:none!important}
+.credits p{margin:0 0 12px;line-height:1.5}.credits .thx{margin-top:18px;color:#a8541f;font-weight:700}
+#ovSet .slot .audio,#ovSet .slot #setBox{margin-bottom:12px}
+@media (min-width:900px){
+  #ovStart{background:linear-gradient(90deg,rgba(8,10,16,.88) 0%,rgba(8,10,16,.7) 34%,rgba(8,10,16,.15) 62%,rgba(8,10,16,0) 80%);backdrop-filter:none;-webkit-backdrop-filter:none;justify-content:flex-start;align-items:center}
+  #ovStart>.panel{background:none;border:0;box-shadow:none;margin-left:6vw;max-width:520px;width:520px;color:#f3e6d0;padding:0;max-height:none;overflow:visible}
+  #ovStart .panel h1{font-size:clamp(56px,6.2vw,92px);line-height:.95;background:linear-gradient(180deg,#ffe2a8,#ff9b45 70%,#d8562a);-webkit-background-clip:text;background-clip:text;filter:drop-shadow(0 4px 0 rgba(40,14,4,.7)) drop-shadow(0 0 30px rgba(255,120,40,.35))}
+  #ovStart .panel h1::before{width:64px;height:64px}
+  #ovStart .pg{color:#e0b88a;letter-spacing:.3em}
+  html[lang=en] #ovStart .pg{display:none}
+  #ovStart .panel>p{color:#e6d6bd;font-size:16px}
+  #ovStart .hooks li{background:rgba(255,236,200,.08);border-color:rgba(255,200,140,.25);color:#f3dcb8}
+  #ovStart .row{display:flex;flex-direction:column;flex-wrap:nowrap;align-items:stretch;gap:6px;max-width:340px}
+  #ovStart .row .big{flex:none;min-height:0;width:auto}
+  #ovStart .row .big{background:rgba(255,240,215,.06);border:1px solid rgba(255,220,170,.18);color:#f6e8d2;text-align:left;padding:12px 18px;font-size:18px;border-radius:12px;box-shadow:none;transition:background .15s,transform .15s,padding .15s}
+  #ovStart .row .big:hover,#ovStart .row .big:focus-visible{background:rgba(255,170,90,.22);padding-left:26px;outline:none}
+  #ovStart .row .big.pri{background:linear-gradient(90deg,#d8722e,#b8521e);border-color:#ffb06a;color:#fff}
+  #ovStart .row .big[hidden]{display:none}
+  #ovStart .linkbtn{color:#e0c6a0}
+  #ovStart .embers{inset:auto -6vw -10vh -6vw;height:60vh}
+  #ovStart .ver{position:fixed;color:#bba78f}
+}
+.panel.demo ul{margin:8px 0 14px;padding-left:4px;list-style:none;display:flex;flex-direction:column;gap:6px}.panel.demo li{font-size:15px}
 </style>
 </head>
 <body>
@@ -874,8 +900,11 @@ body:has(.overlay:not([hidden])) #prepCard{display:none}
         <button class="big" id="btnHelp">게임 방법</button>
         <button class="big" id="btnNet">친구와 함께하기</button>
         <button class="big" id="btnMeta">불씨 제단</button>
+        <button class="big" id="btnSetStart">설정</button>
+        <button class="big" id="btnCredits">만든 사람들</button>
         <button class="big" id="btnExit" hidden>게임 종료</button>
       </div>
+      <span class="ver" id="verTag"></span>
       <button type="button" class="linkbtn" id="btnBkStart">백업 코드로 불러오기</button>
       <button type="button" class="linkbtn langbtn" data-lang-toggle aria-label="Language / 언어">🌐 <span class="lnext"></span></button>
       <nav class="legal" aria-label="법적 고지">
@@ -1052,6 +1081,14 @@ body:has(.overlay:not([hidden])) #prepCard{display:none}
   </div>
 </div>
 
+<div class="overlay" id="ovSet" hidden><div class="panel"><h2>설정</h2><div class="slot"></div><div class="row"><button class="big pri" data-close="ovSet">닫기</button></div></div></div>
+<div class="overlay" id="ovCredits" hidden><div class="panel credits"><h2>만든 사람들</h2>
+  <p><b>기획 · 개발</b><br>tanggulstudio</p>
+  <p><b>그림 · 음악 · 효과음</b><br>게임 안에서 코드로 직접 그리고 합성했어요</p>
+  <p><b>글꼴</b><br>Black Han Sans, Gowun Dodum (SIL Open Font License)</p>
+  <p><b>사용한 오픈소스</b><br>Electron, PeerJS, steamworks.js (MIT)</p>
+  <p class="thx">플레이해 주셔서 고마워요. 화톳불을 지켜 주세요!</p>
+  <div class="row"><button class="big pri" data-close="ovCredits">닫기</button></div></div></div>
 <script src="js/zh.js"></script>
 <script src="js/i18n.js"></script>
 <script src="js/data.js"></script>
