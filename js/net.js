@@ -25,6 +25,7 @@ function netErr(e){const t=e&&e.type;return NET_ERR[t]||(_T('연결 오류가 �
 async function netHost(){
   if(!running||NET.role){return;}NET.name=($('netName').value||_T('호스트')).slice(0,10);const code=mkCode();NET.code=code;
   const onConn=conn=>{conn.on('data',m=>netHostMsg(conn,m));conn.on('close',()=>netDrop(conn.peer));};
+  if(steamNetOn())return steamHost(onConn);
   if(location.search.includes('bc')){const ch=bcTransport();NET.bc=ch;NET.role='host';const map={};ch.onmessage=ev=>{const d=ev.data;if(d.to!=='host-'+code)return;let c=map[d.from];if(!c){if(Object.keys(NET.conns).length>=MP_MAX-1)return;c=map[d.from]=wrapBC('host-'+code,d.from,ch);onConn(c);}c._emit('data',d.m);};netShowRoom();return;}
   netStatus(_T('연결 준비 중…'));try{await loadPeer();}catch(e){netStatus(_T('이 화면에서는 멀티플레이를 쓸 수 없어요. GitHub 사이트(tanggulstudio.github.io/Camp-Survivor)에서 열어 주세요.'));return;}
   const peer=new Peer('campsv-'+code,{config:await iceConfig()});NET.peer=peer;
@@ -44,10 +45,10 @@ async function netJoin(){
   setTimeout(()=>{if(!opened&&NET.peer===peer&&!NET.role){netStatus(_T('20초 동안 연결이 안 됐어요. ')+NET_ERR.webrtc+_T('. 다시 참가를 눌러 볼까요?'));try{peer.destroy();}catch(_){}NET.peer=null;}},20000);
   peer.on('error',e=>{netStatus(netErr(e));});
 }
-function netShowRoom(){$('netRoom').hidden=false;$('netCodeShow').textContent=NET.code;netStatus(_T('친구에게 방 코드를 알려 주세요. 최대 ')+MP_MAX+_T('명'));netList();}
+function netShowRoom(){$('netRoom').hidden=false;$('netCodeShow').textContent=NET.code;netStatus(SNET.lobby?L3('Steam 친구를 초대하세요. 최대 '+MP_MAX+'명','Invite your Steam friends. Up to '+MP_MAX+' players','邀请 Steam 好友。最多 '+MP_MAX+' 人'):_T('친구에게 방 코드를 알려 주세요. 최대 ')+MP_MAX+_T('명'));netList();}
 function netList(){const el=$('netPlayers');if(!el)return;const a=[NET.name+(NH()?_T(' (호스트)'):'')].concat(Object.values(NET.ghosts).map(g=>g.name));el.textContent=_T('참가자: ')+a.join(', ');}
 function netDrop(id){const g=NET.ghosts[id];delete NET.ghosts[id];delete NET.conns[id];if(g)toast(g.name+_T(' 님이 나갔어요'),2200);netList();}
-function netLeave(silent){try{if(NET.peer)NET.peer.destroy();}catch(_){}try{if(NET.bc)NET.bc.close();}catch(_){}const wasC=NC();if(wasC)saveChar();
+function netLeave(silent){try{if(NET.peer)NET.peer.destroy();}catch(_){}try{steamLeave();}catch(_){}try{if(NET.bc)NET.bc.close();}catch(_){}const wasC=NC();if(wasC)saveChar();
   Object.assign(NET,{role:null,peer:null,conns:{},host:null,ghosts:{},others:{},bc:null});$('netRoom').hidden=true;netStatus(silent?_T('연결이 끊어졌어요'):_T('멀티플레이를 끝냈어요'));if(wasC){running=false;showStart();}}
 // ---- host side ----
 function netHostMsg(conn,m){const id=conn.peer;

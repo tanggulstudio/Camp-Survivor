@@ -827,6 +827,9 @@ html.desk .legal,html.desk #btnBkStart,html.desk .consent,html.desk #btnDataDel,
   #ovStart .ver{position:fixed;color:#bba78f}
 }
 .panel.demo ul{margin:8px 0 14px;padding-left:4px;list-style:none;display:flex;flex-direction:column;gap:6px}.panel.demo li{font-size:15px}
+.steamonly{display:none}
+#ovNet.steam .steamonly{display:revert}
+#ovNet.steam .dim2:not(#netStatus),#ovNet.steam .netok,#ovNet.steam .netrow:has(#netCode),#ovNet.steam #netCopy,#ovNet.steam #netCodeShow,#ovNet.steam .netroom>span{display:none}
 </style>
 </head>
 <body>
@@ -977,11 +980,12 @@ html.desk .legal,html.desk #btnBkStart,html.desk .consent,html.desk #btnDataDel,
       <h2>친구와 함께하기</h2>
       <p>최대 4명이 한 캠프에서 함께 버텨요. 방을 만들면 내 저장(없으면 새 캠프)으로 방이 열려요. 자원·건물·밤의 습격은 함께 쓰고, 장비·가방·숙련도는 각자 관리해요. 도전의 탑은 호스트가 들어가면 다 같이 이동하고, 층을 깰 때마다 모두 보상을 받아요. 방은 호스트가 게임 중일 때 열 수 있어요.</p>
       <p class="dim2">연결 안내 · 친구와 직접 연결(WebRTC)하기 위해 연결 중개 서버(PeerJS)와 상대방에게 IP 주소 등 접속 정보가 전달돼요. 직접 연결이 안 되는 망에서는 중계 서버(Open Relay)를 거칠 수 있어요. 닉네임은 서버에 저장하지 않아요. <a href="https://tanggulstudio.github.io/Camp-Survivor/privacy.html" target="_blank" rel="noopener">개인정보처리방침</a></p>
+      <p class="steamonly">Steam 친구와 함께해요. 방을 만든 뒤 친구를 초대하거나, 친구가 Steam 친구 목록에서 '게임 참가'를 누르면 들어와요.</p>
       <label class="netok"><input type="checkbox" id="netAgree"> 위 연결 안내를 확인했어요</label>
       <label class="netrow">닉네임 <input type="text" id="netName" maxlength="10" placeholder="모험가" autocomplete="off"></label>
       <div class="row"><button class="big pri" id="netHostBtn">방 만들기</button></div>
       <div class="netrow"><input type="text" id="netCode" maxlength="6" placeholder="방 코드 6자리" autocomplete="off" aria-label="방 코드"><button class="big" id="netJoinBtn">참가하기</button></div>
-      <div id="netRoom" hidden class="netroom"><span>방 코드</span><b id="netCodeShow"></b><button type="button" class="chip" id="netCopy">복사</button><button type="button" class="chip" id="netEnd">방 닫기</button><p id="netPlayers"></p></div>
+      <div id="netRoom" hidden class="netroom"><span>방 코드</span><b id="netCodeShow"></b><button type="button" class="chip" id="netCopy">복사</button><button type="button" class="chip steamonly" id="netInvite">👥 Steam 친구 초대</button><button type="button" class="chip" id="netEnd">방 닫기</button><p id="netPlayers"></p></div>
       <p id="netStatus" role="status" class="dim2"></p>
     </div>
   </div>
@@ -1097,6 +1101,7 @@ html.desk .legal,html.desk #btnBkStart,html.desk .consent,html.desk #btnDataDel,
 <script src="js/engine.js"></script>
 <script src="js/combat.js"></script>
 <script src="js/net.js"></script>
+<script src="js/steamnet.js"></script>
 <script src="js/input.js"></script>
 <script src="js/update.js"></script>
 <script src="js/rounds.js"></script>

@@ -314,12 +314,12 @@ $('diffList').addEventListener('click',e=>{const b=e.target.closest('[data-diff]
 $('mutBox').addEventListener('click',e=>{const b=e.target.closest('[data-mut]');if(!b)return;const id=b.dataset.mut;MUTSEL=MUTSEL.includes(id)?MUTSEL.filter(x=>x!==id):MUTSEL.concat(id);renderMut();const nb=$('mutBox').querySelector('[data-mut="'+id+'"]');if(nb)nb.focus();});
 $('diffBack').addEventListener('click',()=>{$('ovDiff').hidden=true;$('ovStart').hidden=false;});
 function closeNet(){$('ovNet').hidden=true;if(NET.fromPause&&paused)$('ovPause').hidden=false;NET.fromPause=0;}
-function openNet(){if(!$('ovPause').hidden){$('ovPause').hidden=true;NET.fromPause=1;}$('ovNet').hidden=false;$('netHostBtn').disabled=NC();$('netJoinBtn').disabled=false;if(NET.role==='host')netShowRoom();}
+function openNet(){$('ovNet').classList.toggle('steam',steamNetOn());if(!$('ovPause').hidden){$('ovPause').hidden=true;NET.fromPause=1;}$('ovNet').hidden=false;$('netHostBtn').disabled=NC();$('netJoinBtn').disabled=false;if(NET.role==='host')netShowRoom();}
 $('btnNet').addEventListener('click',openNet);
 $('btnNet2').addEventListener('click',()=>{openNet();});
 $('netX').addEventListener('click',closeNet);
 $('netAgree').addEventListener('change',()=>{$('netAgree').closest('label').classList.remove('need');});
-function netNeedAgree(){if($('netAgree').checked)return false;const l=$('netAgree').closest('label');l.classList.add('need');netStatus(_T('위 연결 안내에 먼저 체크해 주세요'));return true;}
+function netNeedAgree(){if(steamNetOn()||$('netAgree').checked)return false;const l=$('netAgree').closest('label');l.classList.add('need');netStatus(_T('위 연결 안내에 먼저 체크해 주세요'));return true;}
 $('netHostBtn').addEventListener('click',()=>{if(netNeedAgree())return;if(!running){const sv=readSave();if(sv)loadGame(sv);else{startNew('normal');closeStory();}$('ovNet').hidden=false;}netHost();});
 $('netJoinBtn').addEventListener('click',()=>{if(netNeedAgree())return;netJoin();});
 $('netCopy').addEventListener('click',()=>{try{navigator.clipboard.writeText(NET.code).then(()=>netStatus(_T('코드를 복사했어요')),()=>netStatus(_T('코드: ')+NET.code));}catch(_){netStatus(_T('코드: ')+NET.code);}});

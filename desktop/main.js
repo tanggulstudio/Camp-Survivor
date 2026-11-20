@@ -78,6 +78,48 @@ ipcMain.on('cs-quit', () => app.quit());
 ipcMain.on('cs-fullscreen', () => { if (win) win.setFullScreen(!win.isFullScreen()); });
 ipcMain.on('cs-steam', e => { e.returnValue = !!steam; });
 
+// ---- Steam lobbies + P2P packets for "Play with Friends" ----
+// The game keeps its own host/client protocol; Steam only carries the messages (JSON text) between players.
+// Numbers below are steamworks.js enum values: LobbyType.FriendsOnly = 1, SendType.Reliable = 2,
+// SteamCallback.P2PSessionRequest = 6, SteamCallback.GameLobbyJoinRequested = 8.
+let lobby = null, lastMembers = '', launchLobby = null;
+{ const i = process.argv.indexOf('+connect_lobby'); if (i >= 0 && process.argv[i + 1]) launchLobby = process.argv[i + 1]; }
+const LOBBY_MIN = 0x0180000000000000n;// lobby IDs sit above every player ID
+const bigints = v => { const out = []; const walk = (x, d) => { if (d > 3 || x == null) return; if (typeof x === 'bigint') out.push(x); else if (typeof x === 'object') for (const k in x) walk(x[k], d + 1); }; walk(v, 0); return out; };
+const lobbyInfo = () => ({ id: String(lobby.id), owner: String(lobby.getOwner().steamId64), me: String(steam.localplayer.getSteamId().steamId64), name: steam.localplayer.getName() });
+const toWin = (ch, ...a) => { try { if (win && !win.isDestroyed()) win.webContents.send(ch, ...a); } catch (_) {} };
+ipcMain.handle('cs-lobby-create', async (e, max) => {
+  if (!steam) throw new Error('no-steam');
+  if (lobby) { try { lobby.leave(); } catch (_) {} }
+  lobby = await steam.matchmaking.createLobby(1, Math.max(2, Math.min(8, max | 0 || 4)));
+  try { lobby.setJoinable(true); } catch (_) {}
+  try { steam.localplayer.setRichPresence('connect', '+connect_lobby ' + lobby.id); } catch (_) {}
+  lastMembers = ''; return lobbyInfo();
+});
+ipcMain.handle('cs-lobby-join', async (e, id) => {
+  if (!steam) throw new Error('no-steam');
+  if (lobby) { try { lobby.leave(); } catch (_) {} }
+  lobby = await steam.matchmaking.joinLobby(BigInt(id));
+  lastMembers = ''; return lobbyInfo();
+});
+ipcMain.on('cs-lobby-leave', () => { try { if (lobby) lobby.leave(); } catch (_) {} lobby = null; lastMembers = ''; try { steam && steam.localplayer.setRichPresence('connect', null); } catch (_) {} });
+ipcMain.on('cs-lobby-invite', () => { try { if (lobby) steam.overlay.activateInviteDialog(lobby.id); } catch (_) {} });
+ipcMain.on('cs-lobby-launch', e => { e.returnValue = launchLobby; launchLobby = null; });
+ipcMain.on('cs-p2p-send', (e, to, data) => { try { if (steam) steam.networking.sendP2PPacket(BigInt(to), 2, Buffer.from(String(data), 'utf8')); } catch (_) {} });
+if (steam) {
+  try { steam.callback.register(6, v => { for (const id of bigints(v)) if (id < LOBBY_MIN) try { steam.networking.acceptP2PSession(id); } catch (_) {} }); } catch (_) {}
+  try { steam.callback.register(8, v => { const id = bigints(v).find(x => x >= LOBBY_MIN); if (id) toWin('cs-lobby-joinreq', String(id)); }); } catch (_) {}
+  // Packets: read everything waiting, ~60 times a second.
+  setInterval(() => {
+    try { let n, guard = 0; while ((n = steam.networking.isP2PPacketAvailable()) > 0 && guard++ < 200) { const p = steam.networking.readP2PPacket(n); toWin('cs-p2p', String(p.steamId.steamId64), p.data.toString('utf8')); } } catch (_) {}
+  }, 16);
+  // Members: tell the game when someone joins or leaves the lobby.
+  setInterval(() => {
+    if (!lobby) return;
+    try { const m = lobby.getMembers().map(x => String(x.steamId64)), key = m.join(','); if (key !== lastMembers) { lastMembers = key; for (const id of m) try { steam.networking.acceptP2PSession(BigInt(id)); } catch (_) {} toWin('cs-lobby-members', m, String(lobby.getOwner().steamId64)); } } catch (_) {}
+  }, 500);
+}
+
 app.whenReady().then(() => {
   session.defaultSession.setPermissionRequestHandler((wc, perm, cb) => cb(false));
   createWindow();
