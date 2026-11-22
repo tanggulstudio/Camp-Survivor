@@ -12,14 +12,17 @@ function progFor(r){return r>=23?4:r>=17?3:r>=12?2:r>=5?1:0}
 /* ---------- economy: everything costs gold ---------- */
 function towerCount(){let n=0;forB(b=>{if(TOWER_T.includes(b.t))n++;});return n}
 {const _cost=cost;cost=function(t){const c=_cost(t);const esc=TOWER_T.includes(t)?1+.07*towerCount():1;return {g:Math.ceil(goldOf(c)*esc*(typeof dBuildMul==='function'?dBuildMul():1))};};}
-{const _me=makeEnemy;makeEnemy=function(t,x,y){_me(t,x,y);const e=S.enemies[S.enemies.length-1];if(e&&!e.wild){const m=(1+(S.day-1)*.045)*Math.pow(1.025,Math.max(0,S.day-30));e.hp*=m;e.max*=m;}};}
+{const _me=makeEnemy;makeEnemy=function(t,x,y){_me(t,x,y);const e=S.enemies[S.enemies.length-1];if(e&&!e.wild){const m=(1+(S.day-1)*.085)*Math.pow(1.035,Math.max(0,S.day-18));e.hp*=m;e.max*=m;}};}
 afford=function(c){if(FREE_BUILD)return true;return S.gold>=goldOf(c)};
 pay=function(c,sign){S.gold-=goldOf(c)*sign;if(S.gold<0)S.gold=0;};
 needLine=function(c){const n=goldOf(c);return n?[{t:nameOf('g')+' '+n+(S.gold<n?_T(' (보유 ')+S.gold+')':''),ok:S.gold>=n}]:[]};
 costText=function(c){const n=goldOf(c);return n?nameOf('g')+' '+n:_T('무료')};
 bUnlocked=function(t){return !S||S.day>=(D_UNLOCK[t]||1)};
 for(const k in B)if(B[k].forge)B[k].forge=false;
-BCATS.splice(2,2,{id:'make',n:L3('지원','Support','辅助'),t:['torch','fire','repairer','healfire']});
+BCATS.splice(1,3,{id:'make',n:L3('지원','Support','辅助'),t:['torch','fire','repairer','healfire']});
+/* no towers in Defense: the hero (and allies) hold the line */
+firstDayHold=function(){return false};
+{const bc=document.getElementById('bcats');if(bc){bc.innerHTML='';BCATS.forEach((c,k)=>{const b=document.createElement('button');b.className='bcat';b.id='bcat-'+c.id;b.setAttribute('role','tab');b.textContent=c.n;b.addEventListener('click',()=>setBcat(k));bc.appendChild(b);});}}
 for(const k in GOLD)GOLD[k]=Math.max(2,Math.round(GOLD[k]*1.25));
 Object.assign(GOLD,{chief:60,hydra:90,golem:110,flame:130,frost:150,abyss:220});
 
@@ -46,11 +49,11 @@ setupDay=function(){
   const nu=Object.keys(D_UNLOCK).filter(t=>D_UNLOCK[t]===S.day&&S.day>1);
   if(nu.length)setTimeout(()=>{if(S)toast(L3('새 건물 해금: ','New build unlocked: ','新建筑解锁：')+nu.map(t=>B[t].n).join(', '),3600);},2600);
   if(progFor(S.day)>before)setTimeout(()=>{if(S)toast(L3('더 강한 종족이 몰려오기 시작해요!','Tougher monsters are joining the raids!','更强的怪物开始来袭！'),3400);},4200);
-  if(S.day%5===0)setTimeout(()=>{if(S&&S.phase==='day')toast(L3('⚠ 보스 라운드! 탑과 벽을 정비하세요','⚠ Boss round! Shore up your towers and walls','⚠ 首领回合！整顿好塔和墙'),4200);},1200);
+  if(S.day%5===0)setTimeout(()=>{if(S&&S.phase==='day')toast(L3('⚠ 보스 라운드! 장비와 벽을 정비하고 체력을 채워 두세요','⚠ Boss round! Gear up, fix walls and top up HP','⚠ 首领回合！整顿装备和墙，补满生命'),4200);},1200);
   planNight();
 };
 beginDay=function(msg){setupDay();save();try{localStorage.setItem(SAVE_KEY+'-am',localStorage.getItem(SAVE_KEY)||'');}catch(_){}
-  toast(S.day===1?L3('건설(B)로 화살탑을 세우세요! 금화로 짓고, 몬스터를 잡으면 금화가 들어와요','Build (B) an Arrow Tower! Everything costs gold, and kills pay gold','用建造(B)建一座箭塔！一切用金币建造，击杀获得金币'):(msg||''),4200);};
+  toast(S.day===1?L3('밤이 오면 화톳불을 지키세요! 스킬(R)로 싸우고, 금화로 대장장이에서 장비를 사요. 벽(B)으로 시간을 벌 수도 있어요','When night falls, guard the campfire! Fight with skills (R) and buy gear at the blacksmith. Walls (B) can buy time','夜幕降临时守护篝火！用技能(R)战斗，用金币在铁匠处买装备。墙(B)可以拖延时间'):(msg||''),4200);};
 rollFoe=function(d,howl){const r=Math.random();let t='goblin';
   if(d>=2&&r<(howl?.6:.25))t='wolf';else if(d>=3&&r>.82)t='boar';else if(d>=4&&r>.68)t='archer';else if(d>=7&&r>.6)t='burrower';
   const r2=Math.random(),pg=progFor(d);
@@ -114,3 +117,4 @@ function fbCell(b){const a=(b.clock/12)*Math.PI*2,D=Math.round(24*RS/2.15);retur
 {const _g2=genMap;genMap=function(s){_g2(s);for(const b of FBOSS){const [bx,by]=fbCell(b),clr=(x,y)=>{if(x<1||y<1||x>=W-1||y>=H-1)return;const i=idx(x,y),v=s.res[i];if(v===7||v===8)return;s.res[i]=0;s.rhp[i]=0;s.water[i]=0;};
   for(let y=-4;y<=4;y++)for(let x=-4;x<=4;x++)if(x*x+y*y<=18)clr(bx+x,by+y);
   const x0=Math.min(CX,bx),x1=Math.max(CX,bx);for(let x=x0;x<=x1;x++)for(let w=-1;w<=1;w++)clr(x,by+w);}};}
+{const _sb=setBuild;setBuild=function(on){_sb(on);if(on&&S)try{setBcat(bcat);}catch(_){}};}

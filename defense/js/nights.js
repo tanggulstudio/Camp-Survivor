@@ -13,11 +13,11 @@ const AUGS=[
   {id:'splash',ic:'💥',pk:'splash',v:.6,n:L3('충격파','Shockwave','冲击波'),d:L3('맞은 적 주변 0.6칸에 40% 피해 (겹치면 넓어짐)','40% splash in 0.6 tiles (stacks wider)','命中周围0.6格40%伤害（叠加变大）')},
   {id:'leech',ic:'🩸',pk:'leech',v:.04,n:L3('흡혈','Lifesteal','吸血'),d:L3('준 피해의 4% 회복','Heal 4% of damage dealt','回复造成伤害的4%')},
   {id:'cdr',ic:'⏱️',pk:'cdr',v:.08,n:L3('집중','Focus','专注'),d:L3('재사용 대기 -8%','Cooldowns −8%','冷却-8%')},
-  {id:'towerp',ic:'🗼',pk:'towerp',v:.15,n:L3('정밀 조준','Calibrated Sights','精准瞄准'),d:L3('모든 포탑 피해 +15%','All towers +15% damage','所有炮塔伤害+15%')},
-  {id:'range',ic:'🔭',n:L3('망루','Watchtower','瞭望台'),d:L3('포탑 사거리 +1칸','Tower range +1 tile','炮塔射程+1格'),fn:()=>{S.mods.towerRange+=1;}},
   {id:'wall',ic:'🧱',n:L3('단단한 벽','Reinforced Walls','坚固城墙'),d:L3('벽 체력 +40%, 모든 건물 수리','Walls +40% HP, repair everything','墙壁生命+40%，修复所有建筑'),fn:()=>{S.mods.wallHp*=1.4;forB(b=>{if(b.max)b.hp=b.max;});}},
   {id:'spike',ic:'🌵',n:L3('독 가시','Venom Spikes','毒刺'),d:L3('가시 함정 피해 +60%','Spike traps +60% damage','尖刺陷阱伤害+60%'),fn:()=>{S.mods.spike*=1.6;}},
   {id:'cheap',ic:'🪙',pk:'cheap',v:.08,max:3,n:L3('알뜰한 설계','Thrifty Design','节俭设计'),d:L3('건물 값 -8%','Buildings −8% cost','建筑费用-8%')},
+  {id:'guard',ic:'🛡️',n:L3('지원군','Reinforcement','援军'),d:L3('계속 곁에서 싸우는 경비병 +1','A permanent guard joins you','一名守卫永久加入'),fn:()=>{S.dc.guards=(S.dc.guards||0)+1;}},
+  {id:'summ',ic:'🌀',pk:'summ',v:.2,n:L3('동료의 결의','Ally Resolve','同伴决心'),d:L3('소환수·경비병 피해 +20%','Summons and guards +20% damage','召唤物与守卫伤害+20%')},
   {id:'gold',ic:'💰',pk:'gold',v:.15,n:L3('현상금','Bounty','赏金'),d:L3('처치 금화 +15%','Kill gold +15%','击杀金币+15%')},
   {id:'irate',ic:'🏦',max:3,n:L3('복리','Compound Interest','复利'),d:L3('이자율 +2% (기본 5%)','Interest rate +2% (base 5%)','利率+2%（基础5%）'),fn:()=>{S.dc.irate=(S.dc.irate||0)+.02;}},
   {id:'stones',ic:'💎',n:L3('광맥 발견','Ore Vein','发现矿脉'),d:L3('강화석 +5 지금 받기','Get 5 upgrade stones now','立即获得5个强化石'),fn:()=>{S.items.estone=(S.items.estone||0)+5;}},
@@ -75,7 +75,7 @@ let PHIT=0;
 {const _he=hitEnemy;hitEnemy=function(e,d){if(e&&(e.thief||e.totem)&&!PHIT&&S&&S.dc)d*=.1;return _he(e,d);};}
 function nightTasks(){const r=S.day,dc=S.dc;dc.orbT=6;dc.orbs=[];
   if(r>=4&&r%5!==0){const n=1+Math.floor(r/15);for(let k=0;k<n;k++)setTimeout(()=>{if(!S||S.phase!=='night')return;spawnEnemy('goblin',S.sides[(Math.random()*S.sides.length)|0]);const e=S.enemies[S.enemies.length-1];
-    e.thief=1;e.spd*=1.7;e.sz=1.1;toast(L3('💰 금화 도둑이 나타났어요! 포탑은 잘 못 맞혀요. 직접 잡으세요','💰 A gold thief appeared! Towers barely hurt it. Catch it yourself','💰 金币小偷出现了！炮塔几乎打不动，亲自抓住它'),3400);},(6+k*9)*1000);}
+    e.thief=1;e.spd*=1.7;e.sz=1.1;toast(L3('💰 금화 도둑이 나타났어요! 동료 공격은 거의 안 통해요. 직접 잡으세요','💰 A gold thief appeared! Allies barely hurt it. Catch it yourself','💰 金币小偷出现了！同伴几乎打不动，亲自抓住它'),3400);},(6+k*9)*1000);}
   if(r>=6&&r%2===0&&r%5!==0){const n=r>=30?2:1;for(let k=0;k<n;k++){const a=Math.random()*Math.PI*2,D=9+Math.random()*3,c=freeCellNear(idx(Math.round(CX+Math.cos(a)*D),Math.round(CY+Math.sin(a)*D)));const [x,y]=cCenter(c);
     const e=makeWild('shard',x,y);e.totem=1;e.spd=0;e.sz=1.4;e.max=e.hp=80*(1+r*.3);e.sumT=4;e.sumN=0;}
     setTimeout(()=>{if(S&&S.phase==='night')toast(L3('🗿 숲에 소환 토템이 솟았어요! 부수기 전까지 고블린을 계속 불러요','🗿 A summoning totem rose in the forest! It keeps calling goblins until destroyed','🗿 森林里出现了召唤图腾！不摧毁就会不断召唤哥布林'),3800);},2500);}}
@@ -101,7 +101,7 @@ function nightDraw(now){const dc=S.dc;if(dc.orbs)for(const o of dc.orbs){const b
 {const _dp2=drawPlayer;drawPlayer=function(now){if(S.dc&&!S.p.ghost&&!S.p.remote)try{nightDraw(now);}catch(_){}return _dp2(now);};}
 
 /* ---------- 4. speed ---------- */
-{const _u3=update;update=function(dt){_u3(dt);if(S&&S.dc&&running&&!paused){nightTick(dt);if(S.dc.fast&&S.phase==='night'&&!S.menu)_u3(dt);}};}
+{const _u3=update;const step=d=>{_u3(d);if(S&&S.dc&&running&&!paused){nightTick(d);if(!NC())coreTick(d);}};update=function(dt){step(dt);if(S&&S.dc&&S.dc.fast&&S.phase==='night'&&!S.menu)step(dt);};}
 function toggleFast(){if(!S||!S.dc)return;S.dc.fast=!S.dc.fast;const b=$('btnFast');if(b){b.classList.toggle('on',!!S.dc.fast);b.textContent=S.dc.fast?'⏩ 2×':'▶ 1×';}toast(S.dc.fast?L3('밤 2배속','Night speed 2×','夜晚2倍速'):L3('보통 속도','Normal speed','正常速度'),1200);}
 
 /* ---------- hooks: dawn → upgrade pick, interest rate, HUD, save ---------- */
@@ -115,3 +115,10 @@ window.addEventListener('load',()=>{const g=id=>document.getElementById(id);
     if(!g('ovAug').hidden&&/^[123]$/.test(e.key)){const bs=g('augList').querySelectorAll('[data-aug]');const b=bs[+e.key-1];if(b)b.click();}});
   {const _ct2=closeTopOverlay;closeTopOverlay=function(){if(!g('ovAug').hidden)return true;return _ct2();};}
 });
+
+/* ---------- the campfire fights back (no towers in Defense) ---------- */
+function coreDmg(){return (6+S.day*2.2)*(1+.12*(S.dc.bless||0))*(1+.15*((S.coreLv||1)-1))}
+function coreTick(dt){const dc=S.dc;if(S.phase!=='night'||S.tower)return;dc.coreT=(dc.coreT||0)-dt;if(dc.coreT>0)return;
+  const [cx,cy]=cCenter(CI),es=S.enemies.filter(e=>!e.dead&&!e.burrow&&!e.wild&&Math.hypot(e.x-cx,e.y-cy)<5.5*T).sort((a,b)=>Math.hypot(a.x-cx,a.y-cy)-Math.hypot(b.x-cx,b.y-cy));
+  if(!es.length){dc.coreT=.3;return;}dc.coreT=.9;const n=1+Math.floor(((S.coreLv||1)-1)/2)+Math.floor((dc.bless||0)/3);
+  for(const e of es.slice(0,n))S.arrows.push({x:cx,y:cy-18,e,dmg:coreDmg(),kind:'pfire'});sfx('shoot',cx,cy);}

@@ -19,7 +19,7 @@ const DCLS={
   archer:{ic:'🏹',col:'#3f8a4a',w:'bow',n:[L3('궁수','Archer','弓手'),L3('레인저','Ranger','游侠'),L3('바람의 사수','Windstrider','风之射手')],
     d:L3('멀리서 여러 적을 한꺼번에 쏘는 활잡이','A bowman who shoots many foes at once','一次射击多个敌人的弓手'),sk:['rain','pierce','snipe','arrowstorm']},
   engineer:{ic:'🔧',col:'#c08a2a',w:'hammer',n:[L3('기술자','Engineer','工程师'),L3('포병','Artillerist','炮兵'),L3('대기공사','Grand Machinist','大机工师'),],
-    d:L3('포탑을 강하게, 값싸게 만드는 장인','A craftsman who makes towers stronger and cheaper','让炮塔更强更便宜的工匠'),sk:['turret','repair','overclock','mech']},
+    d:L3('직접 포탑과 대포를 깔아 싸우는 기술자','Fights by deploying turrets and cannons','亲手部署炮塔与大炮作战的技师'),sk:['turret','repair','overclock','mech']},
   tamer:{ic:'👺',col:'#6a9a3a',w:'boom',n:[L3('고블린 조련사','Goblin Tamer','哥布林驯兽师'),L3('고블린 대장','Goblin Captain','哥布林队长'),L3('고블린 군주','Goblin Overlord','哥布林霸主')],
     d:L3('길들인 고블린 무리와 함께 싸워요','Fights alongside a tamed goblin band','与驯服的哥布林一同作战'),sk:['gobsum','gobbomb','gobhorde','gobking']},
   merchant:{ic:'💰',col:'#d8b040',w:'star',n:[L3('상인','Merchant','商人'),L3('거상','Tycoon','巨商'),L3('황금 상회주','Guild Master','黄金商会长')],
@@ -39,7 +39,7 @@ const DCLS={
   assassin:{ic:'🗡️',col:'#4a4a5a',w:'star',n:[L3('암살자','Assassin','刺客'),L3('독 칼날','Venomblade','毒刃'),L3('그림자 처형자','Executioner','处刑者')],
     d:L3('약해진 적을 끝장내는 칼잡이','Finishes off weakened foes','终结虚弱敌人的刺客'),sk:['shadow','venomblade','smokebomb','execute']},
   bard:{ic:'🎵',col:'#e07ab0',w:'boom',n:[L3('음유시인','Bard','吟游诗人'),L3('전쟁 악사','War Minstrel','战争乐师'),L3('전설의 가인','Legendary Virtuoso','传奇歌者')],
-    d:L3('노래로 포탑과 동료를 북돋아요','Songs that lift towers and allies','以歌声鼓舞炮塔与同伴'),sk:['hymn','lullaby','march','encore']},
+    d:L3('노래로 자신과 동료를 북돋아요','Songs that lift you and your allies','以歌声鼓舞自己与同伴'),sk:['hymn','lullaby','march','encore']},
   ember:{hid:1,piece:'ember',ic:'🔥',col:'#ff7a2a',w:'fire',n:[L3('불씨지기','Emberkeeper','守火人'),L3('불씨 수호자','Ember Warden','余烬守护者'),L3('태양의 화신','Avatar of the Sun','太阳化身')],
     d:L3('[히든] 화톳불과 하나가 된 자','[Hidden] One with the campfire','[隐藏] 与篝火合一者'),sk:['fireball','inferno','emberwall','sunfall']},
   shadow:{hid:1,piece:'shadow',ic:'🌑',col:'#5a3a8a',w:'star',n:[L3('그림자 추적자','Shadowstalker','暗影追猎者'),L3('그림자 군주','Shadow Lord','暗影君主'),L3('밤의 제왕','Night Emperor','夜之帝王')],
@@ -83,7 +83,7 @@ const PK={
   spd:{f:v=>L('이동 속도 +'+Math.round(v*100)+'%','Move speed +'+Math.round(v*100)+'%','移速+'+Math.round(v*100)+'%')},
   regen:{f:v=>L('초당 체력 '+(v*100).toFixed(1)+'% 회복','Regenerate '+(v*100).toFixed(1)+'% HP/s','每秒回复'+(v*100).toFixed(1)+'%生命')},
   coreregen:{f:v=>L('밤마다 화톳불이 초당 '+(v*100).toFixed(1)+'% 회복','Campfire heals '+(v*100).toFixed(1)+'%/s at night','夜间篝火每秒回复'+(v*100).toFixed(1)+'%')},
-  towerp:{f:v=>L('포탑 피해 +'+Math.round(v*100)+'%','Tower damage +'+Math.round(v*100)+'%','炮塔伤害+'+Math.round(v*100)+'%')},
+  towerp:{f:v=>L('내 포탑 피해 +'+Math.round(v*100)+'%','My turrets +'+Math.round(v*100)+'% damage','我的炮塔伤害+'+Math.round(v*100)+'%')},
   cheap:{f:v=>L('건물 값 -'+Math.round(v*100)+'%','Buildings −'+Math.round(v*100)+'% cost','建筑费用-'+Math.round(v*100)+'%')},
   summ:{f:v=>L('소환수 피해 +'+Math.round(v*100)+'%','Summon damage +'+Math.round(v*100)+'%','召唤物伤害+'+Math.round(v*100)+'%')},
   fam:{f:v=>L('따라다니는 정령 +'+v,'Familiars +'+v,'随身灵体+'+v)},
@@ -98,7 +98,7 @@ const PK={
 const PAS={
   warrior:[['hp',[.15,.25,.35]],['splash',[1,1.3,1.6]],['def',[0,8,14]],['stunhit',[0,0,15]]],
   archer:[['multi',[3,5,7]],['crit',[10,18,26]],['aspd',[0,.15,.25]],['bounce',[0,0,4]]],
-  engineer:[['towerp',[.2,.35,.5]],['cheap',[.15,.2,.25]],['coreregen',[0,.003,.005]],['splash',[0,0,1.5]]],
+  engineer:[['towerp',[.3,.55,.8]],['aspd',[.1,.15,.2]],['coreregen',[0,.003,.005]],['splash',[0,0,1.5]]],
   tamer:[['pack',[1,2,3]],['summ',[.25,.45,.7]],['multi',[0,3,4]],['gold',[0,0,.3]]],
   merchant:[['greed',[1,1.5,2]],['gold',[.2,.3,.45]],['interest',[0,2,3]],['crit',[0,0,20]]],
   berserker:[['fury',[.8,1.2,1.6]],['leech',[.04,.07,.1]],['aspd',[0,.15,.25]],['splash',[0,0,1.4]]],
@@ -108,7 +108,7 @@ const PAS={
   frostmage:[['chill',[1.5,2.2,3]],['splash',[1,1.3,1.6]],['atk',[0,.15,.25]],['stunhit',[0,0,12]]],
   stormcaller:[['bounce',[3,5,7]],['cdr',[.1,.15,.2]],['crit',[0,15,22]],['aspd',[0,0,.25]]],
   assassin:[['crit',[20,30,40]],['execute',[.5,.8,1.2]],['spd',[0,.15,.2]],['multi',[0,0,3]]],
-  bard:[['towerp',[.1,.2,.3]],['summ',[.2,.35,.5]],['aspd',[0,.15,.2]],['coreregen',[0,0,.004]]],
+  bard:[['atk',[.1,.15,.2]],['summ',[.3,.5,.8]],['aspd',[0,.15,.2]],['coreregen',[0,0,.004]]],
   ember:[['burn',[2,3,4]],['coreregen',[.003,.005,.008]],['splash',[0,1.3,1.7]],['atk',[0,0,.3]]],
   shadow:[['multi',[3,5,7]],['crit',[15,25,35]],['cdr',[0,.1,.2]],['execute',[0,0,1]]],
   goldking:[['greed2',[1.5,2,3]],['gold',[.5,.75,1]],['hp',[0,.2,.3]],['splash',[0,0,1.5]]],
@@ -119,15 +119,15 @@ function pv(k){if(!S||!S.dc)return 0;const L2=PAS[S.dc.cls];if(!L2)return 0;let 
 function pasText(i){const P=PAS[S.dc.cls][i],t=Math.max(S.dc.tier,i===2?2:i===3?3:1);return PK[P[0]].f(P[1][t-1])}
 function pasNext(i){const P=PAS[S.dc.cls][i],t=S.dc.tier;if(t>=3||!pasOpen(i))return '';return ' → '+PK[P[0]].f(P[1][t])}
 function dBuildMul(){return 1-pv('cheap')}
-{const _a=pAtk;pAtk=function(){let v=_a();if(S&&S.dc&&!S.p.ghost&&!S.p.remote){const dc=S.dc;v*=1+.08*(dc.tier-1)+pv('atk');
+{const _a=pAtk;pAtk=function(){let v=_a();if(S&&S.dc&&!S.p.ghost&&!S.p.remote){const dc=S.dc;v*=1+.08*(dc.tier-1)+pv('atk')+.03*(dc.bless||0);
     const g1=pv('greed'),g2=pv('greed2'),fu=pv('fury');if(g1)v*=1+Math.min(S.gold/400,g1);if(g2)v*=1+Math.min(S.gold/300,g2);if(fu)v*=1+(1-Math.max(0,S.p.hp)/Math.max(1,pMax()))*fu;
-    if(dBuf('rage'))v*=1.5;if(dBuf('march'))v*=1.3;if(dBuf('rag'))v*=2;if(dBuf('roar'))v*=1.2;if(dBuf('gold'))v*=1.5;
+    if(dBuf('rage'))v*=1.5;if(dBuf('march'))v*=1.3;if(dBuf('hymn'))v*=1.25;if(dBuf('rag'))v*=2;if(dBuf('roar'))v*=1.2;if(dBuf('gold'))v*=1.5;
     if(dForm('wolf'))v*=1.4;else if(dForm('bear'))v*=1.2;else if(dForm('dragon'))v*=1.8;else if(dForm('primal'))v*=2;}
   return v*SKM;};}
 {const _d=pDef;pDef=function(){let v=_d();if(S&&S.dc){const t=S.dc.tier;v+=pv('def');if(dBuf('guard'))v+=8*t;if(dForm('bear'))v+=10;}return v;};}
 {const _m=pMax;pMax=function(){let v=_m();if(S&&S.dc&&!S.p.ghost){v*=1+pv('hp');if(dForm('bear'))v*=1.5;else if(dForm('primal'))v*=1.3;v=Math.round(v);}return v;};}
 {const _s=pSpd;pSpd=function(){let v=_s();if(S&&S.dc){v*=1+pv('spd');if(dBuf('march'))v*=1.2;if(dBuf('rage'))v*=1.25;if(dForm('wolf'))v*=1.45;else if(dForm('primal'))v*=1.3;else if(dForm('dragon'))v*=1.1;}return v;};}
-{const _e=eqSum;eqSum=function(k){let v=_e(k);if(S&&S.dc){if(k==='summ')v+=pv('summ');else if(k==='cdr')v+=pv('cdr');else if(k==='fam')v+=pv('fam');}return v;};}
+{const _e=eqSum;eqSum=function(k){let v=_e(k);if(S&&S.dc){if(k==='summ')v+=pv('summ')+(dBuf('hymn')?.25:0);else if(k==='cdr')v+=pv('cdr');else if(k==='fam')v+=pv('fam');}return v;};}
 {const _h=hurtPlayer;hurtPlayer=function(d){if(S&&S.dc&&!S.p.remote){if(dBuf('rag'))d*=.35;if(dBuf('evade'))d*=.3;if(dForm('bear'))d*=.8;}return _h(d);};}
 let PAS_ON=0;
 {const _o=onPlayerHit;onPlayerHit=function(e,dm){const r=_o(e,dm);if(!S||!S.dc||PAS_ON)return r;PAS_ON=1;try{const p=S.p;let h=0;
@@ -138,7 +138,7 @@ let PAS_ON=0;
     if(dBuf('venom')){e.poison=Math.max(e.poison||0,3);e.slow=Math.max(e.slow||0,1.5);}}
   h+=dm*pv('leech');if(dBuf('leech'))h+=dm*.25;if(h&&!p.dead)p.hp=Math.min(pMax(),p.hp+h);}finally{PAS_ON=0;}return r;};}
 {const _pa=playerAttack;playerAttack=function(tgt,cls){_pa(tgt,cls);if(!S||!S.dc)return;const p=S.p;
-  const as=pv('aspd');if(as)p.cd*=1-as;
+  const as=pv('aspd')+(dBuf('oc')?.3:0);if(as)p.cd*=1-Math.min(.7,as);
   const mu=pv('multi');if(mu>1){const rng=(({book:5,bow:6.5,staff:5.5,star:5,boom:5.5,lance:2.4,hammer:1.8}[cls]||1.6)+.5)*T;const os=dNear(p.x,p.y,rng,mu).filter(o=>o!==tgt).slice(0,mu-1);
     for(const o of os){const dm=pAtk()*.6;if(cls==='bow')S.arrows.push({x:p.x,y:p.y-6,e:o,dmg:dm,kind:'parrow'});else if(cls==='star')S.arrows.push({x:p.x,y:p.y-6,e:o,dmg:dm,kind:'star',sp:560});else if(cls==='staff'||cls==='book')S.arrows.push({x:p.x,y:p.y-8,e:o,dmg:dm,kind:'pbolt'});else if(cls==='boom')S.arrows.push({x:p.x,y:p.y-6,e:o,dmg:dm,kind:'boom',left:2,hit:[],sp:380});
       else{hitEnemy(o,dm);onPlayerHit(o,dm);S.fx.push({k:'slash',x:o.x,y:o.y,a:Math.atan2(o.y-p.y,o.x-p.x),r:16,t:0,life:.14});}}}
@@ -164,10 +164,10 @@ dSk('warcry',14,L('함성','War Cry','战吼'),L('주변 적을 1.5초 기절시
 dSk('judgment',30,L('심판','Judgment','审判'),L('[궁극기] 하늘의 빛이 넓게 내려 공격력 6배 피해·기절. 내 체력 40%, 화톳불 10% 회복','[Ultimate] Holy light: 6× ATK in a wide area + stun. Heals you 40% and the fire 10%','[终极] 圣光降临：大范围6倍伤害并击晕。回复自身40%和篝火10%'),'✨',p=>{dAoe(p.x,p.y,5*T,pAtk()*6,{stun:2,col:'#fff2a0'});for(let k=0;k<6;k++){const a=k/6*6.28;S.fx.push({k:'l',pts:[[p.x+Math.cos(a)*3*T,p.y+Math.sin(a)*3*T-240],[p.x+Math.cos(a)*3*T,p.y+Math.sin(a)*3*T]],t:0,life:.4,big:1});}p.hp=Math.min(pMax(),p.hp+pMax()*.4);coreHeal(.1);shake(8);sfx('explode',p.x,p.y);});
 dSk('snipe',10,L('저격','Snipe','狙击'),L('가장 체력이 많은 적에게 공격력 7배 화살','A 7× ATK shot at the toughest enemy in range','向范围内最强的敌人射出7倍伤害的箭'),'🎯',p=>{const es=S.enemies.filter(e=>!e.dead&&!e.burrow&&Math.hypot(e.x-p.x,e.y-p.y)<14*T).sort((a,b)=>b.hp-a.hp);const e=es[0];if(!e)return;const dm=pAtk()*7;hitEnemy(e,dm);onPlayerHit(e,dm);S.fx.push({k:'thrust',x:p.x,y:p.y,a:Math.atan2(e.y-p.y,e.x-p.x),len:Math.hypot(e.x-p.x,e.y-p.y),t:0,life:.35});burst(e.x,e.y,'#fff',12);sfx('hit',e.x,e.y);});
 dSk('arrowstorm',28,L('화살 폭풍','Arrow Storm','箭雨风暴'),L('[궁극기] 5초 동안 넓은 범위에 화살이 쏟아져요','[Ultimate] Arrows pour over a wide area for 5s','[终极] 5秒内大范围箭雨倾泻'),'🌪️',p=>{const [x,y]=dTgt();dZone({k:'rain',x,y,r:3.6*T,life:5,iv:.1,dm:pAtk()*.9});S.fx.push({k:'ring',x,y,r:3.6*T,t:0,life:5,col:'#c8f0a0',warn:1});});
-dSk('turret',12,L('포탑 설치','Deploy Turret','部署炮塔'),L('그 자리에 자동 포탑을 세워요 (최대 3개)','Drops an auto-turret where you stand (up to 3)','在原地放置自动炮塔（最多3座）'),'🗼',p=>{const ts=S.dc.z.filter(z=>z.k==='turret');if(ts.length>=3)ts[0].t=ts[0].life;dZone({k:'turret',x:p.x,y:p.y+6,life:15+5*S.dc.tier,iv:.6,rng:6*T,dm:pAtk()*.8});sfx('build');});
+dSk('turret',12,L('포탑 설치','Deploy Turret','部署炮塔'),L('그 자리에 자동 포탑을 세워요 (최대 3개)','Drops an auto-turret where you stand (up to 3)','在原地放置自动炮塔（最多3座）'),'🗼',p=>{const ts=S.dc.z.filter(z=>z.k==='turret');if(ts.length>=3)ts[0].t=ts[0].life;dZone({k:'turret',x:p.x,y:p.y+6,life:15+5*S.dc.tier,iv:.6,rng:6*T,dm:pAtk()*.8*(1+pv('towerp'))});sfx('build');});
 dSk('repair',18,L('긴급 수리','Quick Repair','紧急修理'),L('모든 건물을 40% 수리하고 화톳불을 8% 회복','Repairs every building by 40% and heals the fire 8%','修复所有建筑40%，篝火回复8%'),'🛠️',p=>{forB(b=>{if(b.max)b.hp=Math.min(b.max,b.hp+b.max*.4);});coreHeal(.08);sfx('build');});
-dSk('overclock',22,L('과부하','Overclock','超频'),L('8초 동안 모든 포탑 피해 +60%','All towers deal +60% damage for 8s','8秒内所有炮塔伤害+60%'),'⚡',p=>{towerBoost(1.6,8);burst(p.x,p.y,'#9fd8ff',20);sfx('zap',p.x,p.y);});
-dSk('mech',35,L('거대 포','Siege Cannon','攻城巨炮'),L('[궁극기] 15초 동안 폭발 포탄을 쏘는 거대 포를 세워요','[Ultimate] A siege cannon firing explosive shells for 15s','[终极] 放置一门发射爆炸炮弹的巨炮，持续15秒'),'💣',p=>{dZone({k:'cannon',x:p.x,y:p.y+6,life:15,iv:.8,rng:8*T,dm:pAtk()*2.2});shake(4);sfx('build');});
+dSk('overclock',22,L('과부하','Overclock','超频'),L('8초 동안 내 포탑이 두 배 빠르게 쏘고, 나도 공격 속도 +30%','For 8s your turrets fire twice as fast and you attack 30% faster','8秒内炮塔射速翻倍，自身攻速+30%'),'⚡',p=>{dBuff('oc',8);burst(p.x,p.y,'#9fd8ff',20);sfx('zap',p.x,p.y);});
+dSk('mech',35,L('거대 포','Siege Cannon','攻城巨炮'),L('[궁극기] 15초 동안 폭발 포탄을 쏘는 거대 포를 세워요','[Ultimate] A siege cannon firing explosive shells for 15s','[终极] 放置一门发射爆炸炮弹的巨炮，持续15秒'),'💣',p=>{dZone({k:'cannon',x:p.x,y:p.y+6,life:15,iv:.8,rng:8*T,dm:pAtk()*2.2*(1+pv('towerp'))});shake(4);sfx('build');});
 dSk('gobsum',12,L('고블린 호출','Goblin Call','哥布林召唤'),L('고블린 2마리를 18초 동안 불러요','Calls 2 goblins for 18s','召唤2只哥布林，持续18秒'),'👺',()=>dAlly('gob',2,18));
 dSk('gobbomb',9,L('폭탄 투척','Goblin Bombs','哥布林炸弹'),L('가까운 적 4명에게 폭탄을 던져요 (공격력 1.6배 범위 피해)','Throws bombs at 4 nearby foes (1.6× ATK splash)','向附近4个敌人投掷炸弹（1.6倍范围伤害）'),'💥',p=>{for(const e of dNear(p.x,p.y,7*T,4))S.arrows.push({x:p.x,y:p.y-8,e,dmg:pAtk()*1.6,kind:'blast'});sfx('throw');});
 dSk('gobhorde',20,L('고블린 떼','Goblin Horde','哥布林大军'),L('고블린 5마리를 20초 동안 불러요','Calls 5 goblins for 20s','召唤5只哥布林，持续20秒'),'🏴',()=>dAlly('gob',5,20));
@@ -204,10 +204,10 @@ dSk('chainbolt',9,L('연쇄 번개','Chain Lightning','连锁闪电'),L('번개�
 dSk('venomblade',16,L('독 바르기','Venom Blades','淬毒'),L('8초 동안 내 공격이 독과 둔화를 걸어요','For 8s your hits poison and slow','8秒内攻击附带中毒和减速'),'🧪',p=>{dBuff('venom',8);burst(p.x,p.y,'#7ad04a',16);});
 dSk('smokebomb',15,L('연막탄','Smoke Bomb','烟雾弹'),L('주변 적을 2초 기절시키고 4초 동안 받는 피해 -70%','Stuns nearby foes 2s; −70% damage taken for 4s','击晕周围敌人2秒；4秒内受到伤害-70%'),'💨',p=>{dAoe(p.x,p.y,3*T,pAtk()*.8,{stun:2,col:'#aaaaaa'});smoke(p.x,p.y,14);dBuff('evade',4);});
 dSk('execute',34,L('처형','Execute','处决'),L('[궁극기] 주변에서 체력 40% 이하인 적(보스 제외)을 즉사시키고, 나머지에게 공격력 5배 피해','[Ultimate] Instantly kills nearby non-boss foes under 40% HP; 5× ATK to the rest','[终极] 秒杀附近生命低于40%的非首领敌人；其余受到5倍伤害'),'⚰️',p=>{for(const e of dNear(p.x,p.y,5*T)){if(!e.nightBoss&&!e.awak&&!e.lair&&e.hp<e.max*.4){hitEnemy(e,e.hp+1);burst(e.x,e.y,'#c02a2a',10);}else{const dm=pAtk()*5;hitEnemy(e,dm);onPlayerHit(e,dm);}}S.fx.push({k:'ring',x:p.x,y:p.y,r:5*T,t:0,life:.4,col:'#c02a2a'});shake(6);});
-dSk('hymn',18,L('전투의 찬가','Battle Hymn','战斗赞歌'),L('10초 동안 모든 포탑 피해 +35%','All towers +35% damage for 10s','10秒内所有炮塔伤害+35%'),'🎶',()=>towerBoost(1.35,10));
+dSk('hymn',18,L('전투의 찬가','Battle Hymn','战斗赞歌'),L('10초 동안 나와 동료의 공격력 +25%','+25% ATK for you and allies for 10s','10秒内自身与同伴攻击+25%'),'🎶',p=>{dBuff('hymn',10);burst(p.x,p.y,'#ffb0d8',22);sfx('horn');});
 dSk('lullaby',16,L('자장가','Lullaby','摇篮曲'),L('넓은 범위의 적을 3.5초 재워요','Puts foes in a wide area to sleep for 3.5s','让大范围的敌人沉睡3.5秒'),'😴',p=>{dAoe(p.x,p.y,4.5*T,pAtk()*.5,{stun:3.5,col:'#e8b0ff'});});
 dSk('march',18,L('행진곡','War March','进行曲'),L('8초 동안 공격력 +30%, 이동 속도 +20%','+30% ATK and +20% speed for 8s','8秒内攻击+30%，移速+20%'),'🥁',p=>{dBuff('march',8);burst(p.x,p.y,'#ffb0d8',18);sfx('horn');});
-dSk('encore',36,L('앙코르','Encore','安可'),L('[궁극기] 다른 스킬 재사용 대기를 모두 초기화하고, 10초 동안 포탑 피해 +60%, 체력 20% 회복','[Ultimate] Resets your other cooldowns, towers +60% for 10s, heals 20%','[终极] 重置其他技能冷却，10秒内炮塔+60%，回复20%生命'),'🎤',p=>{for(const k in S.acd)if(k!=='w_encore')S.acd[k]=0;towerBoost(1.6,10);p.hp=Math.min(pMax(),p.hp+pMax()*.2);shake(4);});
+dSk('encore',36,L('앙코르','Encore','安可'),L('[궁극기] 다른 스킬 재사용 대기 초기화, 15초 동안 찬가 효과, 체력 30% 회복','[Ultimate] Resets other cooldowns, Battle Hymn for 15s, heals 30%','[终极] 重置其他技能冷却，15秒战斗赞歌，回复30%生命'),'🎤',p=>{for(const k in S.acd)if(k!=='w_encore')S.acd[k]=0;dBuff('hymn',15);p.hp=Math.min(pMax(),p.hp+pMax()*.3);shake(4);renderAbil();});
 
 /* which skills are open: slot 1 at Lv1, slot 2 at Lv5, slot 3 at 2nd job, ultimate at 3rd job */
 function skillOpen(i){if(!S.dc)return false;return i===0||(i===1&&S.p.lvl>=5)||(i===2&&S.dc.tier>=2)||(i===3&&S.dc.tier>=3)}
@@ -234,7 +234,7 @@ function dTick(dt){const dc=S.dc,p=S.p;
   const pk=pv('pack'),perm=pk?[dc.cls==='beast'?'wolf':'gob',pk]:null;
   {const want=dc.guards||0;let have=S.allies.filter(a=>a.guard).length;while(have<want){S.allies.push({x:p.x+(Math.random()-.5)*40,y:p.y+(Math.random()-.5)*40,life:Infinity,cd:0,face:0,dk:'merc',guard:1});have++;}}
   if(perm){let have=S.allies.filter(a=>a.perm).length;while(have<perm[1]){S.allies.push({x:p.x+(Math.random()-.5)*40,y:p.y+(Math.random()-.5)*40,life:Infinity,cd:0,face:0,dk:perm[0],perm:1});have++;}}
-  for(const z of dc.z){z.t+=dt;z.tick-=dt;if(z.tick>0)continue;z.tick=z.iv||9;
+  for(const z of dc.z){z.t+=dt;z.tick-=dt;if(z.tick>0)continue;z.tick=(z.iv||9)*(dBuf('oc')&&(z.k==='turret'||z.k==='cannon')?.5:1);
     if(z.k==='turret'||z.k==='cannon'){const e=dNear(z.x,z.y,z.rng,1)[0];if(e){z.a=Math.atan2(e.y-z.y,e.x-z.x);S.arrows.push({x:z.x,y:z.y-10,e,dmg:z.dm,kind:z.k==='cannon'?'blast':'arrow'});sfx('shoot',z.x,z.y);}}
     else if(z.k==='rain'||z.k==='coins'){const a=Math.random()*6.28,r=Math.random()*z.r,x=z.x+Math.cos(a)*r,y=z.y+Math.sin(a)*r;S.fx.push({k:'thrust',x,y:y-60,a:Math.PI/2,len:60,t:0,life:.18});for(const e of S.enemies){if(e.dead||e.burrow)continue;if(Math.hypot(e.x-x,e.y-y)<.9*T+ET[e.t].r)hitEnemy(e,z.dm);}if(z.k==='coins')burst(x,y,'#ffd23a',3);}
     else if(z.k==='sanct'){if(Math.hypot(p.x-z.x,p.y-z.y)<z.r&&!p.dead)p.hp=Math.min(pMax(),p.hp+pMax()*.03);for(const e of S.enemies){if(e.dead||e.burrow)continue;if(Math.hypot(e.x-z.x,e.y-z.y)<z.r+ET[e.t].r)hitEnemy(e,z.dm);}}
@@ -262,10 +262,10 @@ function givePiece(k){const dc=S.dc;if(!dc||dc.pc[k])return;if(HID_CLS.includes(
   setTimeout(()=>{if(S)toast(L('2차 전직 때 히든 직업 「','At your 2nd promotion you can choose the hidden class "','第二次转职时可选择隐藏职业「')+clsName(PIECES[k].cls,2)+L('」을(를) 고를 수 있어요','"','」')+'',5200);},2400);}
 
 /* ---------- promotion quests: each class earns its own token (2nd) and seal (3rd) ---------- */
-const PQ={warrior:[['lord:boar',1],['boss',3]],archer:[['kill:wolf,snowwolf',60],['lord:wolf',2]],engineer:[['tower',15],['nocore',5]],tamer:[['kill:goblin',150],['summon',60]],
+const PQ={warrior:[['lord:boar',1],['boss',3]],archer:[['kill:wolf,snowwolf',60],['lord:wolf',2]],engineer:[['skill',60],['nocore',5]],tamer:[['kill:goblin',150],['summon',60]],
   merchant:[['gold',800],['gold',3000]],berserker:[['kills',300],['lord:any',4]],shifter:[['form',15],['lord:crystal',2]],summoner:[['summon',40],['floor',15]],
   priest:[['nocore',3],['lord:toad',2]],frostmage:[['lord:crystal',1],['skill',150]],stormcaller:[['skill',80],['lord:wolf',2]],assassin:[['crit',150],['boss',3]],
-  bard:[['tower',12],['nocore',6]],ember:[['nocore',2],['lord:any',5]],shadow:[['kills',600],['crit',300]],goldking:[['gold',1500],['gold',5000]],beast:[['kill:wolf,snowwolf',100],['lord:wolf',3]]};
+  bard:[['skill',60],['nocore',6]],ember:[['nocore',2],['lord:any',5]],shadow:[['kills',600],['crit',300]],goldking:[['gold',1500],['gold',5000]],beast:[['kill:wolf,snowwolf',100],['lord:wolf',3]]};
 function dst(){const dc=S.dc;return dc.st||(dc.st={k:{},lord:{},skill:0,form:0,summon:0,crit:0,nc:0,boss:0})}
 function pqProg(q){const [k,n]=q,st=dst(),[a,b]=k.split(':');let v=0;
   if(a==='kill')v=b.split(',').reduce((s2,t)=>s2+(st.k[t]||0),0);else if(a==='kills')v=S.kills;else if(a==='lord')v=b==='any'?Object.values(st.lord).reduce((x,y)=>x+y,0):(st.lord[b]||0);
@@ -296,7 +296,7 @@ function promote(to){const n=promoNeed();if(!n)return;const dc=S.dc,hid=to&&to!=
   toast(L('새 스킬 해금: ','New skill: ','新技能：')+WSKILL[clsOf().sk[dc.tier===2?2:3]].n+' ('+WKEYS[dc.tier===2?2:3]+')',4200);renderAbil();save();renderCls();}
 function enhMax(){return S.dc.wt>=WLINE_LEN()-1?20:5}
 function blessCost(){return Math.round(150*Math.pow(1.3,S.dc.bless||0))}
-function bless(){const c=blessCost();if(S.gold<c)return;S.gold-=c;S.dc.bless=(S.dc.bless||0)+1;S.core.max=Math.round(S.core.max*1.12);S.core.hp=S.core.max;S.mods.towerDmg*=1.04;sfx('level');renderCls();hud();}
+function bless(){const c=blessCost();if(S.gold<c)return;S.gold-=c;S.dc.bless=(S.dc.bless||0)+1;S.core.max=Math.round(S.core.max*1.12);S.core.hp=S.core.max;sfx('level');renderCls();hud();}
 function enhCostD(){const dc=S.dc,lv=S.enh[dc.wid]||0,t=dc.wt;return {g:Math.round(12*(t+1)*(lv+1)),es:1+Math.floor(lv/2)}}
 function fuseCostD(){const t=S.dc.wt;return {g:Math.round(50*Math.pow(t+1,1.5)),es:2+t*2,soul:t+1>=4?1:0}}
 function enhance(){const dc=S.dc,lv=S.enh[dc.wid]||0,c=enhCostD();if(lv>=enhMax()||S.gold<c.g||(S.items.estone||0)<c.es)return;S.gold-=c.g;S.items.estone-=c.es;S.enh[dc.wid]=lv+1;sfx('anvil');burst(S.p.x,S.p.y,'#9fe8ff',16);renderCls();hud();}
@@ -308,7 +308,7 @@ function fuse(){const dc=S.dc,c=fuseCostD(),L2=WLINE();if((S.enh[dc.wid]||0)<5||
 function applyClass(c){const dc=S.dc={cls:c,tier:1,wt:0,wid:null,pc:{},bf:{},form:null,z:[],lv:1};dc.wid=WLINE()[0];
   S.eq.weapon=dc.wid;S.inv=S.inv.filter(id=>!(ITEMS[id]&&ITEMS[id].slot==='weapon'));S.enh[dc.wid]=0;
   S.items.twticket=1;S.wood=0;S.stone=0;S.gold=75+40*mlv('gold')+(mlv('start')||0)*20;S.items.estone=2;S.items.soul=0;S.tut=TUT.length;S.prog=0;
-  S.mods.enemy=1.2;dc.tpm=1;
+  S.mods.enemy=1;dc.tpm=1;
   S.p.hp=pMax();renderAbil();hud();renderTut();}
 let PICK_DIFF='normal';
 function openPick(diff){PICK_DIFF=diff;const el=$('pickList');
@@ -363,7 +363,7 @@ function dShopItems(){const d=S.day,dc=S.dc,L2=[];
   else if(DSHOP==='gem'){for(const k in GEMS){const G=GEMS[k],lv=(dc.gems&&dc.gems[k])||0,mx=G.max&&lv>=G.max;L2.push({k:'gem_'+k,ic:G.ic,n:G.n+' Lv '+lv+(mx?' (MAX)':''),d:PK[k].f(+(G.v*(lv+1)).toFixed(3))+L(' (영구, 계속 올릴 수 있어요)',' (permanent, stackable)','（永久，可叠加）'),g:dPrice('gem_'+k,100,1.4),off:mx,fn:()=>{dc.gems=dc.gems||{};dc.gems[k]=(dc.gems[k]||0)+1;}});}}
   else if(DSHOP==='inn'){L2.push({k:'rest',ic:'🛏️',n:L('휴식','Rest','休息'),d:L('체력을 모두 채워요','Restore full HP','回满生命'),g:10+d,off:S.p.hp>=pMax(),fn:()=>{S.p.hp=pMax();}},
     {k:'guard',ic:'🛡️',n:L('경비병 고용','Hire a Guard','雇佣守卫')+' ('+(dc.guards||0)+'/3)',d:L('계속 곁에서 싸우는 경비병 (최대 3명)','A guard who fights beside you for good (up to 3)','永久并肩作战的守卫（最多3名）'),g:dPrice('guard',150,2),off:(dc.guards||0)>=3,fn:()=>{dc.guards=(dc.guards||0)+1;}});}
-  else if(DSHOP==='altar'){L2.push({k:'bless',ic:'🔥',n:L('화톳불 축복','Campfire Blessing','篝火祝福')+(dc.bless?' Lv '+dc.bless:''),d:L('화톳불 최대 체력 +12%, 모든 포탑 피해 +4%','+12% campfire max HP, +4% all towers','篝火最大生命+12%，所有炮塔+4%'),g:blessCost(),fn:()=>{S.gold+=blessCost();bless();}},
+  else if(DSHOP==='altar'){L2.push({k:'bless',ic:'🔥',n:L('화톳불 축복','Campfire Blessing','篝火祝福')+(dc.bless?' Lv '+dc.bless:''),d:L('화톳불 최대 체력 +12%, 내 공격력 +3%','+12% campfire max HP, +3% ATK','篝火最大生命+12%，攻击+3%'),g:blessCost(),fn:()=>{S.gold+=blessCost();bless();}},
     {k:'soul',ic:'👻',n:ITEM_NAME.soul+' ×1',d:L('금화로 보스의 혼을 사요. 살 때마다 비싸져요','Buy a boss soul with gold. Price rises each time','用金币购买首领之魂。每次涨价'),g:dPrice('soul',400,1.5),fn:()=>{S.items.soul=(S.items.soul||0)+1;}});}
   return L2;}
 const DSHOP_N={smith:[L('대장장이','Blacksmith','铁匠'),L('무기·방어구·신발·장신구 판매, 장비 강화','Weapons, armor, boots and accessories; gear upgrades','出售武器、防具、鞋子、饰品；强化装备')],shop:[L('잡화점','General Store','杂货店'),L('물약·수리 키트·폭탄·강화석','Potions, repair kits, bombs, stones','药水、修理包、炸弹、强化石')],gem:[L('보석상','Jeweler','珠宝商'),L('영구 보석: 살수록 계속 강해져요','Permanent gems that keep stacking','永久宝石：越买越强')],inn:[L('여관','Inn','旅馆'),L('휴식과 경비병 고용','Rest and hire guards','休息与雇佣守卫')],altar:[L('태양의 제단','Sun Altar','太阳祭坛'),L('화톳불 축복과 보스의 혼','Campfire blessing and boss souls','篝火祝福与首领之魂')]};
@@ -389,7 +389,7 @@ function renderCls(){const el=$('clsBody');if(!el||!S||!S.dc)return;const dc=S.d
     (lv<enhMax()?'<button type="button" class="big pri" data-act="enh"'+(S.gold>=ec.g&&(S.items.estone||0)>=ec.es?'':' disabled')+'>'+L('강화','Upgrade','强化')+' +'+(lv+1)+' · '+ec.g+'G · '+ITEM_NAME.estone+' '+ec.es+'</button>':
     last?'<span class="dim2">'+L('최고 단계 무기 · +20 완성','Top-tier weapon · maxed at +20','最高阶武器 · 已满+20')+'</span>':'<button type="button" class="big pri" data-act="fuse"'+(S.gold>=fc.g&&(S.items.estone||0)>=fc.es&&(S.items.soul||0)>=fc.soul?'':' disabled')+'>'+L('합성 → ','Fuse → ','合成 → ')+ITEMS[WLINE()[dc.wt+1]].n+' · '+fc.g+'G · '+ITEM_NAME.estone+' '+fc.es+(fc.soul?' · '+ITEM_NAME.soul+' '+fc.soul:'')+'</button>')+'</div>';
   h+='<p class="dim2">'+L('+5까지 강화하면 상위 무기로 합성할 수 있어요(마지막 무기는 +20까지). 강화석은 라운드 보상·정예·보스에게서, 보스의 혼은 보스 라운드에서 얻어요','Upgrade to +5 to fuse into the next weapon (the last one goes to +20). Stones come from round rewards, elites and bosses; souls from boss rounds','强化到+5即可合成上位武器（最终武器可强化到+20）。强化石来自回合奖励、精英和首领；首领之魂来自首领回合')+'</p>';
-  h+='<h3>'+L('화톳불 축복','Campfire blessing','篝火祝福')+(dc.bless?' Lv '+dc.bless:'')+'</h3><p class="dim2">'+L('화톳불 최대 체력 +12%, 모든 포탑 피해 +4%. 횟수 제한 없이 올릴 수 있어요','+12% campfire max HP and +4% to all towers. No limit','篝火最大生命+12%，所有炮塔伤害+4%。无上限')+'</p><div class="row"><button type="button" class="big pri" data-act="bless"'+(S.gold>=blessCost()?'':' disabled')+'>'+L('축복','Bless','祝福')+' · '+blessCost()+'G</button></div>';
+  h+='<h3>'+L('화톳불 축복','Campfire blessing','篝火祝福')+(dc.bless?' Lv '+dc.bless:'')+'</h3><p class="dim2">'+L('화톳불 최대 체력 +12%, 내 공격력 +3%. 횟수 제한 없이 올릴 수 있어요','+12% campfire max HP and +3% ATK. No limit','篝火最大生命+12%，攻击+3%。无上限')+'</p><div class="row"><button type="button" class="big pri" data-act="bless"'+(S.gold>=blessCost()?'':' disabled')+'>'+L('축복','Bless','祝福')+' · '+blessCost()+'G</button></div>';
   h+='<h3>'+L('재료','Materials','材料')+'</h3><p>'+itemIcon('estone').replace('<svg','<svg class="mi"')+' '+ITEM_NAME.estone+' '+(S.items.estone||0)+' · '+itemIcon('soul').replace('<svg','<svg class="mi"')+' '+ITEM_NAME.soul+' '+(S.items.soul||0)+'</p>';
   h+='<h3>'+L('히든 피스','Hidden pieces','隐藏碎片')+'</h3><ul class="hp">'+Object.keys(PIECES).map(k=>{const P=PIECES[k],got=dc.pc[k],pr=got?'':k==='shadow'?' ('+Math.min(S.kills,500)+' / 500)':k==='gold'?' ('+L('지금 ','now ','当前 ')+S.gold+' / 2000G)':'';return '<li class="'+(got?'got':'')+'"><span>'+(got?P.ic:'❔')+'</span><b>'+(got?P.n:'???')+'</b><small>'+P.h+pr+'</small></li>';}).join('')+'</ul>';
   el.innerHTML=h;}
@@ -444,7 +444,7 @@ function dDrawForm(k,now){const p=S.p,b=p.moving?Math.sin(now/90)*1.5:0,f=Math.c
 window.addEventListener('load',()=>{const g=id=>document.getElementById(id);
   if(typeof HELP!=='undefined'){const pad=HELP.find(h=>/Controller|게임패드|手柄/.test(h.t));HELP.length=0;
     HELP.push({t:L('기본 조작','Basics','基本操作'),items:[[L('이동','Move','移动'),L('화면을 끌거나 WASD·방향키','Drag the screen or WASD / arrows','拖动屏幕或WASD/方向键')],[L('공격','Attack','攻击'),L('가까운 적은 자동으로 공격해요','Nearby foes are attacked automatically','自动攻击附近的敌人')],[L('스킬','Skills','技能'),'R · T · C · V'],[L('직업 창','Class panel','职业面板'),L('K키 또는 직업 버튼','K or the Class button','K键或职业按钮')],[L('건설','Build','建造'),L('B키 또는 건설 버튼, 숫자키 1~9로 고르기','B or the Build button, 1–9 to pick','B键或建造按钮，数字键1~9选择')],[L('밤 부르기','Call night','召唤夜晚'),L('N키. 일찍 부르면 남은 시간만큼 금화 보너스','N. Calling early pays a gold bonus','N键。提前召唤可获得金币奖励')]]},
-      {t:L('라운드와 금화','Rounds and gold','回合与金币'),items:[[L('라운드','Rounds','回合'),L('낮은 준비 시간, 밤은 습격이에요. 100라운드를 막으면 승리, 그 뒤는 무한','Day is prep, night is the raid. Hold 100 rounds to win, then endless','白天准备，夜晚来袭。守住100回合获胜，之后无尽')],[L('보스','Bosses','首领'),L('5라운드마다 보스가 와요. 10라운드부터는 각성 보스도 함께','A boss every 5 rounds; awakened bosses from round 10','每5回合一个首领；第10回合起还有觉醒首领')],[L('금화','Gold','金币'),L('처치·라운드 보상·이자(가진 금화 5%)로 벌어요. 건물은 모두 금화로 지어요','Earn from kills, round rewards and 5% interest. Everything costs gold','击杀、回合奖励和5%利息获得金币。一切用金币建造')],[L('포탑 값','Tower cost','炮塔价格'),L('포탑은 지을수록 조금씩 비싸져요. 업그레이드도 함께 써요','Each tower costs a bit more than the last; upgrade them too','炮塔越建越贵，也要记得升级')],[L('밤의 규칙','Night rules','夜晚规则'),L('3라운드부터 밤마다 규칙이 붙어요(질주·중갑·떼거리·분열·재생·포위·정예·박쥐). 왼쪽 위에 표시돼요','From round 3 each night has a rule (swift, armored, swarm, split, regen, flank, elite, bats), shown top-left','从第3回合起每晚都有规则（疾行、重甲、虫群、分裂、再生、包围、精英、蝙蝠），显示在左上')],[L('밤의 할 일','Night jobs','夜晚任务'),L('금화 도둑(직접 잡기), 소환 토템(직접 부수기), 버프 구슬(직접 줍기). 포탑은 도둑과 토템에 거의 피해를 못 줘요','Gold thieves (catch them), summoning totems (smash them), buff orbs (grab them). Towers barely hurt thieves and totems','金币小偷（亲手抓）、召唤图腾（亲手砸）、增益宝珠（亲手捡）。炮塔几乎打不动小偷和图腾')],[L('라운드 강화','Round upgrades','回合强化'),L('라운드를 막을 때마다 강화 3개 중 하나를 골라요 (1·2·3키)','After every round pick 1 of 3 upgrades (keys 1·2·3)','每回合结束后从3个强化中选1个（1·2·3键）')],[L('2배속','2× speed','2倍速'),L('= 키나 ▶ 버튼으로 밤을 2배속으로','= or the ▶ button for 2× nights','=键或▶按钮让夜晚2倍速')],[L('화톳불 축복','Campfire blessing','篝火祝福'),L('직업 창에서 금화로 화톳불과 포탑을 계속 강하게 할 수 있어요','Spend gold in the class panel to keep strengthening fire and towers','在职业面板花金币持续强化篝火与炮塔')]]},
+      {t:L('라운드와 금화','Rounds and gold','回合与金币'),items:[[L('라운드','Rounds','回合'),L('낮은 준비 시간, 밤은 습격이에요. 100라운드를 막으면 승리, 그 뒤는 무한','Day is prep, night is the raid. Hold 100 rounds to win, then endless','白天准备，夜晚来袭。守住100回合获胜，之后无尽')],[L('보스','Bosses','首领'),L('5라운드마다 보스가 와요. 10라운드부터는 각성 보스도 함께','A boss every 5 rounds; awakened bosses from round 10','每5回合一个首领；第10回合起还有觉醒首领')],[L('금화','Gold','金币'),L('처치·라운드 보상·이자(가진 금화 5%)로 벌어요. 건물은 모두 금화로 지어요','Earn from kills, round rewards and 5% interest. Everything costs gold','击杀、回合奖励和5%利息获得金币。一切用金币建造')],[L('포탑 없음','No towers','没有炮塔'),L('포탑은 지을 수 없어요. 직접 싸우고, 동료(경비병·소환수)와 벽으로 버텨요','No towers to build. Fight yourself, with allies (guards, summons) and walls','不能建炮塔。亲自战斗，靠同伴（守卫、召唤物）和墙坚持')],[L('밤의 규칙','Night rules','夜晚规则'),L('3라운드부터 밤마다 규칙이 붙어요(질주·중갑·떼거리·분열·재생·포위·정예·박쥐). 왼쪽 위에 표시돼요','From round 3 each night has a rule (swift, armored, swarm, split, regen, flank, elite, bats), shown top-left','从第3回合起每晚都有规则（疾行、重甲、虫群、分裂、再生、包围、精英、蝙蝠），显示在左上')],[L('밤의 할 일','Night jobs','夜晚任务'),L('금화 도둑(직접 잡기), 소환 토템(직접 부수기), 버프 구슬(직접 줍기). 동료 공격은 도둑과 토템에 거의 안 통해요','Gold thieves (catch them), summoning totems (smash them), buff orbs (grab them). Allies barely hurt thieves and totems','金币小偷（亲手抓）、召唤图腾（亲手砸）、增益宝珠（亲手捡）。同伴几乎打不动小偷和图腾')],[L('라운드 강화','Round upgrades','回合强化'),L('라운드를 막을 때마다 강화 3개 중 하나를 골라요 (1·2·3키)','After every round pick 1 of 3 upgrades (keys 1·2·3)','每回合结束后从3个强化中选1个（1·2·3键）')],[L('2배속','2× speed','2倍速'),L('= 키나 ▶ 버튼으로 밤을 2배속으로','= or the ▶ button for 2× nights','=键或▶按钮让夜晚2倍速')],[L('화톳불 축복','Campfire blessing','篝火祝福'),L('직업 창이나 태양의 제단에서 금화로 화톳불과 나를 계속 강하게 할 수 있어요','Spend gold in the class panel or Sun Altar to keep strengthening the fire and yourself','在职业面板或太阳祭坛花金币持续强化篝火与自己')]]},
       {t:L('직업과 스킬','Classes and skills','职业与技能'),items:[[L('직업','Classes','职业'),L('13종 + 히든 4종. 랜덤으로 고르면 8% 확률로 히든 직업','13 + 4 hidden. Random has an 8% hidden chance','13种+4种隐藏。随机有8%概率为隐藏职业')],[L('액티브','Actives','主动'),L('Lv1·Lv5에 하나씩, 2차 전직에 하나, 3차 전직에 궁극기. 전직마다 강해져요','One at Lv1 and Lv5, one at 2nd job, the ultimate at 3rd. Stronger each promotion','Lv1和Lv5各一个，二转一个，三转终极技。每次转职变强')],[L('패시브','Passives','被动'),L('Lv1·Lv5에 하나씩, 전직마다 하나씩 늘고, 이미 배운 패시브도 강해져요 (예: 다중 공격 3명 → 5명 → 7명)','One at Lv1 and Lv5, one more per promotion; learned ones grow too (e.g. multi-attack 3 → 5 → 7)','Lv1和Lv5各一个，每次转职再加一个，已学的也会增强（如多重攻击3→5→7）')],[L('전직','Promotion','转职'),L('Lv10 + 보스의 혼 1 + 150G → 2차, Lv20 + 보스의 혼 3 + 600G → 3차','Lv10 + 1 soul + 150G → 2nd; Lv20 + 3 souls + 600G → 3rd','Lv10+1个魂+150G→二转；Lv20+3个魂+600G→三转')]]},
       {t:L('히든 직업','Hidden classes','隐藏职业'),items:[[L('히든 피스','Hidden pieces','隐藏碎片'),L('숨겨진 조건을 채우면 얻어요. 직업 창에서 조건과 진행 상황을 볼 수 있어요','Earned by meeting secret conditions; see progress in the class panel','满足隐藏条件获得；在职业面板查看进度')],[L('히든 전직','Hidden promotion','隐藏转职'),L('피스를 가진 채 2차 전직을 하면 히든 직업으로 바꿀 수 있어요','Promote to 2nd job while holding a piece to switch to its hidden class','持有碎片进行二转，可转为隐藏职业')]]},
       {t:L('무기','Weapons','武器'),items:[[L('직업 무기','Class weapon','职业武器'),L('직업마다 무기 계열이 정해져 있어요','Each class has its own weapon line','每个职业有固定的武器系列')],[L('강화','Upgrade','强化'),L('금화와 강화석으로 +5까지','Gold and upgrade stones, up to +5','用金币和强化石强化到+5')],[L('합성','Fuse','合成'),L('+5가 되면 상위 무기로 합성 (마지막 무기는 +20까지)','At +5, fuse into the next weapon (the last one goes to +20)','+5后合成上位武器（最终武器可到+20）')]]});
@@ -468,7 +468,7 @@ window.addEventListener('load',()=>{const g=id=>document.getElementById(id);
     else if(b.dataset.act==='equip'){const w=S.dc.wid,o=S.eq.weapon;if(o&&o!==w)S.inv.push(o);S.inv=S.inv.filter(x=>x!==w);S.eq.weapon=w;renderAbil();renderCls();hud();}});
   const st=g('ovStart');if(st){const h1=st.querySelector('h1');if(h1)h1.innerHTML=L('캠프<br><em>디펜스</em>','Camp<br><em>Defense</em>','营地<br><em>防御</em>');
     const pg=st.querySelector('.pg');if(pg)pg.textContent='CAMP SURVIVOR: DEFENSE';
-    const pp=st.querySelector('.panel > p');if(pp)pp.textContent=L('직업을 골라 100라운드 동안 화톳불을 지키세요. 금화로 포탑을 세우고, 레벨을 올려 전직하고, 숨겨진 히든 직업을 찾아보세요.','Pick a class and defend the campfire for 100 rounds. Build towers with gold, level up, promote, and hunt for hidden classes.','选择职业，守护篝火100回合。用金币建塔、升级转职，寻找隐藏职业。');
+    const pp=st.querySelector('.panel > p');if(pp)pp.textContent=L('직업을 골라 100라운드 동안 화톳불을 지키세요. 직접 싸우며 장비를 사 모으고, 레벨을 올려 전직하고, 숨겨진 히든 직업을 찾아보세요.','Pick a class and defend the campfire for 100 rounds. Fight yourself, gear up, level up, promote, and hunt for hidden classes.','选择职业，守护篝火100回合。亲自战斗、购买装备、升级转职，寻找隐藏职业。');
     const hk=st.querySelector('.hooks');if(hk)hk.innerHTML='<li><b>⚔️</b>'+L('직업 13종 + 히든 4종','13 classes + 4 hidden','13种职业+4种隐藏')+'</li><li><b>🏰</b>'+L('100라운드 디펜스','100-round defense','100回合防御')+'</li><li><b>⭐</b>'+L('3차 전직 · 궁극기','3 tiers · ultimates','三转·终极技')+'</li><li><b>🗡️</b>'+L('무기 강화 · 합성','Weapon upgrade · fuse','武器强化·合成')+'</li>';}
 });
 
