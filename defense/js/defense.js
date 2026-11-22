@@ -9,7 +9,12 @@ const DWIN=100;
 const D_UNLOCK={tower:1,wall:1,door:1,spike:1,torch:1,fire:1,swall:2,scarecrow:3,ballista:3,repairer:4,iwall:5,magic:6,healfire:6,catapult:7,venom:9,prism:13};
 /* one lane per player: solo = 1 direction, 2 players = 2, … up to 4 */
 function dPlayers(){try{if(typeof NET!=='undefined'&&NH())return Math.max(1,Math.min(4,1+Object.keys(NET.conns||{}).length));}catch(_){}return 1}
-{const _nc=nightCount;nightCount=function(){return _nc()*(S&&S.dc?dPlayers():1);};}
+/* each direction gets its own full solo-sized wave, same monsters and same timing */
+{const _pn=planNight;planNight=function(){const r=_pn();if(!r||!S.dc||!S.sides||S.sides.length<2)return r;const solo=r.q.slice(),n=S.sides.length;S.dc.soloQ={day:S.day,q:solo};const q=[];for(const t of solo)for(let k=0;k<n;k++)q.push(t);r.q=q;return r;};}
+function dSplitWaves(){const sides=S.sides||[];if(sides.length<2)return;const solo=(S.dc.soloQ&&S.dc.soloQ.day===S.day)?S.dc.soloQ.q:S.spawnQ.filter(q=>!q.boss&&!q.el&&!q.awak).map(q=>q.t);
+  const extra=S.spawnQ.filter(q=>q.boss||q.el),n=solo.length,win=Math.min(38,12+n*1.1),Q=[];
+  sides.forEach((sd,si)=>{solo.forEach((t,k)=>Q.push({t,at:k/Math.max(1,n)*win+si*.2,side:sd}));for(const e of extra)Q.push(Object.assign({},e,{side:sd,at:e.at+si*.3}));});
+  Q.sort((a,b)=>a.at-b.at);S.spawnQ=Q;}
 function progFor(r){return r>=23?4:r>=17?3:r>=12?2:r>=5?1:0}
 
 /* ---------- economy: everything costs gold ---------- */
@@ -66,6 +71,7 @@ rollFoe=function(d,howl){const r=Math.random();let t='goblin';
   if(!S.dc||NC()||S.phase!=='day'||S.tower)return _sn();
   const left=Math.max(0,dayLen()-S.t),hd=S.hiddenDone;S.hiddenDone=0;S.dc.coreN=S.core.hp;_sn();S.hiddenDone=hd;
   if(S.phase!=='night')return;
+  dSplitWaves();
   if(S.day>1&&left>4){const b=Math.round(left*.6);S.gold+=b;float(S.p.x,S.p.y-40,'+'+b+'G','#ffd23a');setTimeout(()=>toast(L3('빨리 부른 보너스 +'+b+'G','Early call bonus +'+b+'G','提前开战奖励 +'+b+'G'),2200),400);}
   const d=S.day;if(d%5===0&&d>=10){const i=d/5-2,t=d>=DWIN?'abyss':AWAK[i%AWAK.length],last=S.spawnQ.length?S.spawnQ[S.spawnQ.length-1].at:10;
     S.spawnQ.push({t,at:last*.6,side:S.sides[0],awak:1});S.spawnQ.sort((a,b)=>a.at-b.at);
