@@ -12,7 +12,7 @@ function update(dt){
   if(NC())netOthersLerp(dt);
   if(!NC()){
   if(S.phase==='day'){
-    if(!S.tower)S.t+=dt;
+    if(!S.tower||NH())S.t+=dt;
     if(S.day%5===0&&!S.peace&&!S.bossWarn&&S.t>dayLen()-35){S.bossWarn=1;sfx('horn');shake(3);toast(_L('⚠ 보스의 밤이 다가와요! 캠프로 돌아와 벽과 탑을 정비하고 체력을 채워 두세요','⚠ The boss night is coming! Return to camp, repair walls and towers, and heal up'),5000);}
     if(!S.warned&&S.t>dayLen()-15){S.warned=true;if(!S.peace)toast(_T('해가 지고 있어! ')+S.sides.map(s=>SIDE_NAME[s]).join('·')+_T('쪽에서 발소리가 들려'),3200);}
     if(firstDayHold())S.t=dayLen()-20;
