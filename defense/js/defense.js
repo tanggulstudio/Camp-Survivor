@@ -7,6 +7,9 @@ const DGV={g:1,w:1,s:1.5,u:3,i:4,a:6,c:10,o:8,e:12,d:16,b:20,m:24,token:5,ess:3}
 function goldOf(c){let v=0;for(const k in c)if(c[k])v+=c[k]*(DGV[k]||2);return Math.ceil(v)}
 const DWIN=100;
 const D_UNLOCK={tower:1,wall:1,door:1,spike:1,torch:1,fire:1,swall:2,scarecrow:3,ballista:3,repairer:4,iwall:5,magic:6,healfire:6,catapult:7,venom:9,prism:13};
+/* one lane per player: solo = 1 direction, 2 players = 2, … up to 4 */
+function dPlayers(){try{if(typeof NET!=='undefined'&&NH())return Math.max(1,Math.min(4,1+Object.keys(NET.conns||{}).length));}catch(_){}return 1}
+{const _nc=nightCount;nightCount=function(){return _nc()*(S&&S.dc?dPlayers():1);};}
 function progFor(r){return r>=23?4:r>=17?3:r>=12?2:r>=5?1:0}
 
 /* ---------- economy: everything costs gold ---------- */
@@ -44,7 +47,7 @@ setupDay=function(){
   S.phase='day';S.t=0;S.warned=false;S.bossWarn=0;S.raided=false;S.merchant=null;S.event=null;S.restBonus=0;S.restNext=0;S.lost=null;S.digs=[];
   const before=progFor(S.day-1);S.prog=Math.max(S.prog||0,progFor(S.day));
   if(S.day>=6&&S.day%5!==0&&Math.random()<.15)S.event=EVENTS.find(e=>e.id==='blood')||null;
-  const n=S.day<3?1:S.day<8?2:S.day<16?3:4,pool=[0,1,2,3];S.sides=[];
+  const n=dPlayers(),pool=[0,1,2,3];S.sides=[];
   for(let k=0;k<n;k++)S.sides.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0]);
   const nu=Object.keys(D_UNLOCK).filter(t=>D_UNLOCK[t]===S.day&&S.day>1);
   if(nu.length)setTimeout(()=>{if(S)toast(L3('새 건물 해금: ','New build unlocked: ','新建筑解锁：')+nu.map(t=>B[t].n).join(', '),3600);},2600);

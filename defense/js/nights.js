@@ -46,13 +46,11 @@ const AFF={
   swarm:{ic:'🐜',n:L3('떼거리의 밤','Swarm Night','虫群之夜'),d:L3('적 수 +60%, 대신 체력 -40%','60% more enemies with −40% HP','敌人数量+60%，生命-40%')},
   split:{ic:'🧬',n:L3('분열의 밤','Splitting Night','分裂之夜'),d:L3('쓰러진 적이 작은 고블린 2마리로 갈라져요','Fallen foes split into 2 small goblins','倒下的敌人分裂成2只小哥布林')},
   regen:{ic:'💚',n:L3('재생의 밤','Regenerating Night','再生之夜'),d:L3('적이 초당 체력 3%를 회복해요. 한 번에 몰아치세요','Enemies regenerate 3%/s. Burst them down','敌人每秒回复3%生命。集中火力')},
-  flank:{ic:'🔀',n:L3('포위의 밤','Flanking Night','包围之夜'),d:L3('한 방향에서 더 몰려와요','They come from one more direction','多一个方向来袭')},
   elite:{ic:'⭐',n:L3('정예의 밤','Elite Night','精英之夜'),d:L3('적 4마리 중 1마리가 정예예요','1 in 4 enemies is elite','每4个敌人中有1个精英')},
   bats:{ic:'🦇',n:L3('박쥐 떼의 밤','Bat Night','蝙蝠之夜'),d:L3('박쥐 떼가 사방에서 날아와요','Bat swarms fly in from everywhere','蝙蝠群从四面八方飞来')}};
 function affLabel(){const a=S.dc&&S.dc.aff&&AFF[S.dc.aff];return a?a.ic+' '+a.n:''}
 {const _sd=setupDay;setupDay=function(){_sd();if(!S.dc)return;const r=S.day;S.dc.aff=null;
-  if(r>=3&&r%5!==0){const ks=Object.keys(AFF).filter(k=>k!=='flank'||S.sides.length<4);S.dc.aff=ks[(Math.random()*ks.length)|0];
-    if(S.dc.aff==='flank'){const pool=[0,1,2,3].filter(x=>!S.sides.includes(x));S.sides.push(pool[(Math.random()*pool.length)|0]);planNight();}
+  if(r>=3&&r%5!==0){const ks=Object.keys(AFF);S.dc.aff=ks[(Math.random()*ks.length)|0];
     setTimeout(()=>{if(S&&S.dc&&S.dc.aff&&S.phase==='day')toast(L3('오늘 밤: ','Tonight: ','今晚：')+affLabel()+' — '+AFF[S.dc.aff].d,4600);},1500);}};}
 {const _sn2=startNight;startNight=function(){const was=S.phase;_sn2();if(!S.dc||was!=='day'||S.phase!=='night')return;const a=S.dc.aff,Q=S.spawnQ;
   if(a==='armored'){S.spawnQ=Q.filter((q,i)=>q.boss||q.awak||i%4!==3);}
