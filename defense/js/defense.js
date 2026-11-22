@@ -42,7 +42,7 @@ regrow=function(){};
 openBarrier=function(){};
 storyLater=function(){};
 showStory=function(id,after){if(after)after();};
-dayLen=function(){return S.day===1?60:S.day%5===0?40:30};
+dayLen=function(){return S.day===1?45:S.day%5===0?40:30};
 {const _drop=drop;drop=function(x,y,kind,n){n=n||1;
   if(kind==='g'){S.gold+=n;float(x,y-30,'+'+n+'G','#ffd23a');return;}
   if(kind==='estone'||kind==='soul'){S.items[kind]=(S.items[kind]||0)+n;float(x,y-34,'+'+n+' '+ITEM_NAME[kind],kind==='soul'?'#c9a6ff':'#9fe8ff');return;}

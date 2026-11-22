@@ -435,7 +435,7 @@ function gpPoll(dt){
   if(dn(2))castW(0);if(dn(3))castW(1);if(dn(4))castW(2);if(dn(5))throwBomb();
   if(dn(6)){setBuild(!buildOpen);}
   if(dn(7)){const ra=relicAbil();if(ra)castAbil(ra);}
-  if(dn(8))openMap();if(dn(9))togglePause();if(dn(10))openBag();if(dn(11)){S.goalOff=!S.goalOff;renderTut();}
+  if(dn(8))openMap();if(dn(9))togglePause();if(dn(10))openBag();if(dn(11)){if(S.dc)castW(3);else{S.goalOff=!S.goalOff;renderTut();}}
   gpHint();save();}
 function frame(now){
   const dt=Math.min(.05,(now-last)/1000);last=now;

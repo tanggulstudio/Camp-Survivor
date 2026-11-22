@@ -72,7 +72,7 @@ function dawnReport(embers){const n=S.nl;S.nl=null;if(!n||S.peace)return;
   let mvp=null,mv=0;for(const i in n.tw)if(n.tw[i]>mv){mv=n.tw[i];mvp=i;}
   const tb=mvp!=null?B[n.t[mvp]]:null,nx=sideSummary(),nt=nx.reduce((a,o)=>a+o.n,0);
   const row=(l,v,c)=>'<div><small>'+l+'</small><b'+(c?' class="'+c+'"':'')+'>'+v+'</b></div>';
-  const h='<button type="button" class="dx" aria-label="'+_L('닫기','Close')+'">×</button><p class="dk">'+_L(n.day+'일째 밤을 지켜 냈어요','Night '+n.day+' survived')+'</p>'
+  const h='<button type="button" class="dx" aria-label="'+_L('닫기','Close')+'">×</button><p class="dk">'+(typeof DEFM!=='undefined'?L3('라운드 '+n.day+' 방어 성공','Round '+n.day+' held','第'+n.day+'回合守住了'):_L(n.day+'일째 밤을 지켜 냈어요','Night '+n.day+' survived'))+'</p>'
     +'<div class="dg">'+row(_L('처치','Kills'),n.k)+row(_L('금화','Gold'),'+'+n.g,'g')+row(_L('화톳불 피해','Bonfire hits'),n.cd?'-'+Math.round(n.cd):_L('없음','None'),n.cd?'bad':'ok')+row(_L('무너진 건물','Lost'),n.lost,n.lost?'bad':'ok')+'</div>'
     +(tb?'<p class="mvp">🏆 '+_L('오늘 밤의 수호탑 · ','Tower of the night · ')+'<b>'+tb.n+'</b> <small>'+_L('피해 ','dmg ')+Math.round(mv).toLocaleString()+'</small></p>':'')
     +(embers?'<p class="emb">🔥 '+_L('불씨 +'+embers,'Embers +'+embers)+'</p>':'')

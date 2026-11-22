@@ -65,7 +65,7 @@ let SKM=1;
 function dBuf(k){return S.dc&&S.dc.bf&&S.dc.bf[k]>0}
 function dForm(k){const f=S.dc&&S.dc.form;return f&&f.t>0&&(!k||f.k===k)}
 
-/* ---------- passives: 2 at the 1st job (Lv1, Lv5), +1 at each promotion; every passive grows with the job tier ---------- */
+/* ---------- passives: 2 at the 1st job (Lv1, Lv3), +1 at each promotion; every passive grows with the job tier ---------- */
 const PK={
   multi:{f:v=>L('다중 공격: 한 번에 '+v+'명','Multi-attack: '+v+' targets','多重攻击：'+v+'个目标')},
   bounce:{f:v=>L('튕기는 공격: '+v+'번 튕겨요','Ricochet: bounces '+v+' times','弹射攻击：弹射'+v+'次')},
@@ -113,7 +113,7 @@ const PAS={
   shadow:[['multi',[3,5,7]],['crit',[15,25,35]],['cdr',[0,.1,.2]],['execute',[0,0,1]]],
   goldking:[['greed2',[1.5,2,3]],['gold',[.5,.75,1]],['hp',[0,.2,.3]],['splash',[0,0,1.5]]],
   beast:[['pack',[1,2,3]],['hp',[.15,.2,.3]],['leech',[0,.05,.08]],['multi',[0,0,4]]]};
-function pasOpen(i){const dc=S.dc;return i===0||(i===1&&S.p.lvl>=5)||(i===2&&dc.tier>=2)||(i===3&&dc.tier>=3)}
+function pasOpen(i){const dc=S.dc;return i===0||(i===1&&S.p.lvl>=3)||(i===2&&dc.tier>=2)||(i===3&&dc.tier>=3)}
 const GEMS={atk:{ic:'🔴',v:.04,n:L3('루비','Ruby','红宝石')},hp:{ic:'🔵',v:.04,n:L3('사파이어','Sapphire','蓝宝石')},aspd:{ic:'🟢',v:.03,n:L3('에메랄드','Emerald','祖母绿')},gold:{ic:'🟡',v:.05,n:L3('토파즈','Topaz','黄玉')},cdr:{ic:'⚪',v:.02,n:L3('다이아몬드','Diamond','钻石'),max:10}};
 function pv(k){if(!S||!S.dc)return 0;const L2=PAS[S.dc.cls];if(!L2)return 0;let v=(S.dc.gems&&S.dc.gems[k]&&GEMS[k])?S.dc.gems[k]*GEMS[k].v:0;for(let i=0;i<L2.length;i++)if(L2[i][0]===k&&pasOpen(i))v+=L2[i][1][S.dc.tier-1];return v}
 function pasText(i){const P=PAS[S.dc.cls][i],t=Math.max(S.dc.tier,i===2?2:i===3?3:1);return PK[P[0]].f(P[1][t-1])}
@@ -209,8 +209,8 @@ dSk('lullaby',16,L('자장가','Lullaby','摇篮曲'),L('넓은 범위의 적을
 dSk('march',18,L('행진곡','War March','进行曲'),L('8초 동안 공격력 +30%, 이동 속도 +20%','+30% ATK and +20% speed for 8s','8秒内攻击+30%，移速+20%'),'🥁',p=>{dBuff('march',8);burst(p.x,p.y,'#ffb0d8',18);sfx('horn');});
 dSk('encore',36,L('앙코르','Encore','安可'),L('[궁극기] 다른 스킬 재사용 대기 초기화, 15초 동안 찬가 효과, 체력 30% 회복','[Ultimate] Resets other cooldowns, Battle Hymn for 15s, heals 30%','[终极] 重置其他技能冷却，15秒战斗赞歌，回复30%生命'),'🎤',p=>{for(const k in S.acd)if(k!=='w_encore')S.acd[k]=0;dBuff('hymn',15);p.hp=Math.min(pMax(),p.hp+pMax()*.3);shake(4);renderAbil();});
 
-/* which skills are open: slot 1 at Lv1, slot 2 at Lv5, slot 3 at 2nd job, ultimate at 3rd job */
-function skillOpen(i){if(!S.dc)return false;return i===0||(i===1&&S.p.lvl>=5)||(i===2&&S.dc.tier>=2)||(i===3&&S.dc.tier>=3)}
+/* which skills are open: slot 1 at Lv1, slot 2 at Lv3, slot 3 at 2nd job, ultimate at 3rd job */
+function skillOpen(i){if(!S.dc)return false;return i===0||(i===1&&S.p.lvl>=3)||(i===2&&S.dc.tier>=2)||(i===3&&S.dc.tier>=3)}
 {const _ws=wSkills;wSkills=function(){if(!S||!S.dc)return _ws();return clsOf().sk.filter((s,i)=>skillOpen(i))};}
 {const _cw=castW;castW=function(n){if(!S||!S.dc)return _cw(n);const sk=wSkills()[n||0],p=S.p;if(!sk||p.dead||(S.acd['w_'+sk]||0)>0)return;
   if(!running||paused||S.phase==='dawn'||S.menu||S.trading)return;SKM=1+.3*(S.dc.tier-1);
@@ -244,7 +244,7 @@ function dTick(dt){const dc=S.dc,p=S.p;
   dc.z=dc.z.filter(z=>z.t<z.life);
   if(S.kills>=500)givePiece('shadow');
   dc.pqT=(dc.pqT||0)-dt;if(dc.pqT<=0){dc.pqT=1;pqCheck();}
-  if(dc.lv!==p.lvl){const was=dc.lv||1;dc.lv=p.lvl;if(was<5&&p.lvl>=5){renderAbil();toast(L('새 스킬 해금: ','New skill: ','新技能：')+WSKILL[clsOf().sk[1]].n+' (T)',3600);}
+  if(dc.lv!==p.lvl){const was=dc.lv||1;dc.lv=p.lvl;if(was<3&&p.lvl>=3){renderAbil();toast(L('새 스킬 해금: ','New skill: ','新技能：')+WSKILL[clsOf().sk[1]].n+' (T)',3600);}
     if((was<10&&p.lvl>=10)||(was<20&&p.lvl>=20))setTimeout(()=>{if(S)toast(L('전직할 수 있는 레벨이에요! 직업 창(K)을 열어 보세요','You can promote! Open the class panel (K)','可以转职了！打开职业面板 (K)'),4200);},1600);}
 }
 
@@ -307,7 +307,7 @@ function fuse(){const dc=S.dc,c=fuseCostD(),L2=WLINE();if((S.enh[dc.wid]||0)<5||
 /* ---------- class pick ---------- */
 function applyClass(c){const dc=S.dc={cls:c,tier:1,wt:0,wid:null,pc:{},bf:{},form:null,z:[],lv:1};dc.wid=WLINE()[0];
   S.eq.weapon=dc.wid;S.inv=S.inv.filter(id=>!(ITEMS[id]&&ITEMS[id].slot==='weapon'));S.enh[dc.wid]=0;
-  S.items.twticket=1;S.wood=0;S.stone=0;S.gold=75+40*mlv('gold')+(mlv('start')||0)*20;S.items.estone=2;S.items.soul=0;S.tut=TUT.length;S.prog=0;
+  S.peaceOK=1;S.items.twticket=1;S.wood=0;S.stone=0;S.gold=75+40*mlv('gold')+(mlv('start')||0)*20;S.items.estone=2;S.items.soul=0;S.tut=TUT.length;S.prog=0;
   S.mods.enemy=1;dc.tpm=1;
   S.p.hp=pMax();renderAbil();hud();renderTut();}
 let PICK_DIFF='normal';
@@ -376,9 +376,9 @@ function openCls(){DSHOP=null;if(!running||paused||!S||!S.dc||S.phase==='dawn'||
 function closeCls(){DSHOP=null;$('ovCls').hidden=true;if(S)S.menu=false;}
 function renderCls(){const el=$('clsBody');if(!el||!S||!S.dc)return;const dc=S.dc,C=clsOf(),p=S.p;let h='';
   h+='<div class="ch" style="--cc:'+C.col+'"><span class="pi">'+C.ic+'</span><div><b>'+clsName()+' '+tierTag()+'</b><small>'+[1,2,3].map(t=>(t<=dc.tier?clsName(dc.cls,t):'?')+' '+tierTag(t)).join(' → ')+'</small><small>Lv '+p.lvl+' · '+C.d+'</small></div></div>';
-  h+='<h3>'+L('액티브 스킬','Active skills','主动技能')+' · Lv '+dc.tier+'</h3><ul class="sk">'+C.sk.map((s,i)=>{const o=skillOpen(i),w=WSKILL[s];return '<li class="'+(o?'':'off')+'"><span class="k">'+WKEYS[i]+'</span><b>'+w.n+'</b><small>'+(o?w.d:[L('Lv 1','Lv 1','Lv 1'),L('Lv 5에 해금','Unlocks at Lv 5','Lv 5 解锁'),L('2차 전직 때 해금','Unlocks at 2nd promotion','第二次转职解锁'),L('3차 전직 때 해금 (궁극기)','Unlocks at 3rd promotion (Ultimate)','第三次转职解锁（终极）')][i])+'</small></li>';}).join('')+'</ul>';
+  h+='<h3>'+L('액티브 스킬','Active skills','主动技能')+' · Lv '+dc.tier+'</h3><ul class="sk">'+C.sk.map((s,i)=>{const o=skillOpen(i),w=WSKILL[s];return '<li class="'+(o?'':'off')+'"><span class="k">'+WKEYS[i]+'</span><b>'+w.n+'</b><small>'+(o?w.d:[L('Lv 1','Lv 1','Lv 1'),L('Lv 3에 해금','Unlocks at Lv 3','Lv 3 解锁'),L('2차 전직 때 해금','Unlocks at 2nd promotion','第二次转职解锁'),L('3차 전직 때 해금 (궁극기)','Unlocks at 3rd promotion (Ultimate)','第三次转职解锁（终极）')][i])+'</small></li>';}).join('')+'</ul>';
   h+='<p class="dim2">'+L('액티브 스킬은 전직할 때마다 피해 +30%, 재사용 대기 -10%, 소환 수 +1로 강해져요','Active skills get +30% damage, −10% cooldown and +1 summon at each promotion','每次转职，主动技能伤害+30%、冷却-10%、召唤数+1')+'</p>';
-  h+='<h3>'+L('패시브','Passives','被动')+' · Lv '+dc.tier+'</h3><ul class="sk">'+PAS[dc.cls].map((P,i)=>{const o=pasOpen(i);return '<li class="'+(o?'':'off')+'"><span class="k">P'+(i+1)+'</span><b>'+pasText(i)+(o?'<span class="nx">'+pasNext(i)+'</span>':'')+'</b><small>'+(o?L('전직하면 더 강해져요','Grows with each promotion','转职后更强'):[L('Lv 1','Lv 1','Lv 1'),L('Lv 5에 해금','Unlocks at Lv 5','Lv 5 解锁'),L('2차 전직 때 해금','Unlocks at 2nd promotion','第二次转职解锁'),L('3차 전직 때 해금','Unlocks at 3rd promotion','第三次转职解锁')][i])+'</small></li>';}).join('')+'</ul>';
+  h+='<h3>'+L('패시브','Passives','被动')+' · Lv '+dc.tier+'</h3><ul class="sk">'+PAS[dc.cls].map((P,i)=>{const o=pasOpen(i);return '<li class="'+(o?'':'off')+'"><span class="k">P'+(i+1)+'</span><b>'+pasText(i)+(o?'<span class="nx">'+pasNext(i)+'</span>':'')+'</b><small>'+(o?L('전직하면 더 강해져요','Grows with each promotion','转职后更强'):[L('Lv 1','Lv 1','Lv 1'),L('Lv 3에 해금','Unlocks at Lv 3','Lv 3 解锁'),L('2차 전직 때 해금','Unlocks at 2nd promotion','第二次转职解锁'),L('3차 전직 때 해금','Unlocks at 3rd promotion','第三次转职解锁')][i])+'</small></li>';}).join('')+'</ul>';
   const pn=promoNeed();h+='<h3>'+L('전직','Promotion','转职')+'</h3>';
   if(!pn)h+='<p class="dim2">'+L('최종 직업이에요','Final class reached','已是最终职业')+'</p>';
   else{h+='<p>'+pn.d+'</p><div class="row">';const opts=[dc.cls];if(dc.tier===1&&!C.hid)for(const k in dc.pc)if(dc.pc[k])opts.push(PIECES[k].cls);
@@ -445,7 +445,7 @@ window.addEventListener('load',()=>{const g=id=>document.getElementById(id);
   if(typeof HELP!=='undefined'){const pad=HELP.find(h=>/Controller|게임패드|手柄/.test(h.t));HELP.length=0;
     HELP.push({t:L('기본 조작','Basics','基本操作'),items:[[L('이동','Move','移动'),L('화면을 끌거나 WASD·방향키','Drag the screen or WASD / arrows','拖动屏幕或WASD/方向键')],[L('공격','Attack','攻击'),L('가까운 적은 자동으로 공격해요','Nearby foes are attacked automatically','自动攻击附近的敌人')],[L('스킬','Skills','技能'),'R · T · C · V'],[L('직업 창','Class panel','职业面板'),L('K키 또는 직업 버튼','K or the Class button','K键或职业按钮')],[L('건설','Build','建造'),L('B키 또는 건설 버튼, 숫자키 1~9로 고르기','B or the Build button, 1–9 to pick','B键或建造按钮，数字键1~9选择')],[L('밤 부르기','Call night','召唤夜晚'),L('N키. 일찍 부르면 남은 시간만큼 금화 보너스','N. Calling early pays a gold bonus','N键。提前召唤可获得金币奖励')]]},
       {t:L('라운드와 금화','Rounds and gold','回合与金币'),items:[[L('라운드','Rounds','回合'),L('낮은 준비 시간, 밤은 습격이에요. 100라운드를 막으면 승리, 그 뒤는 무한','Day is prep, night is the raid. Hold 100 rounds to win, then endless','白天准备，夜晚来袭。守住100回合获胜，之后无尽')],[L('보스','Bosses','首领'),L('5라운드마다 보스가 와요. 10라운드부터는 각성 보스도 함께','A boss every 5 rounds; awakened bosses from round 10','每5回合一个首领；第10回合起还有觉醒首领')],[L('금화','Gold','金币'),L('처치·라운드 보상·이자(가진 금화 5%)로 벌어요. 건물은 모두 금화로 지어요','Earn from kills, round rewards and 5% interest. Everything costs gold','击杀、回合奖励和5%利息获得金币。一切用金币建造')],[L('포탑 없음','No towers','没有炮塔'),L('포탑은 지을 수 없어요. 직접 싸우고, 동료(경비병·소환수)와 벽으로 버텨요','No towers to build. Fight yourself, with allies (guards, summons) and walls','不能建炮塔。亲自战斗，靠同伴（守卫、召唤物）和墙坚持')],[L('밤의 규칙','Night rules','夜晚规则'),L('3라운드부터 밤마다 규칙이 붙어요(질주·중갑·떼거리·분열·재생·정예·박쥐). 왼쪽 위에 표시돼요','From round 3 each night has a rule (swift, armored, swarm, split, regen, elite, bats), shown top-left','从第3回合起每晚都有规则（疾行、重甲、虫群、分裂、再生、精英、蝙蝠），显示在左上')],[L('밤의 할 일','Night jobs','夜晚任务'),L('금화 도둑(직접 잡기), 소환 토템(직접 부수기), 버프 구슬(직접 줍기). 동료 공격은 도둑과 토템에 거의 안 통해요','Gold thieves (catch them), summoning totems (smash them), buff orbs (grab them). Allies barely hurt thieves and totems','金币小偷（亲手抓）、召唤图腾（亲手砸）、增益宝珠（亲手捡）。同伴几乎打不动小偷和图腾')],[L('라운드 강화','Round upgrades','回合强化'),L('라운드를 막을 때마다 강화 3개 중 하나를 골라요 (1·2·3키)','After every round pick 1 of 3 upgrades (keys 1·2·3)','每回合结束后从3个强化中选1个（1·2·3键）')],[L('2배속','2× speed','2倍速'),L('= 키나 ▶ 버튼으로 밤을 2배속으로','= or the ▶ button for 2× nights','=键或▶按钮让夜晚2倍速')],[L('화톳불 축복','Campfire blessing','篝火祝福'),L('직업 창이나 태양의 제단에서 금화로 화톳불과 나를 계속 강하게 할 수 있어요','Spend gold in the class panel or Sun Altar to keep strengthening the fire and yourself','在职业面板或太阳祭坛花金币持续强化篝火与自己')]]},
-      {t:L('직업과 스킬','Classes and skills','职业与技能'),items:[[L('직업','Classes','职业'),L('13종 + 히든 4종. 랜덤으로 고르면 8% 확률로 히든 직업','13 + 4 hidden. Random has an 8% hidden chance','13种+4种隐藏。随机有8%概率为隐藏职业')],[L('액티브','Actives','主动'),L('Lv1·Lv5에 하나씩, 2차 전직에 하나, 3차 전직에 궁극기. 전직마다 강해져요','One at Lv1 and Lv5, one at 2nd job, the ultimate at 3rd. Stronger each promotion','Lv1和Lv5各一个，二转一个，三转终极技。每次转职变强')],[L('패시브','Passives','被动'),L('Lv1·Lv5에 하나씩, 전직마다 하나씩 늘고, 이미 배운 패시브도 강해져요 (예: 다중 공격 3명 → 5명 → 7명)','One at Lv1 and Lv5, one more per promotion; learned ones grow too (e.g. multi-attack 3 → 5 → 7)','Lv1和Lv5各一个，每次转职再加一个，已学的也会增强（如多重攻击3→5→7）')],[L('전직','Promotion','转职'),L('Lv10 + 보스의 혼 1 + 150G → 2차, Lv20 + 보스의 혼 3 + 600G → 3차','Lv10 + 1 soul + 150G → 2nd; Lv20 + 3 souls + 600G → 3rd','Lv10+1个魂+150G→二转；Lv20+3个魂+600G→三转')]]},
+      {t:L('직업과 스킬','Classes and skills','职业与技能'),items:[[L('직업','Classes','职业'),L('13종 + 히든 4종. 랜덤으로 고르면 8% 확률로 히든 직업','13 + 4 hidden. Random has an 8% hidden chance','13种+4种隐藏。随机有8%概率为隐藏职业')],[L('액티브','Actives','主动'),L('Lv1·Lv3에 하나씩, 2차 전직에 하나, 3차 전직에 궁극기. 전직마다 강해져요','One at Lv1 and Lv3, one at 2nd job, the ultimate at 3rd. Stronger each promotion','Lv1和Lv3各一个，二转一个，三转终极技。每次转职变强')],[L('패시브','Passives','被动'),L('Lv1·Lv3에 하나씩, 전직마다 하나씩 늘고, 이미 배운 패시브도 강해져요 (예: 다중 공격 3명 → 5명 → 7명)','One at Lv1 and Lv3, one more per promotion; learned ones grow too (e.g. multi-attack 3 → 5 → 7)','Lv1和Lv3各一个，每次转职再加一个，已学的也会增强（如多重攻击3→5→7）')],[L('전직','Promotion','转职'),L('Lv10 + 보스의 혼 1 + 150G → 2차, Lv20 + 보스의 혼 3 + 600G → 3차','Lv10 + 1 soul + 150G → 2nd; Lv20 + 3 souls + 600G → 3rd','Lv10+1个魂+150G→二转；Lv20+3个魂+600G→三转')]]},
       {t:L('히든 직업','Hidden classes','隐藏职业'),items:[[L('히든 피스','Hidden pieces','隐藏碎片'),L('숨겨진 조건을 채우면 얻어요. 직업 창에서 조건과 진행 상황을 볼 수 있어요','Earned by meeting secret conditions; see progress in the class panel','满足隐藏条件获得；在职业面板查看进度')],[L('히든 전직','Hidden promotion','隐藏转职'),L('피스를 가진 채 2차 전직을 하면 히든 직업으로 바꿀 수 있어요','Promote to 2nd job while holding a piece to switch to its hidden class','持有碎片进行二转，可转为隐藏职业')]]},
       {t:L('무기','Weapons','武器'),items:[[L('직업 무기','Class weapon','职业武器'),L('직업마다 무기 계열이 정해져 있어요','Each class has its own weapon line','每个职业有固定的武器系列')],[L('강화','Upgrade','强化'),L('금화와 강화석으로 +5까지','Gold and upgrade stones, up to +5','用金币和强化石强化到+5')],[L('합성','Fuse','合成'),L('+5가 되면 상위 무기로 합성 (마지막 무기는 +20까지)','At +5, fuse into the next weapon (the last one goes to +20)','+5后合成上位武器（最终武器可到+20）')]]});
     if(pad)HELP.push(pad);}
@@ -475,7 +475,7 @@ window.addEventListener('load',()=>{const g=id=>document.getElementById(id);
 /* ---------- fixed lords ---------- */
 function fbAlive(id){return S.enemies.find(e=>e.fb===id&&!e.dead)}
 function fbSpawn(b){const st=S.dc.fb[b.id]||(S.dc.fb[b.id]={lv:1,at:1});const [cx,cy]=cCenter(idx(...fbCell(b)));const e=makeWild(b.t,cx,cy);
-  const L2=st.lv;e.fb=b.id;e.sz=1.9;e.elite=1;e.max=e.hp=70*({boar:1,wolf:1.4,toad:.8,crystal:1.2}[b.id]||1)*(6+4*L2)*(1+S.day*.12);e.m=(e.m||1)*(1.6+.25*L2);e.fbT=3;return e;}
+  const L2=st.lv;e.fb=b.id;e.sz=1.9;e.elite=1;e.max=e.hp=70*({boar:1,wolf:1.4,toad:.8,crystal:1.2}[b.id]||1)*(3+4*L2)*(1+S.day*.12);e.m=(e.m||1)*(1.6+.25*L2);e.fbT=3;return e;}
 function fbTick(dt){if(S.tower||NC())return;const dc=S.dc;dc.fb=dc.fb||{};
   for(const b of FBOSS){const st=dc.fb[b.id]||(dc.fb[b.id]={lv:1,at:1});const e=fbAlive(b.id);
     if(!e){if(S.day>=st.at&&S.phase==='day')fbSpawn(b);continue;}
@@ -489,7 +489,7 @@ function fbTick(dt){if(S.tower||NC())return;const dc=S.dc;dc.fb=dc.fb||{};
   towerGearDrop(Math.min(60,4+L2*5+Math.floor(S.day/3)),e.x,e.y);if(L2>=2)dropRare(e.x,e.y,true);
   shake(8);burst(e.x,e.y,'#ffe08a',30);sfx('achieve');
   toast(b.ic+' '+b.n+' Lv '+L2+L('을(를) 쓰러뜨렸어요! ',' defeated! ','被击败了！')+ITEM_NAME.soul+' +1 · '+ITEM_NAME.estone+' +'+es+' · +'+g+'G · '+L('장비 획득','gear dropped','获得装备')+' · '+L('2라운드 뒤 더 강해져 돌아와요','Returns stronger in 2 rounds','2回合后变得更强回来'),5200);};}
-function fbDrawLabels(){for(const e of S.enemies){if(!e.fb||e.dead)continue;const b=FBOSS.find(x=>x.id===e.fb),st=S.dc.fb[e.fb];
+function fbDrawLabels(){for(const e of S.enemies){if(!e.fb||e.dead)continue;const b=FBOSS.find(x=>x.id===e.fb),st=(S.dc.fb&&S.dc.fb[e.fb])||{lv:e.fbLv||1};if(!b)continue;
   ctx.font='bold 12px "Gowun Dodum",sans-serif';ctx.textAlign='center';const y=e.y-ET[e.t].r*(e.sz||1)-22,t=b.ic+' '+b.n+' Lv '+st.lv;ctx.fillStyle='rgba(0,0,0,.6)';ctx.fillText(t,e.x+1,y+1);ctx.fillStyle='#ffd27a';ctx.fillText(t,e.x,y);
   ctx.fillStyle='rgba(0,0,0,.5)';ctx.fillRect(e.x-24,y+4,48,4);ctx.fillStyle='#ff6a4a';ctx.fillRect(e.x-24,y+4,48*Math.max(0,e.hp/e.max),4);
   if(e.slam){ctx.globalAlpha=.6;ctx.strokeStyle='#ff6a4a';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(e.x,e.y);ctx.lineTo(e.slam.x,e.slam.y);ctx.stroke();ctx.globalAlpha=1;}}
