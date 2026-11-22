@@ -295,6 +295,38 @@ function openPick(diff){PICK_DIFF=diff;const el=$('pickList');
 function pickClass(c){if(c==='random'){c=Math.random()<.08?HID_CLS[(Math.random()*HID_CLS.length)|0]:BASE_CLS[(Math.random()*BASE_CLS.length)|0];}
   $('ovPick').hidden=true;dStartNew(PICK_DIFF,c);if(DCLS[c].hid)setTimeout(()=>{try{phaseTitle(L('히든 직업!','Hidden class!','隐藏职业！'),DCLS[c].ic+' '+DCLS[c].n[0],true);}catch(_){}},800);}
 
+/* ---------- armory (smith): gear for gold, and enhancement of equipped gear ---------- */
+const SHOP_MAT=['leather','u','i','a','o','e','d','b','m'],RCOL=['#8a6a4a','#c87a4a','#9aa0a8','#e8c040','#3a6ad0','#3ac07a','#bff4ff','#3a2450','#9fd8e8'];
+SHOP_MAT.forEach((m,t)=>{const mn=()=>nameOf(m);
+  ITEMS['sring'+t]={n:L(mn()+' 반지',mn()+' Ring',mn()+'戒指'),slot:'acc',atk:[2,4,6,9,13,18,24,31,40][t],d:'',shop:1};IC['sring'+t]=RING(RCOL[t],'#ff6a5a');
+  ITEMS['samu'+t]={n:L(mn()+' 부적',mn()+' Amulet',mn()+'护符'),slot:'neck',atk:[1,3,5,7,10,14,19,25,32][t],hp:[10,18,28,40,55,75,100,130,170][t],d:'',shop:1};IC['samu'+t]=AMULET(RCOL[t]);});
+function shopTier(){return Math.min(8,Math.floor(S.day/7))}
+function statLine(id){const e=ITEMS[id],lv=S.enh[id]||0,m=1+.1*lv,a=[];if(e.atk)a.push(L('공격 ','ATK ','攻击 ')+Math.round(e.atk*m));if(e.def)a.push(L('방어 ','DEF ','防御 ')+Math.round(e.def*m));if(e.hp)a.push(L('체력 ','HP ','生命 ')+Math.round(e.hp*m));if(e.spd)a.push(L('속도 +','Speed +','速度 +')+Math.round(e.spd*100)+'%');return a.join(' · ')}
+function gearScore(id){if(!id||!ITEMS[id])return 0;const e=ITEMS[id];return (e.atk||0)*2+(e.def||0)*2+(e.hp||0)*.3+(e.spd||0)*100}
+function bestBuy(slot){const r=bestBuy0(slot);if(!r)return null;const cur=slot==='acc'?Math.min(gearScore(S.eq.acc1),gearScore(S.eq.acc2)):gearScore(S.eq[slot]);return gearScore(r)>cur?r:null}
+function bestBuy0(slot){const t=shopTier();let best=null;
+  if(slot==='acc'||slot==='neck'){const k=(slot==='acc'?'sring':'samu');for(let i=t;i>=0;i--)if(!owns(k+i)){best=k+i;break;}return best;}
+  for(const id in ITEMS){const e=ITEMS[id];if(e.slot!==slot||!e.recipe||owns(id))continue;const g=gearTier(id);if(g>t)continue;if(!best||gearScore(id)>gearScore(best))best=id;}return best;}
+function buyPrice(id){const e=ITEMS[id];if(e.shop){const t=+id.replace(/\D/g,'');return Math.round(40*Math.pow(1.55,t))}return Math.round(goldOf(e.recipe)*2.5+20)}
+function equipBought(id){const sl=ITEMS[id].slot;let slot=sl;if(sl==='acc'){slot=!S.eq.acc1?'acc1':!S.eq.acc2?'acc2':gearScore(S.eq.acc1)<=gearScore(S.eq.acc2)?'acc1':'acc2';}
+  const old=S.eq[slot];if(old)S.inv.push(old);S.eq[slot]=id;S.enh[id]=S.enh[id]||0;}
+function gEnhCost(id){const lv=S.enh[id]||0,t=ITEMS[id].shop?+id.replace(/\D/g,''):Math.max(0,gearTier(id));return {g:Math.round(15*(t+1)*(lv+1)),es:1+Math.floor(lv/3)}}
+function gEnhance(id){const c=gEnhCost(id),lv=S.enh[id]||0;if(lv>=10||S.gold<c.g||(S.items.estone||0)<c.es)return;S.gold-=c.g;S.items.estone-=c.es;S.enh[id]=lv+1;sfx('anvil');burst(S.p.x,S.p.y,'#9fe8ff',14);renderDShop();hud();}
+function armoryHtml(){const SL=[['weapon',L('무기','Weapon','武器')],['head',L('투구','Helmet','头盔')],['body',L('갑옷','Armor','铠甲')],['hands',L('장갑','Gloves','手套')],['feet',L('신발','Boots','鞋子')],['neck',L('부적','Amulet','护符')],['acc',L('반지','Ring','戒指')]];
+  let h='<h3>'+L('장비 판매','Gear for sale','出售装备')+' · '+L('라운드가 오를수록 더 좋은 장비가 들어와요','Better gear arrives as rounds go up','回合越高货越好')+'</h3><ul class="sk shop">';
+  for(const [sl,nm] of SL){let id,price;
+    if(sl==='weapon'){const dc=S.dc,Lw=WLINE(),ti=Math.min(Lw.length-1,Math.max(dc.wt+1,Math.min(Lw.length-1,shopTier())));if(ti<=dc.wt||ti>shopTier()){h+='<li class="off"><span class="k">⚔️</span><b>'+nm+'</b><small>'+L('지금 직업 무기보다 좋은 무기가 아직 없어요 (직업 창에서 합성)','Nothing better than your class weapon yet (fuse it in the class panel)','暂无比职业武器更好的武器（在职业面板合成）')+'</small></li>';continue;}id=Lw[ti];price=Math.round(goldOf(ITEMS[id].recipe||{g:100})*3+60*(ti+1));}
+    else{id=bestBuy(sl);if(!id){h+='<li class="off"><span class="k">·</span><b>'+nm+'</b><small>'+L('지금 살 수 있는 더 좋은 장비가 없어요','Nothing better to buy right now','暂时没有更好的可买')+'</small></li>';continue;}price=buyPrice(id);}
+    const cur=sl==='acc'?[S.eq.acc1,S.eq.acc2].filter(Boolean).map(x=>ITEMS[x].n).join(', '):S.eq[sl]?ITEMS[S.eq[sl]].n:'-';
+    h+='<li><span class="k">'+itemIcon(id).replace('<svg','<svg class="mi"')+'</span><b>'+nm+' · '+ITEMS[id].n+'</b><small>'+statLine(id)+' · '+L('지금: ','Now: ','当前：')+cur+'</small><button type="button" class="big'+(S.gold>=price?' pri':'')+'" data-gear="'+id+'" data-price="'+price+'"'+(S.gold>=price?'':' disabled')+'>'+price+'G</button></li>';}
+  h+='</ul><h3>'+L('장비 강화','Upgrade gear','强化装备')+' · +10'+L('까지',' max','为止')+'</h3><ul class="sk shop">';
+  for(const sl of SLOT_KEYS){const id=S.eq[sl];if(!id||!ITEMS[id]||id===S.dc.wid||sl==='relic')continue;const lv=S.enh[id]||0,c=gEnhCost(id),ok=lv<10&&S.gold>=c.g&&(S.items.estone||0)>=c.es;
+    h+='<li class="'+(lv>=10?'off':'')+'"><span class="k">'+itemIcon(id).replace('<svg','<svg class="mi"')+'</span><b>'+ITEMS[id].n+' +'+lv+'</b><small>'+statLine(id)+'</small><button type="button" class="big'+(ok?' pri':'')+'" data-genh="'+id+'"'+(ok?'':' disabled')+'>'+(lv>=10?'MAX':c.g+'G · '+ITEM_NAME.estone+' '+c.es)+'</button></li>';}
+  h+='</ul><p class="dim2">'+L('직업 무기 강화와 합성은 직업 창(K)에서 해요. 강화석은 잡화점에서도 살 수 있어요','Upgrade and fuse your class weapon in the class panel (K). Stones are also sold at the general store','职业武器的强化与合成在职业面板 (K)。强化石也可在杂货店购买')+'</p>';return h;}
+function buyGear(id,price){if(S.gold<price)return;S.gold-=price;const dc=S.dc,Lw=WLINE(),wi=Lw.indexOf(id);
+  if(wi>dc.wt){const old=dc.wid;dc.wt=wi;dc.wid=id;S.enh[id]=0;if(S.eq.weapon===old)S.eq.weapon=id;else equipBought(id);S.inv=S.inv.filter(x=>x!==old);renderAbil();}else equipBought(id);
+  sfx('coin');burst(S.p.x,S.p.y,'#ffd27a',16);toast(L('장착했어요: ','Equipped: ','已装备：')+ITEMS[id].n,2200);renderDShop();hud();}
+
 /* ---------- town shops, repurposed for defense ---------- */
 let DSHOP=null;
 function dPrice(k,base,grow){const n=(S.dc.buys&&S.dc.buys[k])||0;return Math.round(base*Math.pow(grow,n))}
@@ -310,10 +342,10 @@ function dShopItems(){const d=S.day,dc=S.dc,L2=[];
   else if(DSHOP==='altar'){L2.push({k:'bless',ic:'🔥',n:L('화톳불 축복','Campfire Blessing','篝火祝福')+(dc.bless?' Lv '+dc.bless:''),d:L('화톳불 최대 체력 +12%, 모든 포탑 피해 +4%','+12% campfire max HP, +4% all towers','篝火最大生命+12%，所有炮塔+4%'),g:blessCost(),fn:()=>{S.gold+=blessCost();bless();}},
     {k:'soul',ic:'👻',n:ITEM_NAME.soul+' ×1',d:L('금화로 보스의 혼을 사요. 살 때마다 비싸져요','Buy a boss soul with gold. Price rises each time','用金币购买首领之魂。每次涨价'),g:dPrice('soul',400,1.5),fn:()=>{S.items.soul=(S.items.soul||0)+1;}});}
   return L2;}
-const DSHOP_N={shop:[L('잡화점','General Store','杂货店'),L('물약·수리 키트·폭탄·강화석','Potions, repair kits, bombs, stones','药水、修理包、炸弹、强化石')],gem:[L('보석상','Jeweler','珠宝商'),L('영구 보석: 살수록 계속 강해져요','Permanent gems that keep stacking','永久宝石：越买越强')],inn:[L('여관','Inn','旅馆'),L('휴식과 경비병 고용','Rest and hire guards','休息与雇佣守卫')],altar:[L('태양의 제단','Sun Altar','太阳祭坛'),L('화톳불 축복과 보스의 혼','Campfire blessing and boss souls','篝火祝福与首领之魂')]};
+const DSHOP_N={smith:[L('대장장이','Blacksmith','铁匠'),L('무기·방어구·신발·장신구 판매, 장비 강화','Weapons, armor, boots and accessories; gear upgrades','出售武器、防具、鞋子、饰品；强化装备')],shop:[L('잡화점','General Store','杂货店'),L('물약·수리 키트·폭탄·강화석','Potions, repair kits, bombs, stones','药水、修理包、炸弹、强化石')],gem:[L('보석상','Jeweler','珠宝商'),L('영구 보석: 살수록 계속 강해져요','Permanent gems that keep stacking','永久宝石：越买越强')],inn:[L('여관','Inn','旅馆'),L('휴식과 경비병 고용','Rest and hire guards','休息与雇佣守卫')],altar:[L('태양의 제단','Sun Altar','太阳祭坛'),L('화톳불 축복과 보스의 혼','Campfire blessing and boss souls','篝火祝福与首领之魂')]};
 function openDShop(id){if(!running||paused||!S||!S.dc||S.phase==='dawn')return;DSHOP=id;S.menu=true;renderDShop();$('ovCls').hidden=false;}
 function renderDShop(){const el=$('clsBody');if(!el||!DSHOP)return;const N=DSHOP_N[DSHOP];
-  el.innerHTML='<div class="ch" style="--cc:#d8b040"><span class="pi">🏪</span><div><b>'+N[0]+'</b><small>'+N[1]+'</small><small>'+nameOf('g')+' '+S.gold+'</small></div></div><ul class="sk shop">'+dShopItems().map(it=>'<li class="'+(it.off?'off':'')+'"><span class="k">'+it.ic+'</span><b>'+it.n+'</b><small>'+it.d+'</small><button type="button" class="big'+(!it.off&&S.gold>=it.g?' pri':'')+'" data-buy="'+it.k+'"'+(it.off||S.gold<it.g?' disabled':'')+'>'+it.g+'G</button></li>').join('')+'</ul>';}
+  el.innerHTML='<div class="ch" style="--cc:#d8b040"><span class="pi">🏪</span><div><b>'+N[0]+'</b><small>'+N[1]+'</small><small>'+nameOf('g')+' '+S.gold+' · '+ITEM_NAME.estone+' '+(S.items.estone||0)+'</small></div></div>'+(DSHOP==='smith'?armoryHtml():'<ul class="sk shop">'+dShopItems().map(it=>'<li class="'+(it.off?'off':'')+'"><span class="k">'+it.ic+'</span><b>'+it.n+'</b><small>'+it.d+'</small><button type="button" class="big'+(!it.off&&S.gold>=it.g?' pri':'')+'" data-buy="'+it.k+'"'+(it.off||S.gold<it.g?' disabled':'')+'>'+it.g+'G</button></li>').join('')+'</ul>')+'';}
 
 /* ---------- class panel (K) ---------- */
 function openCls(){DSHOP=null;if(!running||paused||!S||!S.dc||S.phase==='dawn'||S.trading)return;S.menu=true;renderCls();$('ovCls').hidden=false;}
@@ -342,11 +374,11 @@ function renderCls(){const el=$('clsBody');if(!el||!S||!S.dc)return;const dc=S.d
 
 /* ---------- HUD, menus, overlays ---------- */
 {const _ct=closeTopOverlay;closeTopOverlay=function(){if($('ovCls')&&!$('ovCls').hidden){closeCls();return true;}if($('ovPick')&&!$('ovPick').hidden){$('ovPick').hidden=true;$('ovDiff').hidden=false;return true;}return _ct();};}
-{const _os=openShop;openShop=function(id){if(S&&S.dc){if(id==='smith'){openCls();return;}if(DSHOP_N[id]){openDShop(id);return;}}return _os(id);};}
+{const _os=openShop;openShop=function(id){if(S&&S.dc){if(DSHOP_N[id]){openDShop(id);return;}}return _os(id);};}
 
 /* ---------- drawing: auras, forms, summons, turrets ---------- */
 {const _dp=drawPlayer;drawPlayer=function(now){const p=S.p;if(!S.dc||p.ghost||p.remote)return _dp(now);
-  for(const z of S.dc.z)dDrawZone(z,now);
+  for(const z of S.dc.z)dDrawZone(z,now);try{fbDrawLabels();}catch(_){}
   const dc=S.dc,C=clsOf();
   if(dc.tier>=2){ctx.save();ctx.globalAlpha=.25+.12*Math.sin(now/300);ctx.strokeStyle=C.col;ctx.lineWidth=dc.tier>=3?3:2;ctx.beginPath();ctx.ellipse(p.x,p.y+11,16+dc.tier*2,6+dc.tier,0,0,7);ctx.stroke();ctx.restore();
     if(dc.tier>=3&&Math.random()<.25)S.fx.push({k:'p',x:p.x+(Math.random()-.5)*20,y:p.y+6,vx:0,vy:-30,t:0,life:.8,col:C.col});}
@@ -395,8 +427,8 @@ window.addEventListener('load',()=>{const g=id=>document.getElementById(id);
     if(pad)HELP.push(pad);}
 
 {const _sn=startNew;startNew=function(diff){$('ovDiff').hidden=true;openPick(diff);};
-  window.dStartNew=function(diff,c){_sn(diff);applyClass(c);setTimeout(()=>{if(S)toast(clsOf().ic+' '+clsName()+' · '+clsOf().d,5200);},4600);};}
-{const _b=buildSave;buildSave=function(){const o=_b();if(S.dc){const dc=S.dc;o.dfn={twSoul:dc.twSoul||{},gems:dc.gems||{},guards:dc.guards||0,buys:dc.buys||{},tpm:dc.tpm||1,bless:dc.bless||0,cls:dc.cls,tier:dc.tier,wt:dc.wt,wid:dc.wid,pc:dc.pc,won:dc.won||0,lv:dc.lv||1};}return o;};}
+  window.dStartNew=function(diff,c){_sn(diff);applyClass(c);setTimeout(()=>{if(S)toast(clsOf().ic+' '+clsName()+' · '+clsOf().d,5200);},4600);setTimeout(()=>{if(S)toast(L('숲의 11시·1시·5시·7시 방향에 보스가 자리 잡고 있어요. 잡으면 좋은 장비와 전직 재료를 줘요','Lords wait in the forest at 11, 1, 5 and 7 o\'clock. They drop good gear and promotion materials','森林的11点、1点、5点、7点方向盘踞着首领。击败可获得好装备和转职材料'),6000);},11000);};}
+{const _b=buildSave;buildSave=function(){const o=_b();if(S.dc){const dc=S.dc;o.dfn={fb:dc.fb||{},fbKills:dc.fbKills||0,twSoul:dc.twSoul||{},gems:dc.gems||{},guards:dc.guards||0,buys:dc.buys||{},tpm:dc.tpm||1,bless:dc.bless||0,cls:dc.cls,tier:dc.tier,wt:dc.wt,wid:dc.wid,pc:dc.pc,won:dc.won||0,lv:dc.lv||1};}return o;};}
 {const _l=loadGame;loadGame=function(o){_l(o);if(o&&o.dfn){S.dc=Object.assign({bf:{},form:null,z:[]},o.dfn);S.tut=TUT.length;setTimeout(renderAbil,0);}};}
 {const _hud=hud;hud=function(){_hud();if(S&&S.dc){const el=$('lvl');if(el)el.innerHTML=clsOf().ic+' Lv '+S.p.lvl+' · <b>'+clsName()+'</b> <small>'+tierTag()+'</small>';const dy=$('day');if(dy)dy.textContent=L('라운드 ','Round ','第')+S.day+(LANG==='zh'?'回合':'');}};}
   g('pickH').textContent=L('직업을 골라 주세요','Choose your class','选择你的职业');
@@ -407,7 +439,7 @@ window.addEventListener('load',()=>{const g=id=>document.getElementById(id);
   g('clsX').addEventListener('click',closeCls);
   g('btnCls').textContent=L('직업 (K)','Class (K)','职业 (K)');
   g('btnCls').addEventListener('click',()=>{if(g('ovCls').hidden)openCls();else closeCls();});
-  g('clsBody').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||b.disabled)return;if(b.dataset.buy){dBuy(b.dataset.buy);return;}
+  g('clsBody').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||b.disabled)return;if(b.dataset.buy){dBuy(b.dataset.buy);return;}if(b.dataset.gear){buyGear(b.dataset.gear,+b.dataset.price);return;}if(b.dataset.genh){gEnhance(b.dataset.genh);return;}
     if(b.dataset.promo)promote(b.dataset.promo);else if(b.dataset.act==='enh')enhance();else if(b.dataset.act==='fuse')fuse();else if(b.dataset.act==='bless')bless();
     else if(b.dataset.act==='equip'){const w=S.dc.wid,o=S.eq.weapon;if(o&&o!==w)S.inv.push(o);S.inv=S.inv.filter(x=>x!==w);S.eq.weapon=w;renderAbil();renderCls();hud();}});
   const st=g('ovStart');if(st){const h1=st.querySelector('h1');if(h1)h1.innerHTML=L('캠프<br><em>디펜스</em>','Camp<br><em>Defense</em>','营地<br><em>防御</em>');
@@ -415,3 +447,26 @@ window.addEventListener('load',()=>{const g=id=>document.getElementById(id);
     const pp=st.querySelector('.panel > p');if(pp)pp.textContent=L('직업을 골라 100라운드 동안 화톳불을 지키세요. 금화로 포탑을 세우고, 레벨을 올려 전직하고, 숨겨진 히든 직업을 찾아보세요.','Pick a class and defend the campfire for 100 rounds. Build towers with gold, level up, promote, and hunt for hidden classes.','选择职业，守护篝火100回合。用金币建塔、升级转职，寻找隐藏职业。');
     const hk=st.querySelector('.hooks');if(hk)hk.innerHTML='<li><b>⚔️</b>'+L('직업 13종 + 히든 4종','13 classes + 4 hidden','13种职业+4种隐藏')+'</li><li><b>🏰</b>'+L('100라운드 디펜스','100-round defense','100回合防御')+'</li><li><b>⭐</b>'+L('3차 전직 · 궁극기','3 tiers · ultimates','三转·终极技')+'</li><li><b>🗡️</b>'+L('무기 강화 · 합성','Weapon upgrade · fuse','武器强化·合成')+'</li>';}
 });
+
+/* ---------- fixed lords ---------- */
+function fbAlive(id){return S.enemies.find(e=>e.fb===id&&!e.dead)}
+function fbSpawn(b){const st=S.dc.fb[b.id]||(S.dc.fb[b.id]={lv:1,at:1});const [cx,cy]=cCenter(idx(...fbCell(b)));const e=makeWild(b.t,cx,cy);
+  const L2=st.lv;e.fb=b.id;e.sz=1.9;e.elite=1;e.max=e.hp=70*({boar:1,wolf:1.4,toad:.8,crystal:1.2}[b.id]||1)*(6+4*L2)*(1+S.day*.12);e.m=(e.m||1)*(1.6+.25*L2);e.fbT=3;return e;}
+function fbTick(dt){if(S.tower||NC())return;const dc=S.dc;dc.fb=dc.fb||{};
+  for(const b of FBOSS){const st=dc.fb[b.id]||(dc.fb[b.id]={lv:1,at:1});const e=fbAlive(b.id);
+    if(!e){if(S.day>=st.at&&S.phase==='day')fbSpawn(b);continue;}
+    e.fbT-=dt;const p=S.p,dP=Math.hypot(p.x-e.x,p.y-e.y);
+    if(e.fbT<=0&&dP<6*T&&!p.dead){e.fbT=4.5;e.slam={x:p.x,y:p.y,t:.9};S.fx.push({k:'ring',x:p.x,y:p.y,r:2.2*T,t:0,life:.9,col:'#ff6a4a',warn:1});}
+    if(e.slam){e.slam.t-=dt;if(e.slam.t<=0){const s=e.slam;e.slam=null;burst(s.x,s.y,'#ff8a5a',18);shake(4);if(Math.hypot(p.x-s.x,p.y-s.y)<2.2*T)hurtPlayer(ET[e.t].dmg*e.m*1.8);}}}}
+{const _u2=update;update=function(dt){_u2(dt);if(S&&S.dc&&running&&!paused)fbTick(dt);};}
+{const _k2=killEnemy;killEnemy=function(e){const was=!e.dead;_k2(e);if(!was||!e.fb||!S.dc)return;const b=FBOSS.find(x=>x.id===e.fb),st=S.dc.fb[e.fb],L2=st.lv;
+  st.lv++;st.at=S.day+2;S.dc.fbKills=(S.dc.fbKills||0)+1;
+  const es=3+L2,g=Math.round(40*L2*(1+S.day*.1));S.items.estone=(S.items.estone||0)+es;S.items.soul=(S.items.soul||0)+1;S.gold+=g;
+  towerGearDrop(Math.min(60,4+L2*5+Math.floor(S.day/3)),e.x,e.y);if(L2>=2)dropRare(e.x,e.y,true);
+  shake(8);burst(e.x,e.y,'#ffe08a',30);sfx('achieve');
+  toast(b.ic+' '+b.n+' Lv '+L2+L('을(를) 쓰러뜨렸어요! ',' defeated! ','被击败了！')+ITEM_NAME.soul+' +1 · '+ITEM_NAME.estone+' +'+es+' · +'+g+'G · '+L('장비 획득','gear dropped','获得装备')+' · '+L('2라운드 뒤 더 강해져 돌아와요','Returns stronger in 2 rounds','2回合后变得更强回来'),5200);};}
+function fbDrawLabels(){for(const e of S.enemies){if(!e.fb||e.dead)continue;const b=FBOSS.find(x=>x.id===e.fb),st=S.dc.fb[e.fb];
+  ctx.font='bold 12px "Gowun Dodum",sans-serif';ctx.textAlign='center';const y=e.y-ET[e.t].r*(e.sz||1)-22,t=b.ic+' '+b.n+' Lv '+st.lv;ctx.fillStyle='rgba(0,0,0,.6)';ctx.fillText(t,e.x+1,y+1);ctx.fillStyle='#ffd27a';ctx.fillText(t,e.x,y);
+  ctx.fillStyle='rgba(0,0,0,.5)';ctx.fillRect(e.x-24,y+4,48,4);ctx.fillStyle='#ff6a4a';ctx.fillRect(e.x-24,y+4,48*Math.max(0,e.hp/e.max),4);
+  if(e.slam){ctx.globalAlpha=.6;ctx.strokeStyle='#ff6a4a';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(e.x,e.y);ctx.lineTo(e.slam.x,e.slam.y);ctx.stroke();ctx.globalAlpha=1;}}
+  ctx.textAlign='left';}

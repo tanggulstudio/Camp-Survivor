@@ -107,3 +107,10 @@ towerUp=function(){return true};
 {const _tc=towerClear;towerClear=function(){_tc();if(!S.dc)return;const f=S.tower?S.tower.floor:1,es=1+Math.floor(f/3);S.items.estone=(S.items.estone||0)+es;
   let extra=' · '+ITEM_NAME.estone+' +'+es;if(f%10===0&&!(S.dc.twSoul||{})[f]){S.dc.twSoul=S.dc.twSoul||{};S.dc.twSoul[f]=1;S.items.soul=(S.items.soul||0)+1;extra+=' · '+ITEM_NAME.soul+' +1';}
   const el=$('floorSum');if(el)el.textContent+=extra;};}
+/* fixed lords at 11, 1, 5 and 7 o'clock: carve a clearing and a path from the nearest lane */
+const FBOSS=[{id:'boar',clock:11,t:'boar',ic:'🐗',n:L3('멧돼지 대장','Boar Chieftain','野猪首领')},{id:'wolf',clock:1,t:'snowwolf',ic:'🐺',n:L3('서리 늑대 우두머리','Frost Alpha','霜狼头领')},
+  {id:'toad',clock:5,t:'toad',ic:'🐸',n:L3('늪 두꺼비 왕','Bog Toad King','沼泽蟾蜍王')},{id:'crystal',clock:7,t:'shard',ic:'💠',n:L3('수정 거인','Crystal Giant','水晶巨人')}];
+function fbCell(b){const a=(b.clock/12)*Math.PI*2,D=Math.round(24*RS/2.15);return [Math.round(CX+Math.sin(a)*D),Math.round(CY-Math.cos(a)*D)]}
+{const _g2=genMap;genMap=function(s){_g2(s);for(const b of FBOSS){const [bx,by]=fbCell(b),clr=(x,y)=>{if(x<1||y<1||x>=W-1||y>=H-1)return;const i=idx(x,y),v=s.res[i];if(v===7||v===8)return;s.res[i]=0;s.rhp[i]=0;s.water[i]=0;};
+  for(let y=-4;y<=4;y++)for(let x=-4;x<=4;x++)if(x*x+y*y<=18)clr(bx+x,by+y);
+  const x0=Math.min(CX,bx),x1=Math.max(CX,bx);for(let x=x0;x<=x1;x++)for(let w=-1;w<=1;w++)clr(x,by+w);}};}
