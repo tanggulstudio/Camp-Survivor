@@ -131,7 +131,7 @@ function dBuildMul(){return 1-pv('cheap')}
 {const _h=hurtPlayer;hurtPlayer=function(d){if(S&&S.dc&&!S.p.remote){if(dBuf('rag'))d*=.35;if(dBuf('evade'))d*=.3;if(dForm('bear'))d*=.8;}return _h(d);};}
 let PAS_ON=0;
 {const _o=onPlayerHit;onPlayerHit=function(e,dm){const r=_o(e,dm);if(!S||!S.dc||PAS_ON)return r;PAS_ON=1;try{const p=S.p;let h=0;
-  const cr=pv('crit');if(cr&&!e.dead&&Math.random()*100<cr){hitEnemy(e,dm);float(e.x,e.y-26,L('치명!','CRIT!','暴击！'),'#ff6a4a');h+=0;}
+  const cr=pv('crit');if(cr&&!e.dead&&Math.random()*100<cr){dst().crit++;hitEnemy(e,dm);float(e.x,e.y-26,L('치명!','CRIT!','暴击！'),'#ff6a4a');h+=0;}
   const ex=pv('execute');if(ex&&!e.dead&&e.hp<e.max*.3)hitEnemy(e,dm*ex);
   const sp=pv('splash');if(sp){for(const o of S.enemies){if(o===e||o.dead||o.burrow)continue;if(Math.hypot(o.x-e.x,o.y-e.y)<sp*T+ET[o.t].r)hitEnemy(o,dm*.4);}}
   if(!e.dead&&!e.lair){const bu=pv('burn'),ch=pv('chill'),st=pv('stunhit');if(bu)e.poison=Math.max(e.poison||0,bu);if(ch)e.slow=Math.max(e.slow||0,ch);if(st&&Math.random()*100<st)e.stun=Math.max(e.stun||0,.6);
@@ -155,8 +155,8 @@ function dAoe(x,y,r,dm,o){o=o||{};let n=0;for(const e of S.enemies){if(e.dead||e
   S.fx.push({k:'ring',x,y,r,t:0,life:.4,col:o.col||'#ffe08a'});burst(x,y,o.col||'#ffe08a',14);return n;}
 function dTgt(){const p=S.p,t=dNear(p.x,p.y,9*T,1)[0],a=p.aim==null?p.face:p.aim;return t?[t.x,t.y]:[p.x+Math.cos(a)*4*T,p.y+Math.sin(a)*4*T]}
 function dBuff(k,t){S.dc.bf[k]=t;}
-function dForm0(k,t){S.dc.form={k,t};burst(S.p.x,S.p.y,clsOf().col,26);smoke(S.p.x,S.p.y,8);sfx('level');shake(3);}
-function dAlly(dk,n,life,extra){const p=S.p;if(!extra)n+=S.dc.tier-1;for(let k=0;k<n;k++)S.allies.push(Object.assign({x:p.x+(Math.random()-.5)*60,y:p.y+(Math.random()-.5)*60,life,cd:0,face:0,dk},extra||{}));burst(p.x,p.y,'#c8f0a0',12);}
+function dForm0(k,t){S.dc.form={k,t};dst().form++;burst(S.p.x,S.p.y,clsOf().col,26);smoke(S.p.x,S.p.y,8);sfx('level');shake(3);}
+function dAlly(dk,n,life,extra){const p=S.p;if(!extra)n+=S.dc.tier-1;dst().summon+=n;for(let k=0;k<n;k++)S.allies.push(Object.assign({x:p.x+(Math.random()-.5)*60,y:p.y+(Math.random()-.5)*60,life,cd:0,face:0,dk},extra||{}));burst(p.x,p.y,'#c8f0a0',12);}
 function dZone(o){S.dc.z.push(Object.assign({t:0,tick:0},o));}
 function coreHeal(f){S.core.hp=Math.min(S.core.max,S.core.hp+S.core.max*f);const [cx,cy]=cCenter(CI);burst(cx,cy,'#ffd27a',16);float(cx,cy-30,'+'+Math.round(S.core.max*f),'#a8ff9a');}
 const L=L3;
@@ -214,7 +214,7 @@ function skillOpen(i){if(!S.dc)return false;return i===0||(i===1&&S.p.lvl>=5)||(
 {const _ws=wSkills;wSkills=function(){if(!S||!S.dc)return _ws();return clsOf().sk.filter((s,i)=>skillOpen(i))};}
 {const _cw=castW;castW=function(n){if(!S||!S.dc)return _cw(n);const sk=wSkills()[n||0],p=S.p;if(!sk||p.dead||(S.acd['w_'+sk]||0)>0)return;
   if(!running||paused||S.phase==='dawn'||S.menu||S.trading)return;SKM=1+.3*(S.dc.tier-1);
-  try{const D=DSK[sk];if(D){S.acd['w_'+sk]=WSKILL[sk].cd*(1-eqSum('cdr'))*(1-.1*(S.dc.tier-1));D.fn(p);renderAbil();}else{_cw(n);if(S.acd['w_'+sk])S.acd['w_'+sk]*=1-.1*(S.dc.tier-1);}}finally{SKM=1;}};}
+  dst().skill++;try{const D=DSK[sk];if(D){S.acd['w_'+sk]=WSKILL[sk].cd*(1-eqSum('cdr'))*(1-.1*(S.dc.tier-1));D.fn(p);renderAbil();}else{_cw(n);if(S.acd['w_'+sk])S.acd['w_'+sk]*=1-.1*(S.dc.tier-1);}}finally{SKM=1;}};}
 window.addEventListener('keydown',e=>{if(!running||!S||!S.dc)return;const tg=e.target;if(tg&&(tg.tagName==='INPUT'||tg.tagName==='TEXTAREA'))return;const k=(e.key||'').toLowerCase();
   if(k==='v')castW(3);else if(k==='k'){if($('ovCls').hidden)openCls();else closeCls();}});
 
@@ -243,13 +243,15 @@ function dTick(dt){const dc=S.dc,p=S.p;
   for(const z of dc.z)if(z.k==='fall'&&z.t>=z.life&&!z.done){z.done=1;dAoe(z.x,z.y,z.r,z.dm,{col:'#ff9a3a',poison:2});shake(4);sfx('explode',z.x,z.y);}
   dc.z=dc.z.filter(z=>z.t<z.life);
   if(S.kills>=500)givePiece('shadow');
+  dc.pqT=(dc.pqT||0)-dt;if(dc.pqT<=0){dc.pqT=1;pqCheck();}
   if(dc.lv!==p.lvl){const was=dc.lv||1;dc.lv=p.lvl;if(was<5&&p.lvl>=5){renderAbil();toast(L('새 스킬 해금: ','New skill: ','新技能：')+WSKILL[clsOf().sk[1]].n+' (T)',3600);}
     if((was<10&&p.lvl>=10)||(was<20&&p.lvl>=20))setTimeout(()=>{if(S)toast(L('전직할 수 있는 레벨이에요! 직업 창(K)을 열어 보세요','You can promote! Open the class panel (K)','可以转职了！打开职业面板 (K)'),4200);},1600);}
 }
 
 /* ---------- kills: gold bonus, stones, souls, pieces ---------- */
 {const _k=killEnemy;killEnemy=function(e){if(!S.dc||e.dead)return _k(e);const g0=S.gold;_k(e);const dc=S.dc;
-  if(e.wild||e.arena)return;
+  if(e.arena)return;{const st=dst();st.k[e.t]=(st.k[e.t]||0)+1;if(e.nightBoss&&!e.wild)st.boss++;}
+  if(e.wild)return;
   const gm=(1+pv('gold'))*(dBuf('gold')?3:1);const dg=S.gold-g0;if(dg>0&&gm>1){const x=Math.round(dg*(gm-1));S.gold+=x;}
   if(e.awak){S.items.soul=(S.items.soul||0)+2;float(e.x,e.y-44,'+2 '+ITEM_NAME.soul,'#c9a6ff');S.items.estone=(S.items.estone||0)+5;}
   else if(e.nightBoss){S.items.soul=(S.items.soul||0)+1;float(e.x,e.y-44,'+1 '+ITEM_NAME.soul,'#c9a6ff');S.items.estone=(S.items.estone||0)+3;}
@@ -259,12 +261,34 @@ function givePiece(k){const dc=S.dc;if(!dc||dc.pc[k])return;if(HID_CLS.includes(
   try{phaseTitle(L('히든 피스 발견!','Hidden piece found!','发现隐藏碎片！'),PIECES[k].ic+' '+PIECES[k].n,true);}catch(_){}
   setTimeout(()=>{if(S)toast(L('2차 전직 때 히든 직업 「','At your 2nd promotion you can choose the hidden class "','第二次转职时可选择隐藏职业「')+clsName(PIECES[k].cls,2)+L('」을(를) 고를 수 있어요','"','」')+'',5200);},2400);}
 
+/* ---------- promotion quests: each class earns its own token (2nd) and seal (3rd) ---------- */
+const PQ={warrior:[['lord:boar',1],['boss',3]],archer:[['kill:wolf,snowwolf',60],['lord:wolf',2]],engineer:[['tower',15],['nocore',5]],tamer:[['kill:goblin',150],['summon',60]],
+  merchant:[['gold',800],['gold',3000]],berserker:[['kills',300],['lord:any',4]],shifter:[['form',15],['lord:crystal',2]],summoner:[['summon',40],['floor',15]],
+  priest:[['nocore',3],['lord:toad',2]],frostmage:[['lord:crystal',1],['skill',150]],stormcaller:[['skill',80],['lord:wolf',2]],assassin:[['crit',150],['boss',3]],
+  bard:[['tower',12],['nocore',6]],ember:[['nocore',2],['lord:any',5]],shadow:[['kills',600],['crit',300]],goldking:[['gold',1500],['gold',5000]],beast:[['kill:wolf,snowwolf',100],['lord:wolf',3]]};
+function dst(){const dc=S.dc;return dc.st||(dc.st={k:{},lord:{},skill:0,form:0,summon:0,crit:0,nc:0,boss:0})}
+function pqProg(q){const [k,n]=q,st=dst(),[a,b]=k.split(':');let v=0;
+  if(a==='kill')v=b.split(',').reduce((s2,t)=>s2+(st.k[t]||0),0);else if(a==='kills')v=S.kills;else if(a==='lord')v=b==='any'?Object.values(st.lord).reduce((x,y)=>x+y,0):(st.lord[b]||0);
+  else if(a==='tower')v=towerCount();else if(a==='gold')v=S.gold;else if(a==='floor')v=S.towerBest||0;else if(a==='nocore')v=st.nc;else v=st[a]||0;return [Math.min(v,n),n]}
+function pqText(q){const [k,n]=q,[a,b]=k.split(':'),FN=id=>{const f=FBOSS.find(x=>x.id===id);return f?f.ic+' '+f.n:L('아무 고정 보스','any lord','任意固定首领')};
+  const T2={kill:()=>L((b.includes('wolf')?'늑대':b==='goblin'?'고블린':b)+' '+n+'마리 처치','Defeat '+n+' '+(b.includes('wolf')?'wolves':b==='goblin'?'goblins':b),'击败'+n+'只'+(b.includes('wolf')?'狼':b==='goblin'?'哥布林':b)),
+    kills:()=>L('몬스터 '+n+'마리 처치','Defeat '+n+' monsters','击败'+n+'只怪物'),lord:()=>L(FN(b)+' '+n+'번 처치','Defeat '+FN(b)+' '+n+'×','击败'+FN(b)+' '+n+'次'),
+    tower:()=>L('포탑 '+n+'개 세우기','Have '+n+' towers','拥有'+n+'座炮塔'),gold:()=>L('금화 '+n+'G 모으기','Hold '+n+'G','持有'+n+'G'),floor:()=>L('도전의 탑 '+n+'층 돌파','Clear tower floor '+n,'突破挑战之塔'+n+'层'),
+    nocore:()=>L('화톳불이 한 번도 안 맞은 라운드 '+n+'번','Clear '+n+' rounds with no campfire damage','篝火未受伤的回合'+n+'次'),boss:()=>L('습격 보스 '+n+'번 처치','Defeat '+n+' raid bosses','击败'+n+'次来袭首领'),
+    skill:()=>L('스킬 '+n+'번 쓰기','Use skills '+n+' times','使用技能'+n+'次'),form:()=>L('변신 '+n+'번','Transform '+n+' times','变身'+n+'次'),summon:()=>L('소환수 '+n+'마리 부르기','Summon '+n+' allies','召唤'+n+'个召唤物'),crit:()=>L('치명타 '+n+'번','Land '+n+' crits','暴击'+n+'次')};return T2[a]()}
+const PTOK_IC='<path d="M6 3h11a2 2 0 012 2v14l-3-2-3 2-3-2-3 2V5a2 2 0 012-2z" fill="#f0e0b0" stroke="#8a6a3a"/><path d="M9 8h7M9 11h7M9 14h4" stroke="#8a6a3a" stroke-width="1.2"/>';
+function tokKey(t,c){return 'ptok'+t+'_'+(c||S.dc.cls)}
+function tokName(t,c){return clsName(c,t-1)+L(t===2?'의 증표':'의 인장',t===2?"'s Token":"'s Seal",t===2?'之证':'之印')}
+function pqCheck(){const dc=S.dc;if(!dc||dc.tier>=3)return;const t=dc.tier+1,key=tokKey(t);if(S.items[key])return;const q=PQ[dc.cls][t-2],[v,n]=pqProg(q);
+  if(v>=n){S.items[key]=1;ITEM_NAME[key]=tokName(t);IC[key]=PTOK_IC;sfx('achieve');shake(4);try{phaseTitle(L('전직 아이템 획득!','Promotion item!','获得转职道具！'),'📜 '+tokName(t),true);}catch(_){}toast(L('「','"','「')+tokName(t)+L('」 획득! 레벨과 재료가 모이면 전직할 수 있어요','" obtained! Promote once level and materials are ready','」到手！等级和材料齐了就能转职'),5000);}}
+
 /* ---------- promotions & weapon ---------- */
 const PROMO=[null,null,{lv:10,soul:1,g:150},{lv:20,soul:3,g:600}];
 function promoNeed(){const dc=S.dc;if(!dc||dc.tier>=3)return null;const r=PROMO[dc.tier+1],p=S.p,soul=S.items.soul||0;
   const parts=[Math.min(1,p.lvl/r.lv),Math.min(1,soul/r.soul),Math.min(1,S.gold/r.g)];
-  return {t:L((dc.tier+1)+'차 전직','Promotion '+(dc.tier+1),(dc.tier+1)+'转'),d:'Lv '+p.lvl+'/'+r.lv+' · '+ITEM_NAME.soul+' '+soul+'/'+r.soul+' · '+S.gold+'/'+r.g+'G',p:parts.reduce((a,b)=>a+b,0)/3,ok:parts.every(x=>x>=1),r};}
-function promote(to){const n=promoNeed();if(!n||!n.ok)return;const dc=S.dc;S.items.soul-=n.r.soul;S.gold-=n.r.g;
+  const t=dc.tier+1,tk=!!S.items[tokKey(t)],q=PQ[dc.cls][t-2],[qv,qn]=pqProg(q);parts.push(tk?1:qv/qn);
+  return {t:L(t+'차 전직','Promotion '+t,t+'转'),d:'Lv '+p.lvl+'/'+r.lv+' · '+ITEM_NAME.soul+' '+soul+'/'+r.soul+' · '+S.gold+'/'+r.g+'G · '+(tk?'📜 '+tokName(t)+' ✓':'📜 '+pqText(q)+' ('+qv+'/'+qn+')'),p:parts.reduce((a,b)=>a+b,0)/4,base:parts.slice(0,3).every(x=>x>=1),tk,ok:parts.every(x=>x>=1),r};}
+function promote(to){const n=promoNeed();if(!n)return;const dc=S.dc,hid=to&&to!==dc.cls;if(!n.base||!(hid||n.tk))return;if(hid&&!Object.keys(dc.pc).some(k=>dc.pc[k]&&PIECES[k].cls===to))return;S.items.soul-=n.r.soul;S.gold-=n.r.g;if(!hid)delete S.items[tokKey(dc.tier+1)];
   if(to&&to!==dc.cls){const oldW=dc.wid,ol=WLINE();dc.cls=to;const nl=WLINE(),wi=Math.min(dc.wt,nl.length-1);dc.wt=wi;dc.wid=nl[wi];S.enh[dc.wid]=S.enh[oldW]||0;if(S.eq.weapon===oldW||!S.eq.weapon)S.eq.weapon=dc.wid;S.inv=S.inv.filter(x=>x!==oldW&&x!==dc.wid);void ol;}
   S.allies=S.allies.filter(a=>!a.perm);dc.tier++;
   const p=S.p;p.hp=pMax();burst(p.x,p.y,clsOf().col,40);burst(p.x,p.y,'#fff6c0',30);shake(8);sfx('level');
@@ -283,7 +307,7 @@ function fuse(){const dc=S.dc,c=fuseCostD(),L2=WLINE();if((S.enh[dc.wid]||0)<5||
 /* ---------- class pick ---------- */
 function applyClass(c){const dc=S.dc={cls:c,tier:1,wt:0,wid:null,pc:{},bf:{},form:null,z:[],lv:1};dc.wid=WLINE()[0];
   S.eq.weapon=dc.wid;S.inv=S.inv.filter(id=>!(ITEMS[id]&&ITEMS[id].slot==='weapon'));S.enh[dc.wid]=0;
-  S.wood=0;S.stone=0;S.gold=75+40*mlv('gold')+(mlv('start')||0)*20;S.items.estone=2;S.items.soul=0;S.tut=TUT.length;S.prog=0;
+  S.items.twticket=1;S.wood=0;S.stone=0;S.gold=75+40*mlv('gold')+(mlv('start')||0)*20;S.items.estone=2;S.items.soul=0;S.tut=TUT.length;S.prog=0;
   S.mods.enemy=1.2;dc.tpm=1;
   S.p.hp=pMax();renderAbil();hud();renderTut();}
 let PICK_DIFF='normal';
@@ -358,7 +382,7 @@ function renderCls(){const el=$('clsBody');if(!el||!S||!S.dc)return;const dc=S.d
   const pn=promoNeed();h+='<h3>'+L('전직','Promotion','转职')+'</h3>';
   if(!pn)h+='<p class="dim2">'+L('최종 직업이에요','Final class reached','已是最终职业')+'</p>';
   else{h+='<p>'+pn.d+'</p><div class="row">';const opts=[dc.cls];if(dc.tier===1&&!C.hid)for(const k in dc.pc)if(dc.pc[k])opts.push(PIECES[k].cls);
-    h+=opts.map(c=>'<button type="button" class="big'+(c!==dc.cls?' hidb':'')+(pn.ok?' pri':'')+'" data-promo="'+c+'"'+(pn.ok?'':' disabled')+'>'+DCLS[c].ic+' '+clsName(c,dc.tier+1)+' '+tierTag(dc.tier+1,c)+'</button>').join('')+'</div>';}
+    h+=opts.map(c=>{const ok=pn.base&&(c!==dc.cls||pn.tk);return '<button type="button" class="big'+(c!==dc.cls?' hidb':'')+(ok?' pri':'')+'" data-promo="'+c+'"'+(ok?'':' disabled')+'>'+DCLS[c].ic+' '+clsName(c,dc.tier+1)+' '+tierTag(dc.tier+1,c)+(c!==dc.cls?' · '+L('히든 피스로 전직','via hidden piece','以隐藏碎片转职'):'')+'</button>';}).join('')+'</div><p class="dim2">'+L('전직하려면 레벨·보스의 혼·금화와 함께 직업마다 다른 전직 아이템이 필요해요. 위 조건을 채우면 자동으로 얻어요','Promotion needs level, souls, gold and a class-specific item, earned automatically by the condition above','转职需要等级、首领之魂、金币以及各职业不同的转职道具，满足上述条件后自动获得')+'</p>';}
   const w=dc.wid,lv=S.enh[w]||0,ec=enhCostD(),fc=fuseCostD(),last=dc.wt>=WLINE_LEN()-1,eq=S.eq.weapon===w;
   h+='<h3>'+L('직업 무기','Class weapon','职业武器')+'</h3><div class="wp"><span class="wi">'+itemIcon(w)+'</span><div><b>'+itemName(w)+'</b><small>'+L('단계 ','Tier ','阶段 ')+(dc.wt+1)+'/'+WLINE_LEN()+' · '+L('공격력 ','ATK ','攻击 ')+Math.round(ITEMS[w].atk*(1+.1*lv))+'</small></div></div><div class="row">'+
     (eq?'':'<button type="button" class="big" data-act="equip">'+L('장착','Equip','装备')+'</button>')+
@@ -428,8 +452,8 @@ window.addEventListener('load',()=>{const g=id=>document.getElementById(id);
 
 {const _sn=startNew;startNew=function(diff){$('ovDiff').hidden=true;openPick(diff);};
   window.dStartNew=function(diff,c){_sn(diff);applyClass(c);setTimeout(()=>{if(S)toast(clsOf().ic+' '+clsName()+' · '+clsOf().d,5200);},4600);setTimeout(()=>{if(S)toast(L('숲의 11시·1시·5시·7시 방향에 보스가 자리 잡고 있어요. 잡으면 좋은 장비와 전직 재료를 줘요','Lords wait in the forest at 11, 1, 5 and 7 o\'clock. They drop good gear and promotion materials','森林的11点、1点、5点、7点方向盘踞着首领。击败可获得好装备和转职材料'),6000);},11000);};}
-{const _b=buildSave;buildSave=function(){const o=_b();if(S.dc){const dc=S.dc;o.dfn={fb:dc.fb||{},fbKills:dc.fbKills||0,twSoul:dc.twSoul||{},gems:dc.gems||{},guards:dc.guards||0,buys:dc.buys||{},tpm:dc.tpm||1,bless:dc.bless||0,cls:dc.cls,tier:dc.tier,wt:dc.wt,wid:dc.wid,pc:dc.pc,won:dc.won||0,lv:dc.lv||1};}return o;};}
-{const _l=loadGame;loadGame=function(o){_l(o);if(o&&o.dfn){S.dc=Object.assign({bf:{},form:null,z:[]},o.dfn);S.tut=TUT.length;setTimeout(renderAbil,0);}};}
+{const _b=buildSave;buildSave=function(){const o=_b();if(S.dc){const dc=S.dc;o.dfn={st:dst(),fb:dc.fb||{},fbKills:dc.fbKills||0,twSoul:dc.twSoul||{},gems:dc.gems||{},guards:dc.guards||0,buys:dc.buys||{},tpm:dc.tpm||1,bless:dc.bless||0,cls:dc.cls,tier:dc.tier,wt:dc.wt,wid:dc.wid,pc:dc.pc,won:dc.won||0,lv:dc.lv||1};}return o;};}
+{const _l=loadGame;loadGame=function(o){_l(o);if(o&&o.dfn){S.dc=Object.assign({bf:{},form:null,z:[]},o.dfn);for(const k in S.items)if(k.slice(0,4)==='ptok'){const m=k.match(/^ptok(\d)_(\w+)$/);if(m){ITEM_NAME[k]=tokName(+m[1],m[2]);IC[k]=PTOK_IC;}}S.tut=TUT.length;setTimeout(renderAbil,0);}};}
 {const _hud=hud;hud=function(){_hud();if(S&&S.dc){const el=$('lvl');if(el)el.innerHTML=clsOf().ic+' Lv '+S.p.lvl+' · <b>'+clsName()+'</b> <small>'+tierTag()+'</small>';const dy=$('day');if(dy)dy.textContent=L('라운드 ','Round ','第')+S.day+(LANG==='zh'?'回合':'');}};}
   g('pickH').textContent=L('직업을 골라 주세요','Choose your class','选择你的职业');
   g('pickP').textContent=L('직업마다 스킬이 전부 달라요. 레벨을 올리고 보스의 혼을 모아 2차·3차 전직을 하면 새 스킬과 궁극기가 열려요. 히든 피스를 찾으면 히든 직업으로 전직할 수 있어요.','Every class has its own skills. Level up and collect boss souls to promote twice for new skills and an ultimate. Find hidden pieces to switch into hidden classes.','每个职业的技能都不同。升级并收集首领之魂进行第二、三次转职，解锁新技能和终极技。找到隐藏碎片可转职为隐藏职业。');
@@ -460,7 +484,7 @@ function fbTick(dt){if(S.tower||NC())return;const dc=S.dc;dc.fb=dc.fb||{};
     if(e.slam){e.slam.t-=dt;if(e.slam.t<=0){const s=e.slam;e.slam=null;burst(s.x,s.y,'#ff8a5a',18);shake(4);if(Math.hypot(p.x-s.x,p.y-s.y)<2.2*T)hurtPlayer(ET[e.t].dmg*e.m*1.8);}}}}
 {const _u2=update;update=function(dt){_u2(dt);if(S&&S.dc&&running&&!paused)fbTick(dt);};}
 {const _k2=killEnemy;killEnemy=function(e){const was=!e.dead;_k2(e);if(!was||!e.fb||!S.dc)return;const b=FBOSS.find(x=>x.id===e.fb),st=S.dc.fb[e.fb],L2=st.lv;
-  st.lv++;st.at=S.day+2;S.dc.fbKills=(S.dc.fbKills||0)+1;
+  st.lv++;st.at=S.day+2;S.dc.fbKills=(S.dc.fbKills||0)+1;dst().lord[e.fb]=(dst().lord[e.fb]||0)+1;
   const es=3+L2,g=Math.round(40*L2*(1+S.day*.1));S.items.estone=(S.items.estone||0)+es;S.items.soul=(S.items.soul||0)+1;S.gold+=g;
   towerGearDrop(Math.min(60,4+L2*5+Math.floor(S.day/3)),e.x,e.y);if(L2>=2)dropRare(e.x,e.y,true);
   shake(8);burst(e.x,e.y,'#ffe08a',30);sfx('achieve');
@@ -470,3 +494,12 @@ function fbDrawLabels(){for(const e of S.enemies){if(!e.fb||e.dead)continue;cons
   ctx.fillStyle='rgba(0,0,0,.5)';ctx.fillRect(e.x-24,y+4,48,4);ctx.fillStyle='#ff6a4a';ctx.fillRect(e.x-24,y+4,48*Math.max(0,e.hp/e.max),4);
   if(e.slam){ctx.globalAlpha=.6;ctx.strokeStyle='#ff6a4a';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(e.x,e.y);ctx.lineTo(e.slam.x,e.slam.y);ctx.stroke();ctx.globalAlpha=1;}}
   ctx.textAlign='left';}
+
+/* ---------- challenge tower needs a ticket, earned from bosses ---------- */
+ITEM_NAME.twticket=L('탑 입장권','Tower Ticket','塔入场券');IC.twticket='<rect x="3" y="7" width="18" height="10" rx="2" fill="#e8c070"/><circle cx="3" cy="12" r="2" fill="#152219"/><circle cx="21" cy="12" r="2" fill="#152219"/><path d="M9 9v6M12 9l3 3-3 3" stroke="#6a4a20" stroke-width="1.6" fill="none"/>';
+function giveTicket(x,y,n){S.items.twticket=(S.items.twticket||0)+(n||1);float(x,y-50,'+'+(n||1)+' '+ITEM_NAME.twticket,'#e8c070');}
+{const _et=enterTower;enterTower=function(f){if(!S||!S.dc)return _et(f);if(S.phase!=='day')return _et(f);
+  if((S.items.twticket||0)<1){toast(L('탑 입장권이 없어요. 습격 보스나 숲의 고정 보스를 잡으면 얻어요','No tower ticket. Defeat raid bosses or forest lords to earn one','没有入场券。击败来袭首领或森林固定首领即可获得'),3200);return;}
+  S.items.twticket--;_et(f);if(!S.tower){S.items.twticket++;return;}toast(L('입장권 1장을 썼어요 (남은 ','Used 1 ticket (','使用了1张入场券（剩余 ')+S.items.twticket+L('장)',' left)','张）'),2400);};}
+{const _rs=renderShop;renderShop=function(){_rs();if(S&&S.dc&&shopId==='tower'){const b=$('shopBody');if(b)b.insertAdjacentHTML('afterbegin','<p><b>'+itemIcon('twticket').replace('<svg','<svg class="mi" style="width:18px;height:18px;vertical-align:-4px"')+' '+ITEM_NAME.twticket+' '+(S.items.twticket||0)+L('장','',' 张')+'</b> · '+L('들어갈 때마다 1장. 습격 보스·고정 보스를 잡으면 얻어요. 한 번 들어가면 나올 때까지 여러 층을 계속 오를 수 있어요','1 per entry. Earned from raid bosses and forest lords. One entry lets you climb floors until you leave','每次进入消耗1张。击败来袭首领和固定首领获得。进入一次可连续攀登直到离开')+'</p>');}};}
+{const _k3=killEnemy;killEnemy=function(e){const was=!e.dead;_k3(e);if(!was||!S.dc||e.arena)return;if(e.fb||(e.nightBoss&&!e.wild)||e.awak)giveTicket(e.x,e.y,e.awak?2:1);};}

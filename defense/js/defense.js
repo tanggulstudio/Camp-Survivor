@@ -68,7 +68,7 @@ rollFoe=function(d,howl){const r=Math.random();let t='goblin';
 {const _dawn=dawn;dawn=function(){
   if(!S.dc)return _dawn();
   const r=S.day,dc=S.dc;
-  if(r%5===0&&S.core.hp>=(dc.coreN||0)-.5)givePiece('ember');
+  if(S.core.hp>=(dc.coreN||0)-.5){dst().nc++;if(r%5===0)givePiece('ember');}
   const rew=20+6*r,cap=(10+r*2)*Math.max(1,pv('interest')),intr=Math.min(Math.floor(S.gold*.05),cap),es=1+Math.floor(r/4);
   S.gold+=rew+intr;S.items.estone=(S.items.estone||0)+es;gainXp(10+r*4);
   if(dc.oc){S.mods.towerDmg/=(dc.ocm||1.6);dc.oc=0;}
