@@ -852,6 +852,7 @@ html.def #btnNet,html.def [data-tab="craft"],html.def [data-tab="cook"],html.def
 #clsBody .row{display:flex;flex-wrap:wrap;gap:6px}#clsBody .big{font-size:13px}#clsBody .hidb{outline:2px solid #c9a6ff}
 html.def .stats #lvl{grid-column:1/-1;white-space:nowrap}html.def .stats #lvl small{opacity:.75;font-size:10.5px}html.def .stats #lvl+.bar{grid-column:1/-1}
 #clsBody ul.shop li{grid-template-columns:28px 1fr auto}#clsBody ul.shop li small{grid-column:2}#clsBody ul.shop li button{grid-column:3;grid-row:1/span 2;align-self:center;min-width:72px}
+.picks.augs{grid-template-columns:repeat(3,1fr)}@media (max-width:560px){.picks.augs{grid-template-columns:1fr}}.picks.augs .pk{align-items:center;text-align:center;padding:16px 10px}.picks.augs .pk .pi{font-size:34px}.picks.augs .pk small{font-size:13px}.pk.risk{border-left-color:#c02a2a;background:rgba(192,42,42,.08)}#btnFast.on{background:#ffd27a}
 #clsBody .nx{font-weight:400;font-size:12px;color:#5a9a4a}
 #clsBody svg.mi{width:18px;height:18px;vertical-align:-4px}
 </style>
@@ -987,6 +988,12 @@ html.def .stats #lvl{grid-column:1/-1;white-space:nowrap}html.def .stats #lvl sm
       <p class="stext" id="storyText"></p>
       <div class="row"><button class="big" id="storyPrev">이전</button><button class="big pri" id="storyNext">다음</button></div>
       <button class="link" id="storySkip">건너뛰기</button>
+    </div>
+  </div>
+  <div class="overlay" id="ovAug" hidden>
+    <div class="panel wide">
+      <h2 id="augH"></h2>
+      <div class="picks augs" id="augList"></div>
     </div>
   </div>
   <div class="overlay" id="ovPick" hidden>
@@ -1146,6 +1153,7 @@ html.def .stats #lvl{grid-column:1/-1;white-space:nowrap}html.def .stats #lvl sm
 <script src="js/rounds.js"></script>
 <script src="js/defense.js"></script>
 <script src="js/classes.js"></script>
+<script src="js/nights.js"></script>
 <script src="js/ui.js"></script>
 </body>
 </html>
